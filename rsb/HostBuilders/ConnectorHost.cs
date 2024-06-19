@@ -54,7 +54,10 @@ public static class ConnectorHost
                         //add handler
                         services.AddScoped(serviceType, handlerType);
 
-                        //add hosted service
+                        /*
+                         * add hosted service
+                         * each handler will be injected into a worker
+                         */
                         var engineImplType = typeof(HandlerWorker<>)
                             .MakeGenericType(messageType);
 

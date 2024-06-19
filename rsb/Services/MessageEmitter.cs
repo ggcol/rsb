@@ -37,7 +37,7 @@ internal sealed class MessageEmitter : IMessageEmitter
                 /*
                  * May be:
                  * - ServiceBusException (message exceed maximum size)
-                 * - SerializationException (non parsable token)
+                 * - SerializationException (non-parsable token)
                  * - ArgumentException (error in sb connection string)
                  */
             {
