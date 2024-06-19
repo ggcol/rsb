@@ -1,6 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rsb", "rsb\rsb.csproj", "{F33041EA-EA7A-490D-BBCB-561D7237A5BA}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34408.163
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "rsb", "rsb\rsb.csproj", "{F33041EA-EA7A-490D-BBCB-561D7237A5BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Playground", "Playground\Playground.csproj", "{21E5F450-4ED3-4973-B54C-196F5B23A23A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +17,12 @@ Global
 		{F33041EA-EA7A-490D-BBCB-561D7237A5BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F33041EA-EA7A-490D-BBCB-561D7237A5BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F33041EA-EA7A-490D-BBCB-561D7237A5BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21E5F450-4ED3-4973-B54C-196F5B23A23A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21E5F450-4ED3-4973-B54C-196F5B23A23A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21E5F450-4ED3-4973-B54C-196F5B23A23A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21E5F450-4ED3-4973-B54C-196F5B23A23A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
