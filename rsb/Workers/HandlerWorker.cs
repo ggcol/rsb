@@ -3,8 +3,9 @@ using System.Text.Json;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Hosting;
 using rsb.Configurations;
+using rsb.Services;
 
-namespace rsb.Services;
+namespace rsb.Workers;
 
 internal sealed class HandlerWorker<TMessage> : IHostedService
     where TMessage : IAmAMessage
@@ -73,7 +74,7 @@ internal sealed class HandlerWorker<TMessage> : IHostedService
                 .ConfigureAwait(false);
 
             _sbProcessor = serviceBusService.GetProcessor(topic.Name,
-                    topic.SubscriptionName);
+                topic.SubscriptionName);
             return;
         }
 
@@ -106,6 +107,8 @@ internal sealed class HandlerWorker<TMessage> : IHostedService
             .ConfigureAwait(false);
     }
 
+    #region IHosteService implemented
+
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         await _sbProcessor.StartProcessingAsync(cancellationToken)
@@ -118,4 +121,6 @@ internal sealed class HandlerWorker<TMessage> : IHostedService
             .ConfigureAwait(false);
         await _sbProcessor.DisposeAsync().ConfigureAwait(false);
     }
+
+    #endregion
 }
