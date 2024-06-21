@@ -5,6 +5,7 @@ using MoreLinq.Extensions;
 using rsb.Configurations;
 using rsb.HostBuilders.Utils;
 using rsb.Services;
+using rsb.Workers;
 using Serilog;
 
 namespace rsb.HostBuilders;
