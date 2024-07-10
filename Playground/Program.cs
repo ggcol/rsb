@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
-using rsb;
-using rsb.Configurations;
-using rsb.HostBuilders;
+using Rsb;
+using Rsb.Configurations;
+using Rsb.HostBuilders;
 
 await OrchestratorHost
     .Create<Settings>()
