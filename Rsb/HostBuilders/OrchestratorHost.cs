@@ -3,10 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MoreLinq;
 using Rsb.Configurations;
-using Rsb.HostBuilders.Utils;
 using Rsb.Services;
 using Rsb.Workers;
-using Serilog;
 
 namespace Rsb.HostBuilders;
 
@@ -51,7 +49,8 @@ public static class OrchestratorHost
                         // services.AddScoped(typeof(IAmSaga), sagaType);
                         services.AddScoped<IAmSaga>(x => new Saga()
                         {
-                            Data = (IAmSagaData)Activator.CreateInstance(sagaDataType)
+                            Data = (IAmSagaData)Activator.CreateInstance(
+                                sagaDataType)
                         });
 
 
@@ -77,7 +76,6 @@ public static class OrchestratorHost
                         services.AddSingleton(typeof(IHostedService),
                             engineImplType);
                     });
-            })
-            .UseSerilog(ConfigureHost.Logger);
+            });
     }
 }

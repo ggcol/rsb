@@ -3,10 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MoreLinq.Extensions;
 using Rsb.Configurations;
-using Rsb.HostBuilders.Utils;
 using Rsb.Services;
 using Rsb.Workers;
-using Serilog;
 
 namespace Rsb.HostBuilders;
 
@@ -65,7 +63,6 @@ public static class ConnectorHost
                         services.AddSingleton(typeof(IHostedService),
                             engineImplType);
                     });
-            })
-            .UseSerilog(ConfigureHost.Logger);
+            });
     }
 }

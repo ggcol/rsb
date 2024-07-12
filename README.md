@@ -8,6 +8,3 @@ Actual dependencies:
 - Microsoft.Extensions.Caching.Memory
 - Microsoft.Extensions.Hosting
 - Morelinq
-- Serilog.Extenions.Hosting
-- Serilog.Sinks.Console
-- Serilog
