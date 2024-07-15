@@ -112,6 +112,7 @@ internal sealed class AzureServiceBusService<TSettings>
     public ServiceBusProcessor GetProcessor(string queueOrTopic,
         string subscriptionName = null)
     {
+        //TODO check this
         //It does not make sense to cache processors
         return string.IsNullOrEmpty(subscriptionName)
             ? _sbClient.CreateProcessor(queueOrTopic)

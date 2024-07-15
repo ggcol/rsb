@@ -20,7 +20,7 @@ internal sealed class MessageEmitter : IMessageEmitter
         {
             try
             {
-                var holder = collector.Messages.Dequeue();
+                var holder = collector.Messages.FirstOrDefault();
 
                 var destination = holder.Message is IAmACommand
                     ? await _serviceBusService
@@ -32,6 +32,8 @@ internal sealed class MessageEmitter : IMessageEmitter
 
                 await Emit(holder.Message, destination, cancellationToken)
                     .ConfigureAwait(false);
+                
+                collector.Messages.Dequeue();
             }
             catch (Exception ex)
                 /*
