@@ -10,18 +10,20 @@ namespace Rsb.Core;
 //TODO rename
 public static class DependencyInjection
 {
-    public static IHostBuilder UseRsb(this IHostBuilder hostBuilder)
+    public static IHostBuilder UseRsb<TSettings>(this IHostBuilder hostBuilder)
+        where TSettings : class, IConfigureAzureServiceBus, new()
     {
         return hostBuilder
             .ConfigureServices((hostBuilderContext, services) =>
             {
                 services
-                    .Configure<SuperLocalSettings>(
-                        hostBuilderContext.Configuration.GetSection("TODO"));
+                    .Configure<TSettings>(
+                        hostBuilderContext.Configuration.GetSection(typeof(TSettings).Name));
 
                 services
                     .AddMemoryCache()
-                    .AddSingleton<IAzureServiceBusService, AzureServiceBusService<SuperLocalSettings>>()
+                    .AddSingleton<IAzureServiceBusService,
+                        AzureServiceBusService<TSettings>>()
                     .AddTransient<IMessagingContext, MessagingContext>()
                     .AddScoped<IMessageEmitter, MessageEmitter>();
 
@@ -60,10 +62,4 @@ public static class DependencyInjection
                 services.AddHostedService<RsbWorker>();
             });
     }
-}
-
-public class SuperLocalSettings : IConfigureAzureServiceBus
-{
-    public string SbConnectionString { get; set; }
-        = "";
 }

@@ -2,5 +2,5 @@
 
 public interface IConfigureAzureServiceBus
 {
-    public string SbConnectionString { get; set; }
+    public string? ConnectionString { get; set; }
 }

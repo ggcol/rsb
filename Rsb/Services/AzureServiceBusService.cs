@@ -23,7 +23,8 @@ internal sealed class AzureServiceBusService<TSettings>
         _options = options;
         _cache = cache;
 
-        _sbClient = new ServiceBusClient(_options.Value.SbConnectionString,
+        _sbClient = new ServiceBusClient(
+            _options.Value.ConnectionString,
             _myOptions.SbClientOptions);
     }
 
@@ -94,7 +95,7 @@ internal sealed class AzureServiceBusService<TSettings>
     private ServiceBusAdministrationClient MakeAdmClient()
     {
         return new ServiceBusAdministrationClient(_options.Value
-            .SbConnectionString);
+            .ConnectionString);
     }
 
     public ServiceBusSender GetSender(string destination)
@@ -105,7 +106,7 @@ internal sealed class AzureServiceBusService<TSettings>
 
         return _cache.TryGetValue(cacheKey, out ServiceBusSender sender)
             ? sender
-            : _cache.Set(cacheKey, _sbClient.CreateSender(destination), 
+            : _cache.Set(cacheKey, _sbClient.CreateSender(destination),
                 _myOptions.CacheOptions.DefaultCacheEntriesOptions);
     }
 

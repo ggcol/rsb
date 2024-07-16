@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Playground;
 using Rsb;
 using Rsb.Configurations;
 using Rsb.Core;
@@ -7,11 +8,11 @@ using Rsb.Services;
 
 await Host
     .CreateDefaultBuilder()
-    .UseRsb()
+    .UseRsb<Settings>()
     .ConfigureServices(
-        (hostBuilderContext, services) =>
+        (_, services) =>
         {
-            // services.AddHostedService<InitJob>();
+            services.AddHostedService<InitJob>();
             services.AddLogging();
         })
     .RunConsoleAsync();
