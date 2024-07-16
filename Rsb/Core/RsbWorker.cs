@@ -1,4 +1,5 @@
-﻿using Azure.Messaging.ServiceBus;
+﻿using System.Reflection;
+using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Hosting;
 using Rsb.Services;
 using Rsb.Utils;
@@ -25,24 +26,11 @@ internal class RsbWorker : IHostedService
         _serviceProvider = serviceProvider;
         _messageEmitter = messageEmitter;
 
-        var messagesTypes = new List<Type>();
 
-        var listeners = AssemblySearcher.GetListeners();
+        var listeners = AssemblySearcher.GetIHandleMessageImplementersTypes(Assembly.GetEntryAssembly());
 
-        foreach (var listener in listeners)
-        {
-            var implInterfaces = listener.GetInterfaces();
-
-            foreach (var @interface in implInterfaces)
-            {
-                if (@interface.GetGenericTypeDefinition() ==
-                    typeof(IHandleMessage<>))
-                {
-                    messagesTypes.Add(@interface.GetGenericArguments().First());
-                }
-            }
-        }
-
+        var messagesTypes = AssemblySearcher.GetIHandleMessageImplementersMessageTypes(listeners);
+        
         foreach (var messageType in messagesTypes)
         {
             //TODO subscriptions?

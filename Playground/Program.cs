@@ -20,8 +20,11 @@ await Host
 
 public class AMessage : IAmACommand
 {
-    public string Something { get; set; }
+    public string? Something { get; init; }
 }
+
+public class Message1 : IAmACommand{}
+public class Message2 : IAmACommand{}
 
 public class AnHandler : IHandleMessage<AMessage>
 {
@@ -31,6 +34,23 @@ public class AnHandler : IHandleMessage<AMessage>
         Console.WriteLine(message.Something);
     }
 }
+
+public class AnHandlerDouble : IHandleMessage<Message1>,
+    IHandleMessage<Message2>
+{
+    public Task Handle(Message1 message, IMessagingContext context,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task Handle(Message2 message, IMessagingContext context,
+        CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+}
+
 
 internal class InitJob : IHostedService
 {
@@ -54,6 +74,14 @@ internal class InitJob : IHostedService
                 Something = "Hello world!"
             }, cancellationToken)
             .ConfigureAwait(false);
+        
+        await _context.Send(new Message1(), cancellationToken)
+            .ConfigureAwait(false);
+        
+        await _context.Send(new Message2(), cancellationToken)
+            .ConfigureAwait(false);
+        
+        
 
         await _emitter.FlushAll((ICollectMessage)_context, cancellationToken)
             .ConfigureAwait(false);

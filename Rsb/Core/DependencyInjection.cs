@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Rsb.Configurations;
 using Rsb.Services;
@@ -27,27 +28,28 @@ public static class DependencyInjection
                     .AddTransient<IMessagingContext, MessagingContext>()
                     .AddScoped<IMessageEmitter, MessageEmitter>();
 
-                //get all queue/sub name (IAmAMessage)
-                //handlers
-                var listenerTypes = AssemblySearcher.GetListeners();
+                var handlersTypes =
+                    AssemblySearcher.GetIHandleMessageImplementersTypes(
+                        Assembly.GetEntryAssembly());
 
-                foreach (var listenerType in listenerTypes)
+                var messageTypes =
+                    AssemblySearcher.GetIHandleMessageImplementersMessageTypes(
+                        handlersTypes);
+
+
+                foreach (var messageType in messageTypes)
                 {
-                    var messageType = listenerType
-                        .GetInterfaces()
-                        //TODO multiple IHandleMessageDefinition?
-                        .FirstOrDefault(i => i.IsGenericType &&
-                                             i.GetGenericTypeDefinition() ==
-                                             typeof(IHandleMessage<>))?
-                        .GetGenericArguments()
-                        .First()!;
+                    var handlerType =
+                        AssemblySearcher
+                            .GetIHandleMessageImplementerByMessageType(
+                                handlersTypes, messageType);
 
-                    var listenerServiceType = typeof(IHandleMessage<>)
+                    var handlerServiceType = typeof(IHandleMessage<>)
                         .MakeGenericType(messageType);
 
-                    //add listener
                     //TODO this may be transient?
-                    services.AddScoped(listenerServiceType, listenerType);
+                    //add handlers as services
+                    services.AddScoped(handlerServiceType, handlerType);
 
                     var brokerServiceType =
                         typeof(IListenerBroker<>).MakeGenericType(messageType);
@@ -56,6 +58,7 @@ public static class DependencyInjection
                         typeof(ListenerBroker<>).MakeGenericType(messageType);
 
                     //TODO this may be transient?
+                    //add brokers as services, handlers are then injected
                     services.AddScoped(brokerServiceType, brokerImplType);
                 }
 
