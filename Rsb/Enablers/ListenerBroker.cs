@@ -2,7 +2,7 @@
 using Rsb.Configurations;
 using Rsb.Services;
 
-namespace Rsb.Workers;
+namespace Rsb.Enablers;
 
 internal sealed class ListenerBroker<T> : IListenerBroker<T> where T : IAmAMessage
 {

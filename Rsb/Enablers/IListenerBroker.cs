@@ -1,6 +1,6 @@
 ﻿using Rsb.Services;
 
-namespace Rsb.Workers;
+namespace Rsb.Enablers;
 
 internal interface IListenerBroker
 {

@@ -2,9 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Rsb.Configurations;
+using Rsb.Enablers;
 using Rsb.Services;
 using Rsb.Utils;
-using Rsb.Workers;
 
 namespace Rsb.Core;
 

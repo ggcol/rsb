@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Hosting;
+using Rsb.Enablers;
 using Rsb.Services;
 using Rsb.Utils;
-using Rsb.Workers;
 
 namespace Rsb.Core;
 
