@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Rsb.Configurations;
-using Rsb.Enablers;
 using Rsb.Services;
 using Rsb.Utils;
 
@@ -63,16 +62,6 @@ public static class DependencyInjection
             //TODO this may be transient?
             //add handlers as services
             services.AddScoped(handlerServiceType, handlerType);
-
-            var brokerServiceType =
-                typeof(IListenerBroker<>).MakeGenericType(messageType);
-
-            var brokerImplType =
-                typeof(ListenerBroker<>).MakeGenericType(messageType);
-
-            //TODO this may be transient?
-            //add brokers as services, handlers are then injected
-            services.AddScoped(brokerServiceType, brokerImplType);
         }
 
         return services;

@@ -35,21 +35,21 @@ public class AnHandler : IHandleMessage<AMessage>
     }
 }
 
-public class AnHandlerDouble : IHandleMessage<Message1>,
-    IHandleMessage<Message2>
-{
-    public Task Handle(Message1 message, IMessagingContext context,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task Handle(Message2 message, IMessagingContext context,
-        CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-}
+// public class AnHandlerDouble : IHandleMessage<Message1>,
+//     IHandleMessage<Message2>
+// {
+//     public Task Handle(Message1 message, IMessagingContext context,
+//         CancellationToken cancellationToken = default)
+//     {
+//         throw new NotImplementedException();
+//     }
+//
+//     public Task Handle(Message2 message, IMessagingContext context,
+//         CancellationToken cancellationToken = default)
+//     {
+//         throw new NotImplementedException();
+//     }
+// }
 
 
 internal class InitJob : IHostedService
@@ -75,14 +75,12 @@ internal class InitJob : IHostedService
             }, cancellationToken)
             .ConfigureAwait(false);
         
-        await _context.Send(new Message1(), cancellationToken)
-            .ConfigureAwait(false);
+        // await _context.Send(new Message1(), cancellationToken)
+        //     .ConfigureAwait(false);
+        //
+        // await _context.Send(new Message2(), cancellationToken)
+        //     .ConfigureAwait(false);
         
-        await _context.Send(new Message2(), cancellationToken)
-            .ConfigureAwait(false);
-        
-        
-
         await _emitter.FlushAll((ICollectMessage)_context, cancellationToken)
             .ConfigureAwait(false);
     }

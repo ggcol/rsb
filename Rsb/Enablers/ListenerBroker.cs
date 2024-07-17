@@ -19,9 +19,8 @@ internal sealed class ListenerBroker<T> : IListenerBroker<T> where T : IAmAMessa
     public async Task Handle(BinaryData binaryData,
         CancellationToken cancellationToken)
     {
-        //TODO check if async is ok
         var message = await Deserialize(binaryData);
-
+        
         await _handler.Handle(message, _context, cancellationToken)
             .ConfigureAwait(false);
     }
