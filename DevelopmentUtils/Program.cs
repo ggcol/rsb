@@ -17,3 +17,5 @@ await foreach (var topic in topics)
 {
     await adminClient.DeleteTopicAsync(topic.Name);
 }
+
+Console.WriteLine("Done");
