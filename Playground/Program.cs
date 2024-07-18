@@ -12,6 +12,7 @@ await Host
         {
             services.AddHostedService<OneMessageInitJob>();
             // services.AddHostedService<TwoMessagesSameHandlerClassInitJob>();
+            // services.AddHostedService<AGenericJob>();
             services.AddLogging();
         })
     .RunConsoleAsync();

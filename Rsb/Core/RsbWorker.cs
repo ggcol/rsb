@@ -80,7 +80,7 @@ internal class RsbWorker : IHostedService
      * Probably the same can be done for handlers as well but
      * may be a little quirky.
      * Handler shouldn't have dependencies that cannot be resolved from DI
-     * and it is possible to search the entry assembly to get the class
+     * It is possible to search the entry assembly to get the class
      * that implements IHandleMessage<> of a given messagetype.
      * Once gathered a new instance can be created with ActivatorUtilities
      * and then passed as parameter once creating the broker instance.

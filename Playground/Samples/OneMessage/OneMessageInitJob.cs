@@ -21,11 +21,17 @@ internal class OneMessageInitJob : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await _context.Send(new AMessage()
-            {
-                Something = "Hello world!"
-            }, cancellationToken)
-            .ConfigureAwait(false);
+        var max = new Random().Next(5);
+
+        for (var i = 0; i <= max; i++)
+        {
+            await _context.Send(new AMessage()
+                {
+                    Something = $"{i} - Hello world!"
+                }, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        
 
         await _emitter.FlushAll((ICollectMessage)_context, cancellationToken)
             .ConfigureAwait(false);
