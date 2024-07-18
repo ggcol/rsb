@@ -110,14 +110,19 @@ internal sealed class AzureServiceBusService<TSettings>
                 _myOptions.CacheOptions.DefaultCacheEntriesOptions);
     }
 
-    public ServiceBusProcessor GetProcessor(string queueOrTopic,
-        string subscriptionName = null)
+    public ServiceBusProcessor GetProcessor(string queueName)
     {
         //TODO check this
         //It does not make sense to cache processors
-        return string.IsNullOrEmpty(subscriptionName)
-            ? _sbClient.CreateProcessor(queueOrTopic)
-            : _sbClient.CreateProcessor(queueOrTopic, subscriptionName);
+       return _sbClient.CreateProcessor(queueName);
+    }
+
+    public ServiceBusProcessor GetProcessor(string topicName,
+        string subscriptionName)
+    {
+        //TODO check this
+        //It does not make sense to cache processors
+        return _sbClient.CreateProcessor(topicName, subscriptionName);
     }
 
     private string CacheKey(params string[] values)

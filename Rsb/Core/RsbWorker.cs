@@ -2,6 +2,7 @@
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Rsb.Configurations;
 using Rsb.Enablers;
 using Rsb.Services;
 using Rsb.Utils;
@@ -38,17 +39,42 @@ internal class RsbWorker : IHostedService
 
         foreach (var messageType in messagesTypes)
         {
-            //TODO subscriptions?
-            var processor =
-                azureServiceBusService.GetProcessor(messageType.Name);
+           var processor = GetProcessor(azureServiceBusService, messageType)
+                .ConfigureAwait(false).GetAwaiter().GetResult();
 
-            processor.ProcessMessageAsync += async (args) 
+           processor.ProcessMessageAsync += async (args)
                 => await ProcessMessage(messageType, args);
 
             processor.ProcessErrorAsync += async (args)
                 => await ProcessError(messageType, args);
 
             _processors.Add(messageType, processor);
+        }
+    }
+
+    private static async Task<ServiceBusProcessor> GetProcessor(
+        IAzureServiceBusService azureServiceBusService, Type messageType)
+    {
+        var isCommand = messageType.GetInterfaces()
+            .Any(x => x == typeof(IAmACommand));
+        
+        switch (isCommand)
+        {
+            case true:
+            {
+                var queue = await azureServiceBusService
+                    .ConfigureQueue(messageType.Name)
+                    .ConfigureAwait(false);
+                return azureServiceBusService.GetProcessor(queue);
+            }
+            case false:
+            {
+                var topicConfig = await azureServiceBusService
+                    .ConfigureTopicForReceiver(messageType)
+                    .ConfigureAwait(false);
+                return azureServiceBusService.GetProcessor(topicConfig.Name,
+                        topicConfig.SubscriptionName);
+            }
         }
     }
 
@@ -75,7 +101,7 @@ internal class RsbWorker : IHostedService
         await _messageEmitter.FlushAll(broker.Collector,
             args.CancellationToken).ConfigureAwait(false);
     }
-    
+
     /*
      * Probably the same can be done for handlers as well but
      * may be a little quirky.
