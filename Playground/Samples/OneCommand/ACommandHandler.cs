@@ -1,12 +1,12 @@
 ﻿using Rsb;
 
-namespace Playground.Samples.OneMessage;
+namespace Playground.Samples.OneCommand;
 
-public class AnHandler : IHandleMessage<AMessage>
+public class ACommandHandler : IHandleMessage<ACommand>
 {
     private const int FIVE_SECONDS = 5000;
 
-    public async Task Handle(AMessage message, IMessagingContext context,
+    public async Task Handle(ACommand message, IMessagingContext context,
         CancellationToken cancellationToken = default)
     {
         Console.WriteLine("Handler starts");

@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Playground;
-using Playground.Samples.OneMessage;
+using Playground.Samples.OneCommand;
+using Playground.Samples.OneEvent;
 using Rsb.Core;
 
 await Host
@@ -10,7 +11,8 @@ await Host
     .ConfigureServices(
         (_, services) =>
         {
-            services.AddHostedService<OneMessageInitJob>();
+            // services.AddHostedService<OneCommandInitJob>();
+            services.AddHostedService<OneEventInitJob>();
             // services.AddHostedService<TwoMessagesSameHandlerClassInitJob>();
             // services.AddHostedService<AGenericJob>();
             services.AddLogging();

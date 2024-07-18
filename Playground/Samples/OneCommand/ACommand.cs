@@ -1,8 +1,8 @@
 ﻿using Rsb.Configurations;
 
-namespace Playground.Samples.OneMessage;
+namespace Playground.Samples.OneCommand;
 
-public class AMessage : IAmACommand
+public class ACommand : IAmACommand
 {
     public string? Something { get; init; }
 }

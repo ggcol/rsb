@@ -2,15 +2,15 @@
 using Rsb;
 using Rsb.Services;
 
-namespace Playground.Samples.OneMessage;
+namespace Playground.Samples.OneEvent;
 
-internal class OneMessageInitJob : IHostedService
+internal class OneEventInitJob : IHostedService
 {
     private readonly IMessagingContext _context;
     private readonly IMessageEmitter _emitter;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
 
-    public OneMessageInitJob(IMessagingContext context,
+    public OneEventInitJob(IMessagingContext context,
         IMessageEmitter emitter,
         IHostApplicationLifetime hostApplicationLifetime)
     {
@@ -21,11 +21,11 @@ internal class OneMessageInitJob : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var max = new Random().Next(5);
+        var max = new Random().Next(1, 5);
 
         for (var i = 0; i <= max; i++)
         {
-            await _context.Send(new AMessage()
+            await _context.Publish(new AnEvent()
                 {
                     Something = $"{i} - Hello world!"
                 }, cancellationToken)
