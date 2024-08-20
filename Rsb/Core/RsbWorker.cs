@@ -1,11 +1,8 @@
-﻿using System.Reflection;
-using Azure.Messaging.ServiceBus;
+﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Rsb.Configurations;
 using Rsb.Enablers;
 using Rsb.Services;
-using Rsb.Utils;
 
 namespace Rsb.Core;
 
@@ -14,116 +11,43 @@ internal class RsbWorker : IHostedService
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly IServiceProvider _serviceProvider;
     private readonly IMessageEmitter _messageEmitter;
+    private readonly IRsbCache _rsbCache;
 
-    private readonly IDictionary<Type, ServiceBusProcessor> _processors = new
-        Dictionary<Type, ServiceBusProcessor>();
+    private readonly IDictionary<ListenerType, ServiceBusProcessor>
+        _processors = new Dictionary<ListenerType, ServiceBusProcessor>();
 
     public RsbWorker(
         IHostApplicationLifetime hostApplicationLifetime,
         IServiceProvider serviceProvider,
         IAzureServiceBusService azureServiceBusService,
-        IMessageEmitter messageEmitter)
+        IMessageEmitter messageEmitter, IRsbCache rsbCache)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _serviceProvider = serviceProvider;
         _messageEmitter = messageEmitter;
+        _rsbCache = rsbCache;
 
-
-        var listeners =
-            AssemblySearcher.GetIHandleMessageImplementersTypes(
-                Assembly.GetEntryAssembly());
-
-        var messagesTypes =
-            AssemblySearcher.GetIHandleMessageImplementersMessageTypes(
-                listeners);
-
-        foreach (var messageType in messagesTypes)
+        foreach (var listener in _rsbCache.Listeners)
         {
-           var processor = GetProcessor(azureServiceBusService, messageType)
+            var processor = GetProcessor(azureServiceBusService, listener,
+                    hostApplicationLifetime.ApplicationStopping)
                 .ConfigureAwait(false).GetAwaiter().GetResult();
 
-           processor.ProcessMessageAsync += async (args)
-                => await ProcessMessage(messageType, args);
+            processor.ProcessMessageAsync += async (args)
+                => await ProcessMessage(listener, args);
 
             processor.ProcessErrorAsync += async (args)
-                => await ProcessError(messageType, args);
+                => await ProcessError(listener, args);
 
-            _processors.Add(messageType, processor);
+            _processors.Add(listener, processor);
         }
     }
-
-    private static async Task<ServiceBusProcessor> GetProcessor(
-        IAzureServiceBusService azureServiceBusService, Type messageType)
-    {
-        var isCommand = messageType.GetInterfaces()
-            .Any(x => x == typeof(IAmACommand));
-        
-        switch (isCommand)
-        {
-            case true:
-            {
-                var queue = await azureServiceBusService
-                    .ConfigureQueue(messageType.Name)
-                    .ConfigureAwait(false);
-                return azureServiceBusService.GetProcessor(queue);
-            }
-            case false:
-            {
-                var topicConfig = await azureServiceBusService
-                    .ConfigureTopicForReceiver(messageType)
-                    .ConfigureAwait(false);
-                return azureServiceBusService.GetProcessor(topicConfig.Name,
-                        topicConfig.SubscriptionName);
-            }
-        }
-    }
-
-    private async Task ProcessError(Type messageType,
-        ProcessErrorEventArgs args)
-    {
-        var broker = GetBroker(_serviceProvider, messageType);
-        await broker.HandleError(args.Exception, args.CancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    private async Task ProcessMessage(Type messageType,
-        ProcessMessageEventArgs args)
-    {
-        var broker = GetBroker(_serviceProvider, messageType);
-        await broker
-            .Handle(args.Message.Body, args.CancellationToken)
-            .ConfigureAwait(false);
-
-        await args
-            .CompleteMessageAsync(args.Message, args.CancellationToken)
-            .ConfigureAwait(false);
-
-        await _messageEmitter.FlushAll(broker.Collector,
-            args.CancellationToken).ConfigureAwait(false);
-    }
-
-    /*
-     * Probably the same can be done for handlers as well but
-     * may be a little quirky.
-     * Handler shouldn't have dependencies that cannot be resolved from DI
-     * It is possible to search the entry assembly to get the class
-     * that implements IHandleMessage<> of a given messagetype.
-     * Once gathered a new instance can be created with ActivatorUtilities
-     * and then passed as parameter once creating the broker instance.
-     */
-    private static IListenerBroker GetBroker(IServiceProvider serviceProvider,
-        Type messageType)
-    {
-        var implType = typeof(ListenerBroker<>).MakeGenericType(messageType);
-        return (IListenerBroker)ActivatorUtilities.CreateInstance(
-            serviceProvider, implType);
-    }
-
+    
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        foreach (var processor in _processors)
+        foreach (var processorKvp in _processors)
         {
-            await processor.Value.StartProcessingAsync(cancellationToken)
+            await processorKvp.Value.StartProcessingAsync(cancellationToken)
                 .ConfigureAwait(false);
         }
     }
@@ -138,5 +62,68 @@ internal class RsbWorker : IHostedService
         }
 
         _hostApplicationLifetime.StopApplication();
+    }
+
+    private static async Task<ServiceBusProcessor> GetProcessor(
+        IAzureServiceBusService azureServiceBusService, ListenerType listener,
+        CancellationToken cancellationToken)
+    {
+        switch (listener.MessageType.IsCommand)
+        {
+            case true:
+            {
+                var queue = await azureServiceBusService
+                    .ConfigureQueue(listener.MessageType.Type.Name)
+                    .ConfigureAwait(false);
+                return azureServiceBusService.GetProcessor(queue);
+            }
+            case false:
+            {
+                var topicConfig = await azureServiceBusService
+                    .ConfigureTopicForReceiver(listener.MessageType.Type)
+                    .ConfigureAwait(false);
+                return azureServiceBusService.GetProcessor(topicConfig.Name,
+                    topicConfig.SubscriptionName);
+            }
+        }
+    }
+
+    private async Task ProcessError(ListenerType listenerType,
+        ProcessErrorEventArgs args)
+    {
+        var broker = GetBroker(_serviceProvider, listenerType);
+
+        await broker.HandleError(args.Exception, args.CancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task ProcessMessage(ListenerType listenerType,
+        ProcessMessageEventArgs args)
+    {
+        var broker = GetBroker(_serviceProvider, listenerType);
+
+        await broker
+            .Handle(args.Message.Body, args.CancellationToken)
+            .ConfigureAwait(false);
+
+        await args
+            .CompleteMessageAsync(args.Message, args.CancellationToken)
+            .ConfigureAwait(false);
+
+        await _messageEmitter.FlushAll(broker.Collector,
+            args.CancellationToken).ConfigureAwait(false);
+    }
+
+    private static IListenerBroker GetBroker(IServiceProvider serviceProvider,
+        ListenerType listenerType)
+    {
+        var implListener = ActivatorUtilities.CreateInstance(
+            serviceProvider, listenerType.Type);
+
+        var implType = typeof(ListenerBroker<>)
+            .MakeGenericType(listenerType.MessageType.Type);
+        
+        return (IListenerBroker)ActivatorUtilities.CreateInstance(
+            serviceProvider, implType, implListener);
     }
 }

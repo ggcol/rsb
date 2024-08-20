@@ -14,8 +14,7 @@ public class AGenericJob : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var saga = new Prova();
-        Console.WriteLine(saga.CorrelationId);
+        //do sth
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

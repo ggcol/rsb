@@ -1,9 +1,7 @@
-﻿using System.Reflection;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Rsb.Configurations;
 using Rsb.Services;
-using Rsb.Utils;
 
 namespace Rsb.Core;
 
@@ -18,52 +16,31 @@ public static class DependencyInjection
             {
                 services
                     .Configure<TSettings>(
-                        hostBuilderContext.Configuration.GetSection(typeof(TSettings).Name));
+                        hostBuilderContext.Configuration.GetSection(
+                            typeof(TSettings).Name));
+
+                // var sagas = Assembly.GetEntryAssembly().GetTypes()
+                //     .Where(t => t is { IsClass: true, IsAbstract: false })
+                //     .Where(t => t.BaseType.GetGenericTypeDefinition() == typeof(NewSaga<>));
 
                 services
                     .AddMandatoryServices<TSettings>()
-                    .RegisterHandlers();
+                    // .RegisterHandlers()
+                    ;
 
                 services.AddHostedService<RsbWorker>();
             });
     }
 
-    private static IServiceCollection AddMandatoryServices<TSettings>(this IServiceCollection services)
+    private static IServiceCollection AddMandatoryServices<TSettings>(
+        this IServiceCollection services)
         where TSettings : class, IConfigureAzureServiceBus, new()
     {
         return services
             .AddMemoryCache()
+            .AddSingleton<IRsbCache, RsbCache>()
             .AddSingleton<IAzureServiceBusService, AzureServiceBusService<TSettings>>()
             .AddScoped<IMessagingContext, MessagingContext>()
             .AddScoped<IMessageEmitter, MessageEmitter>();
-    }
-    
-    private static IServiceCollection RegisterHandlers(this IServiceCollection services)
-    {
-        var handlersTypes =
-            AssemblySearcher.GetIHandleMessageImplementersTypes(
-                Assembly.GetEntryAssembly());
-
-        var messageTypes =
-            AssemblySearcher.GetIHandleMessageImplementersMessageTypes(
-                handlersTypes);
-
-
-        foreach (var messageType in messageTypes)
-        {
-            var handlerType =
-                AssemblySearcher
-                    .GetIHandleMessageImplementerByMessageType(
-                        handlersTypes, messageType);
-
-            var handlerServiceType = typeof(IHandleMessage<>)
-                .MakeGenericType(messageType);
-
-            //TODO this may be transient?
-            //add handlers as services
-            services.AddScoped(handlerServiceType, handlerType);
-        }
-
-        return services;
     }
 }

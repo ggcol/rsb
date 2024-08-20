@@ -1,7 +1,7 @@
 ﻿using Azure.Messaging.ServiceBus.Administration;
 
 var connectionString 
-    = "";
+    = "Endpoint=sb://sb-wil-we-dev.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=HNl3w4J0UonlS0EESl/gh47Ngo7N2/0cF+ASbB0srHM=";
 var adminClient = new ServiceBusAdministrationClient(connectionString);
 
 // Delete all queues
