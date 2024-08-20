@@ -11,7 +11,6 @@ internal class RsbWorker : IHostedService
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly IServiceProvider _serviceProvider;
     private readonly IMessageEmitter _messageEmitter;
-    private readonly IRsbCache _rsbCache;
 
     private readonly IDictionary<ListenerType, ServiceBusProcessor>
         _processors = new Dictionary<ListenerType, ServiceBusProcessor>();
@@ -20,16 +19,18 @@ internal class RsbWorker : IHostedService
         IHostApplicationLifetime hostApplicationLifetime,
         IServiceProvider serviceProvider,
         IAzureServiceBusService azureServiceBusService,
-        IMessageEmitter messageEmitter, IRsbCache rsbCache)
+        IMessageEmitter messageEmitter, 
+        IRsbCache rsbCache)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _serviceProvider = serviceProvider;
         _messageEmitter = messageEmitter;
-        _rsbCache = rsbCache;
 
-        foreach (var listener in _rsbCache.Listeners)
+        foreach (var listener in rsbCache.Listeners)
         {
-            var processor = GetProcessor(azureServiceBusService, listener,
+            var processor = GetProcessor(
+                    azureServiceBusService, 
+                    listener,
                     hostApplicationLifetime.ApplicationStopping)
                 .ConfigureAwait(false).GetAwaiter().GetResult();
 

@@ -19,13 +19,8 @@ public static class DependencyInjection
                         hostBuilderContext.Configuration.GetSection(
                             typeof(TSettings).Name));
 
-                // var sagas = Assembly.GetEntryAssembly().GetTypes()
-                //     .Where(t => t is { IsClass: true, IsAbstract: false })
-                //     .Where(t => t.BaseType.GetGenericTypeDefinition() == typeof(NewSaga<>));
-
                 services
                     .AddMandatoryServices<TSettings>()
-                    // .RegisterHandlers()
                     ;
 
                 services.AddHostedService<RsbWorker>();
