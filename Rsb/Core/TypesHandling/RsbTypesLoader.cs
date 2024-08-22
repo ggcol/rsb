@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using MoreLinq;
 using Rsb.Core.TypesHandling.Entities;
 
 namespace Rsb.Core.TypesHandling;
@@ -76,25 +75,26 @@ internal sealed class RsbTypesLoader : IRsbTypesLoader
                 Listeners = new HashSet<SagaHandlerType>()
             };
 
-            saga
+            var interfaces = saga
                 .GetInterfaces()
                 .Where(i =>
                     i.IsGenericType &&
                     i.GetGenericTypeDefinition() ==
-                    typeof(IHandleMessage<>))
-                .ForEach(i =>
+                    typeof(IHandleMessage<>));
+
+            foreach (var i in interfaces)
+            {
+                var messageType = i.GetGenericArguments().First();
+                sagaType.Listeners.Add(new SagaHandlerType()
                 {
-                    var messageType = i.GetGenericArguments().First();
-                    sagaType.Listeners.Add(new SagaHandlerType()
+                    MessageType = new MessageType()
                     {
-                        MessageType = new MessageType()
-                        {
-                            Type = messageType,
-                            IsCommand = messageType.GetInterfaces()
-                                .Any(x => x == typeof(IAmACommand))
-                        }
-                    });
+                        Type = messageType,
+                        IsCommand = messageType.GetInterfaces()
+                            .Any(x => x == typeof(IAmACommand))
+                    }
                 });
+            }
 
             yield return sagaType;
         }
