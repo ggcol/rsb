@@ -1,4 +1,4 @@
-﻿using Rsb.Configurations;
+﻿using Rsb;
 
 namespace Playground.Samples.TwoMessagesSameHandlerClass;
 
