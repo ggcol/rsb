@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using Azure.Messaging.ServiceBus;
-using Rsb.Configurations;
+using Rsb.Core.Enablers.Entities;
 
 namespace Rsb.Services;
 
@@ -20,17 +20,17 @@ internal sealed class MessageEmitter : IMessageEmitter
         {
             try
             {
-                var holder = collector.Messages.FirstOrDefault();
+                var rsbMessage = collector.Messages.FirstOrDefault();
 
-                var destination = holder.Message is IAmACommand
+                var destination = rsbMessage.IsCommand
                     ? await _serviceBusService
-                        .ConfigureQueue(holder.MessageName)
+                        .ConfigureQueue(rsbMessage.MessageName)
                         .ConfigureAwait(false)
                     : await _serviceBusService
-                        .ConfigureTopicForSender(holder.MessageName)
+                        .ConfigureTopicForSender(rsbMessage.MessageName)
                         .ConfigureAwait(false);
 
-                await Emit(holder.Message, destination, cancellationToken)
+                await Emit(rsbMessage, destination, cancellationToken)
                     .ConfigureAwait(false);
                 
                 collector.Messages.Dequeue();
@@ -48,7 +48,7 @@ internal sealed class MessageEmitter : IMessageEmitter
         }
     }
     
-    private async Task Emit(IAmAMessage message, string destination,
+    private async Task Emit(IRsbMessage message, string destination,
         CancellationToken cancellationToken = default)
     {
         var sender = _serviceBusService.GetSender(destination);

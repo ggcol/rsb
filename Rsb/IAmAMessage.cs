@@ -1,4 +1,4 @@
-﻿namespace Rsb.Configurations;
+﻿namespace Rsb;
 
 public interface IAmAMessage { }
 public interface IAmACommand : IAmAMessage { }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Rsb.Configurations;
+using Rsb.Core.TypesHandling;
 using Rsb.Services;
 
 namespace Rsb.Core;
@@ -33,7 +34,7 @@ public static class DependencyInjection
     {
         return services
             .AddMemoryCache()
-            .AddSingleton<IRsbCache, RsbCache>()
+            .AddSingleton<IRsbTypesLoader, RsbTypesLoader>()
             .AddSingleton<IAzureServiceBusService, AzureServiceBusService<TSettings>>()
             .AddScoped<IMessagingContext, MessagingContext>()
             .AddScoped<IMessageEmitter, MessageEmitter>();

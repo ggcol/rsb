@@ -1,12 +1,17 @@
-﻿using Azure.Messaging.ServiceBus;
+﻿using System.Text.Json;
+using Azure.Messaging.ServiceBus;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Rsb.Enablers;
+using Rsb.Core.Enablers;
+using Rsb.Core.Enablers.Entities;
+using Rsb.Core.TypesHandling;
+using Rsb.Core.TypesHandling.Entities;
 using Rsb.Services;
 
 namespace Rsb.Core;
 
-internal class RsbWorker : IHostedService
+internal sealed class RsbWorker : IHostedService
 {
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly IServiceProvider _serviceProvider;
@@ -15,35 +20,58 @@ internal class RsbWorker : IHostedService
     private readonly IDictionary<ListenerType, ServiceBusProcessor>
         _processors = new Dictionary<ListenerType, ServiceBusProcessor>();
 
+    private readonly IMemoryCache _memoryCache;
+
     public RsbWorker(
         IHostApplicationLifetime hostApplicationLifetime,
         IServiceProvider serviceProvider,
         IAzureServiceBusService azureServiceBusService,
-        IMessageEmitter messageEmitter, 
-        IRsbCache rsbCache)
+        IMessageEmitter messageEmitter,
+        IRsbTypesLoader rsbTypesLoader, IMemoryCache memoryCache)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _serviceProvider = serviceProvider;
         _messageEmitter = messageEmitter;
+        _memoryCache = memoryCache;
 
-        foreach (var listener in rsbCache.Listeners)
+        foreach (var handler in rsbTypesLoader.Handlers)
         {
             var processor = GetProcessor(
-                    azureServiceBusService, 
-                    listener,
+                    azureServiceBusService,
+                    handler,
                     hostApplicationLifetime.ApplicationStopping)
                 .ConfigureAwait(false).GetAwaiter().GetResult();
 
             processor.ProcessMessageAsync += async (args)
-                => await ProcessMessage(listener, args);
+                => await ProcessMessage(handler, args);
 
             processor.ProcessErrorAsync += async (args)
-                => await ProcessError(listener, args);
+                => await ProcessError(handler, args);
 
-            _processors.Add(listener, processor);
+            _processors.Add(handler, processor);
+        }
+
+        foreach (var saga in rsbTypesLoader.Sagas)
+        {
+            foreach (var listener in saga.Listeners)
+            {
+                var processor = GetProcessor(
+                        azureServiceBusService,
+                        listener,
+                        hostApplicationLifetime.ApplicationStopping)
+                    .ConfigureAwait(false).GetAwaiter().GetResult();
+
+                processor.ProcessMessageAsync += async (args) =>
+                    await ProcessMessage(saga, listener, args);
+
+                processor.ProcessErrorAsync += async (args)
+                    => await ProcessError(saga, listener, args);
+
+                _processors.Add(listener, processor);
+            }
         }
     }
-    
+
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         foreach (var processorKvp in _processors)
@@ -66,22 +94,22 @@ internal class RsbWorker : IHostedService
     }
 
     private static async Task<ServiceBusProcessor> GetProcessor(
-        IAzureServiceBusService azureServiceBusService, ListenerType listener,
+        IAzureServiceBusService azureServiceBusService, ListenerType handler,
         CancellationToken cancellationToken)
     {
-        switch (listener.MessageType.IsCommand)
+        switch (handler.MessageType.IsCommand)
         {
             case true:
             {
                 var queue = await azureServiceBusService
-                    .ConfigureQueue(listener.MessageType.Type.Name)
+                    .ConfigureQueue(handler.MessageType.Type.Name)
                     .ConfigureAwait(false);
                 return azureServiceBusService.GetProcessor(queue);
             }
             case false:
             {
                 var topicConfig = await azureServiceBusService
-                    .ConfigureTopicForReceiver(listener.MessageType.Type)
+                    .ConfigureTopicForReceiver(handler.MessageType.Type)
                     .ConfigureAwait(false);
                 return azureServiceBusService.GetProcessor(topicConfig.Name,
                     topicConfig.SubscriptionName);
@@ -89,19 +117,19 @@ internal class RsbWorker : IHostedService
         }
     }
 
-    private async Task ProcessError(ListenerType listenerType,
+    private async Task ProcessError(HandlerType handlerType,
         ProcessErrorEventArgs args)
     {
-        var broker = GetBroker(_serviceProvider, listenerType);
+        var broker = GetBroker(_serviceProvider, handlerType);
 
         await broker.HandleError(args.Exception, args.CancellationToken)
             .ConfigureAwait(false);
     }
 
-    private async Task ProcessMessage(ListenerType listenerType,
+    private async Task ProcessMessage(HandlerType handlerType,
         ProcessMessageEventArgs args)
     {
-        var broker = GetBroker(_serviceProvider, listenerType);
+        var broker = GetBroker(_serviceProvider, handlerType);
 
         await broker
             .Handle(args.Message.Body, args.CancellationToken)
@@ -111,20 +139,78 @@ internal class RsbWorker : IHostedService
             .CompleteMessageAsync(args.Message, args.CancellationToken)
             .ConfigureAwait(false);
 
-        await _messageEmitter.FlushAll(broker.Collector,
-            args.CancellationToken).ConfigureAwait(false);
+        await _messageEmitter.FlushAll(broker.Collector, args.CancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task ProcessError(SagaType sagaType,
+        ListenerType listenerType,
+        ProcessErrorEventArgs args)
+    {
+        //TODO!
+        throw new NotImplementedException();
+    }
+
+    private async Task ProcessMessage(SagaType sagaType,
+        ListenerType listenerType,
+        ProcessMessageEventArgs args)
+    {
+        var corrId = await JsonSerializer
+            .DeserializeAsync<DeserializeCorrelationId>(
+                args.Message.Body.ToStream(),
+                cancellationToken: args.CancellationToken)
+            .ConfigureAwait(false);
+
+        var correlationId = corrId.CorrelationId;
+
+        var broker = GetBroker(_serviceProvider, sagaType, listenerType,
+            correlationId);
+
+        await broker.Handle(args.Message.Body, args.CancellationToken)
+            .ConfigureAwait(false);
+
+        await args.CompleteMessageAsync(args.Message, args.CancellationToken)
+            .ConfigureAwait(false);
+
+        await _messageEmitter.FlushAll(broker.Collector, args.CancellationToken)
+            .ConfigureAwait(false);
     }
 
     private static IListenerBroker GetBroker(IServiceProvider serviceProvider,
-        ListenerType listenerType)
+        HandlerType handlerType)
     {
         var implListener = ActivatorUtilities.CreateInstance(
-            serviceProvider, listenerType.Type);
+            serviceProvider, handlerType.Type);
 
-        var implType = typeof(ListenerBroker<>)
-            .MakeGenericType(listenerType.MessageType.Type);
-        
+        var implType = typeof(HandlerBroker<>)
+            .MakeGenericType(handlerType.MessageType.Type);
+
         return (IListenerBroker)ActivatorUtilities.CreateInstance(
             serviceProvider, implType, implListener);
+    }
+
+    private ISagaBroker GetBroker(IServiceProvider serviceProvider,
+        SagaType sagaType, ListenerType listenerType, Guid correlationId)
+    {
+        object? implSaga;
+        
+        if (_memoryCache.TryGetValue(correlationId, out var saga))
+        {
+            implSaga = saga;
+        }
+        else
+        {
+            implSaga = ActivatorUtilities.CreateInstance(serviceProvider,
+                    sagaType.Type);
+
+            _memoryCache.Set(correlationId, implSaga);
+        }
+
+        var brokerImplType = typeof(SagaBroker<,>)
+            .MakeGenericType(sagaType.SagaDataType,
+                listenerType.MessageType.Type);
+
+        return (ISagaBroker)ActivatorUtilities.CreateInstance(serviceProvider,
+                brokerImplType, implSaga);
     }
 }

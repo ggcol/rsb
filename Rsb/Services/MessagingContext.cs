@@ -1,19 +1,21 @@
-﻿using Rsb.Configurations;
+﻿using Rsb.Core.Enablers.Entities;
 
 namespace Rsb.Services;
 
 internal sealed class MessagingContext : IMessagingContext, ICollectMessage
 {
-    public Queue<ICollectMessage.MessageHolder> Messages { get; } = new();
-
+    public Queue<IRsbMessage> Messages { get; } = new();
+    public Guid CorrelationId { get; } = Guid.NewGuid();
+    
     public async Task Send<TCommand>(TCommand message,
         CancellationToken cancellationToken = default)
         where TCommand : IAmACommand
     {
-        Messages.Enqueue(new()
+        Messages.Enqueue(new RsbMessage<TCommand>()
         {
             MessageName = typeof(TCommand).Name,
-            Message = message
+            Message = message,
+            CorrelationId = CorrelationId
         });
     }
 
@@ -21,10 +23,11 @@ internal sealed class MessagingContext : IMessagingContext, ICollectMessage
         CancellationToken cancellationToken = default)
         where TEvent : IAmAnEvent
     {
-        Messages.Enqueue(new()
+        Messages.Enqueue(new RsbMessage<TEvent>()
         {
             MessageName = typeof(TEvent).Name,
-            Message = message
+            Message = message,
+            CorrelationId = CorrelationId
         });
     }
 }

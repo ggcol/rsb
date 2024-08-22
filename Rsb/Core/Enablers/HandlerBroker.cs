@@ -1,16 +1,17 @@
 ﻿using System.Text.Json;
-using Rsb.Configurations;
+using Rsb.Core.Enablers.Entities;
 using Rsb.Services;
 
-namespace Rsb.Enablers;
+namespace Rsb.Core.Enablers;
 
-internal sealed class ListenerBroker<T> : IListenerBroker<T> where T : IAmAMessage
+internal sealed class HandlerBroker<TMessage> : IHandlerBroker<TMessage>
+    where TMessage : IAmAMessage
 {
     public ICollectMessage Collector => (ICollectMessage)_context;
-    private readonly IHandleMessage<T> _handler;
+    private readonly IHandleMessage<TMessage> _handler;
     private readonly IMessagingContext _context;
 
-    public ListenerBroker(IHandleMessage<T> handler, IMessagingContext context)
+    public HandlerBroker(IHandleMessage<TMessage> handler, IMessagingContext context)
     {
         _context = context;
         _handler = handler;
@@ -20,8 +21,8 @@ internal sealed class ListenerBroker<T> : IListenerBroker<T> where T : IAmAMessa
         CancellationToken cancellationToken)
     {
         var message = await Deserialize(binaryData);
-        
-        await _handler.Handle(message, _context, cancellationToken)
+
+        await _handler.Handle(message.Message, _context, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -32,10 +33,10 @@ internal sealed class ListenerBroker<T> : IListenerBroker<T> where T : IAmAMessa
             .ConfigureAwait(false);
     }
 
-    private static async Task<T?> Deserialize(BinaryData binaryData)
+    private static async Task<RsbMessage<TMessage>?> Deserialize(BinaryData binaryData)
     {
         return await JsonSerializer
-            .DeserializeAsync<T>(binaryData.ToStream())
+            .DeserializeAsync<RsbMessage<TMessage>>(binaryData.ToStream())
             .ConfigureAwait(false);
     }
 }

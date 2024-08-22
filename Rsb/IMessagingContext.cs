@@ -1,12 +1,12 @@
-﻿using Rsb.Configurations;
-
-namespace Rsb;
+﻿namespace Rsb;
 
 public interface IMessagingContext
 {
-    public Task Send<TCommand>(TCommand message,
+    public Guid CorrelationId { get; }
+    
+    public Task Send<TMessage>(TMessage message,
         CancellationToken cancellationToken = default)
-        where TCommand : IAmACommand;
+        where TMessage : IAmACommand;
 
     public Task Publish<TEvent>(TEvent message,
         CancellationToken cancellationToken = default)

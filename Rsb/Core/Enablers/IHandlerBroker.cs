@@ -1,6 +1,6 @@
 ﻿using Rsb.Services;
 
-namespace Rsb.Enablers;
+namespace Rsb.Core.Enablers;
 
 internal interface IListenerBroker
 {
@@ -13,6 +13,6 @@ internal interface IListenerBroker
         CancellationToken cancellationToken);
 }
 
-internal interface IListenerBroker<T> : IListenerBroker
+internal interface IHandlerBroker<T> : IListenerBroker
 {
 }

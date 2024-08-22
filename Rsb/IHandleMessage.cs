@@ -1,6 +1,4 @@
-﻿using Rsb.Configurations;
-
-namespace Rsb;
+﻿namespace Rsb;
 
 public interface IHandleMessage<in TMessage>
     where TMessage : IAmAMessage
