@@ -1,8 +1,8 @@
 ﻿using System.Text.Json;
 using Azure.Messaging.ServiceBus;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Rsb.Core.Caching;
 using Rsb.Core.Enablers;
 using Rsb.Core.Enablers.Entities;
 using Rsb.Core.TypesHandling;
@@ -16,23 +16,23 @@ internal sealed class RsbWorker : IHostedService
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly IServiceProvider _serviceProvider;
     private readonly IMessageEmitter _messageEmitter;
+    private readonly IRsbCache _rsbCache;
 
     private readonly IDictionary<ListenerType, ServiceBusProcessor>
         _processors = new Dictionary<ListenerType, ServiceBusProcessor>();
-
-    private readonly IMemoryCache _memoryCache;
 
     public RsbWorker(
         IHostApplicationLifetime hostApplicationLifetime,
         IServiceProvider serviceProvider,
         IAzureServiceBusService azureServiceBusService,
         IMessageEmitter messageEmitter,
-        IRsbTypesLoader rsbTypesLoader, IMemoryCache memoryCache)
+        IRsbTypesLoader rsbTypesLoader, 
+        IRsbCache rsbCache)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _serviceProvider = serviceProvider;
         _messageEmitter = messageEmitter;
-        _memoryCache = memoryCache;
+        _rsbCache = rsbCache;
 
         foreach (var handler in rsbTypesLoader.Handlers)
         {
@@ -194,7 +194,7 @@ internal sealed class RsbWorker : IHostedService
     {
         object? implSaga;
         
-        if (_memoryCache.TryGetValue(correlationId, out var saga))
+        if (_rsbCache.TryGetValue(correlationId, out var saga))
         {
             implSaga = saga;
         }
@@ -203,12 +203,11 @@ internal sealed class RsbWorker : IHostedService
             implSaga = ActivatorUtilities.CreateInstance(serviceProvider,
                     sagaType.Type);
 
-            _memoryCache.Set(correlationId, implSaga);
+            _rsbCache.Set(correlationId, implSaga);
         }
 
-        var brokerImplType = typeof(SagaBroker<,>)
-            .MakeGenericType(sagaType.SagaDataType,
-                listenerType.MessageType.Type);
+        var brokerImplType = typeof(SagaBroker<,>).MakeGenericType(
+            sagaType.SagaDataType, listenerType.MessageType.Type);
 
         return (ISagaBroker)ActivatorUtilities.CreateInstance(serviceProvider,
                 brokerImplType, implSaga);

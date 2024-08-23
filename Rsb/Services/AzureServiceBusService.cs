@@ -1,9 +1,10 @@
 ﻿using System.Reflection;
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Rsb.Configurations;
+using Rsb.Core;
+using Rsb.Core.Caching;
 using Rsb.Services.Options;
 
 namespace Rsb.Services;
@@ -15,10 +16,10 @@ internal sealed class AzureServiceBusService<TSettings>
     private ServiceBusClient _sbClient { get; }
     private readonly IOptions<TSettings> _options;
     private readonly AzureServiceBusServiceOptions _myOptions = new();
-    private readonly IMemoryCache _cache;
+    private readonly IRsbCache _cache;
 
     public AzureServiceBusService(IOptions<TSettings> options,
-        IMemoryCache cache)
+        IRsbCache cache)
     {
         _options = options;
         _cache = cache;
@@ -41,7 +42,7 @@ internal sealed class AzureServiceBusService<TSettings>
         }
 
         return _cache.Set(queueName, queueName,
-            _myOptions.CacheOptions.DefaultCacheEntriesOptions);
+            _myOptions.CacheOptions.RsbCacheDefaultExpiration);
     }
 
     public async Task<string> ConfigureTopicForSender(string topicName)
@@ -58,7 +59,7 @@ internal sealed class AzureServiceBusService<TSettings>
         }
 
         return _cache.Set(topicName, topicName,
-            _myOptions.CacheOptions.DefaultCacheEntriesOptions);
+            _myOptions.CacheOptions.RsbCacheDefaultExpiration);
     }
 
     public async Task<TopicConfiguration> ConfigureTopicForReceiver(
@@ -88,7 +89,7 @@ internal sealed class AzureServiceBusService<TSettings>
         }
 
         return _cache.Set(cacheKey, config,
-            _myOptions.CacheOptions.DefaultCacheEntriesOptions);
+            _myOptions.CacheOptions.RsbCacheDefaultExpiration);
     }
 
     //TODO store? throwaway?
@@ -107,7 +108,7 @@ internal sealed class AzureServiceBusService<TSettings>
         return _cache.TryGetValue(cacheKey, out ServiceBusSender sender)
             ? sender
             : _cache.Set(cacheKey, _sbClient.CreateSender(destination),
-                _myOptions.CacheOptions.DefaultCacheEntriesOptions);
+                _myOptions.CacheOptions.RsbCacheDefaultExpiration);
     }
 
     public ServiceBusProcessor GetProcessor(string queueName)
