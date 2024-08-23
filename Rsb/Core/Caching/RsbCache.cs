@@ -1,6 +1,8 @@
-﻿namespace Rsb.Core.Caching;
+﻿using Rsb.Core.Caching.Entities;
 
-internal class RsbCache : IRsbCache
+namespace Rsb.Core.Caching;
+
+internal sealed class RsbCache : IRsbCache
 {
     private readonly IDictionary<object, ObservableCacheItem?> _shelf
         = new Dictionary<object, ObservableCacheItem?>();
@@ -46,4 +48,8 @@ internal class RsbCache : IRsbCache
         return TryGetValue<object>(key, out retrieved);
     }
 
+    public void Remove(object key)
+    {
+        _shelf.Remove(key);
+    }
 }

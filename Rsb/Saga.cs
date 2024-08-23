@@ -1,22 +1,20 @@
-﻿namespace Rsb;
+﻿using Rsb.Core.Sagas.Entities;
+
+namespace Rsb;
 
 public abstract class Saga<T>
     where T : SagaData, new()
 {
     public T SagaData { get; set; } = new();
 
+    internal Guid CorrelationId { get; set; }
+    internal event EventHandler<SagaCompletedEventArgs>? Completed;
+
     protected void IAmComplete()
     {
-        SagaData.IsCompleted = true;
+        Completed?.Invoke(this, new ()
+        {
+            CorrelationId = CorrelationId
+        });
     }
 }
-
-public abstract class SagaData
-{
-    internal bool IsCompleted { get; set; }
-}
-
-
-public interface IAmStartedBy<in TMessage> : IHandleMessage<TMessage>
-where TMessage : IAmAMessage
-{ }

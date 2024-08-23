@@ -25,6 +25,10 @@ internal sealed class SagaBroker<TSagaData, TMessage> : ISagaBroker
         var method = _saga
             .GetType()
             .GetMethods()
+            /*
+             * TODO this nameof() is misleading, it doesn't refers directly to
+             * Saga<>.Handle
+             */
             .FirstOrDefault(m => m.Name.Equals(nameof(Handle)) &&
                                  m.GetParameters().Length == 3 &&
                                  m.GetParameters()[0].ParameterType ==
@@ -46,6 +50,10 @@ internal sealed class SagaBroker<TSagaData, TMessage> : ISagaBroker
         var method = _saga
             .GetType()
             .GetMethods()
+            /*
+             * TODO this nameof() is misleading, it doesn't refers directly to
+             * Saga<>.Handle
+             */
             .FirstOrDefault(m => m.Name.Equals(nameof(HandleError)) &&
                                  m.GetParameters().Length == 3 &&
                                  m.GetParameters()[0].ParameterType ==

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Rsb.Core.Caching;
 using Rsb.Core.Enablers;
 using Rsb.Core.Enablers.Entities;
+using Rsb.Core.Sagas;
 using Rsb.Core.TypesHandling;
 using Rsb.Core.TypesHandling.Entities;
 using Rsb.Services;
@@ -16,7 +17,8 @@ internal sealed class RsbWorker : IHostedService
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly IServiceProvider _serviceProvider;
     private readonly IMessageEmitter _messageEmitter;
-    private readonly IRsbCache _rsbCache;
+    private readonly IRsbCache _cache;
+    private readonly ISagaBehaviour _sagaBehaviour;
 
     private readonly IDictionary<ListenerType, ServiceBusProcessor>
         _processors = new Dictionary<ListenerType, ServiceBusProcessor>();
@@ -26,13 +28,15 @@ internal sealed class RsbWorker : IHostedService
         IServiceProvider serviceProvider,
         IAzureServiceBusService azureServiceBusService,
         IMessageEmitter messageEmitter,
-        IRsbTypesLoader rsbTypesLoader, 
-        IRsbCache rsbCache)
+        IRsbTypesLoader rsbTypesLoader,
+        IRsbCache cache,
+        ISagaBehaviour sagaBehaviour)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _serviceProvider = serviceProvider;
         _messageEmitter = messageEmitter;
-        _rsbCache = rsbCache;
+        _cache = cache;
+        _sagaBehaviour = sagaBehaviour;
 
         foreach (var handler in rsbTypesLoader.Handlers)
         {
@@ -155,13 +159,7 @@ internal sealed class RsbWorker : IHostedService
         ListenerType listenerType,
         ProcessMessageEventArgs args)
     {
-        var corrId = await JsonSerializer
-            .DeserializeAsync<DeserializeCorrelationId>(
-                args.Message.Body.ToStream(),
-                cancellationToken: args.CancellationToken)
-            .ConfigureAwait(false);
-
-        var correlationId = corrId.CorrelationId;
+        var correlationId = await GetCorrelationId(args);
 
         var broker = GetBroker(_serviceProvider, sagaType, listenerType,
             correlationId);
@@ -174,6 +172,18 @@ internal sealed class RsbWorker : IHostedService
 
         await _messageEmitter.FlushAll(broker.Collector, args.CancellationToken)
             .ConfigureAwait(false);
+    }
+
+    private static async Task<Guid> GetCorrelationId(
+        ProcessMessageEventArgs args)
+    {
+        var corrId = await JsonSerializer
+            .DeserializeAsync<DeserializeCorrelationId>(
+                args.Message.Body.ToStream(),
+                cancellationToken: args.CancellationToken)
+            .ConfigureAwait(false);
+
+        return corrId.CorrelationId;
     }
 
     private static IListenerBroker GetBroker(IServiceProvider serviceProvider,
@@ -192,24 +202,31 @@ internal sealed class RsbWorker : IHostedService
     private ISagaBroker GetBroker(IServiceProvider serviceProvider,
         SagaType sagaType, ListenerType listenerType, Guid correlationId)
     {
-        object? implSaga;
-        
-        if (_rsbCache.TryGetValue(correlationId, out var saga))
-        {
-            implSaga = saga;
-        }
-        else
-        {
-            implSaga = ActivatorUtilities.CreateInstance(serviceProvider,
-                    sagaType.Type);
-
-            _rsbCache.Set(correlationId, implSaga);
-        }
+        var implSaga =
+            GetSagaImplementation(serviceProvider, sagaType, correlationId);
 
         var brokerImplType = typeof(SagaBroker<,>).MakeGenericType(
             sagaType.SagaDataType, listenerType.MessageType.Type);
 
         return (ISagaBroker)ActivatorUtilities.CreateInstance(serviceProvider,
-                brokerImplType, implSaga);
+            brokerImplType, implSaga);
+    }
+
+    private object? GetSagaImplementation(IServiceProvider serviceProvider,
+        SagaType sagaType, Guid correlationId)
+    {
+        if (_cache.TryGetValue(correlationId, out var saga))
+        {
+            return saga;
+        }
+
+        var implSaga = ActivatorUtilities.CreateInstance(serviceProvider,
+            sagaType.Type);
+        
+        _sagaBehaviour.SetCorrelationId(sagaType, correlationId, implSaga);
+
+        _sagaBehaviour.HandleCompletion(sagaType, correlationId, implSaga);
+
+        return _cache.Set(correlationId, implSaga);
     }
 }

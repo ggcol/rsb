@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Rsb.Configurations;
 using Rsb.Core.Caching;
+using Rsb.Core.Sagas;
 using Rsb.Core.TypesHandling;
 using Rsb.Services;
 
@@ -37,6 +38,8 @@ public static class DependencyInjection
             .AddSingleton<IRsbCache, RsbCache>()
             .AddSingleton<IRsbTypesLoader, RsbTypesLoader>()
             .AddSingleton<IAzureServiceBusService, AzureServiceBusService<TSettings>>()
+            //may be singleton
+            .AddScoped<ISagaBehaviour, SagaBehaviour>()
             .AddScoped<IMessagingContext, MessagingContext>()
             .AddScoped<IMessageEmitter, MessageEmitter>();
     }

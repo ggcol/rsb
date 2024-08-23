@@ -6,4 +6,5 @@ internal interface IRsbCache
     internal T? Set<T>(object key, T? obj, TimeSpan? expiresAfter = null);
     internal bool TryGetValue(object key, out object? retrieved);
     internal bool TryGetValue<T>(object key, out T? retrieved);
+    internal void Remove(object key);
 }

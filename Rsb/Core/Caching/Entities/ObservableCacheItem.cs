@@ -1,9 +1,9 @@
 ﻿using System.Timers;
 using Timer = System.Timers.Timer;
 
-namespace Rsb.Core.Caching;
+namespace Rsb.Core.Caching.Entities;
 
-internal class ObservableCacheItem
+internal sealed class ObservableCacheItem
 {
     internal object Key { get; }
     internal object? CachedValue { get; }
