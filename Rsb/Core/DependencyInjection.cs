@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Rsb.Configurations;
 using Rsb.Core.Caching;
+using Rsb.Core.Messaging;
 using Rsb.Core.Sagas;
 using Rsb.Core.TypesHandling;
 using Rsb.Services;
@@ -34,6 +35,11 @@ public static class DependencyInjection
         this IServiceCollection services)
         where TSettings : class, IConfigureAzureServiceBus, new()
     {
+        /*
+         * TODO think of this:
+         * what's registered here is broad-wide available in the application...
+         */ 
+        
         return services
             .AddSingleton<IRsbCache, RsbCache>()
             .AddSingleton<IRsbTypesLoader, RsbTypesLoader>()

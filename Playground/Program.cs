@@ -12,10 +12,10 @@ await Host
     .ConfigureServices(
         (_, services) =>
         {
-            // services.AddHostedService<OneCommandInitJob>();
+            services.AddHostedService<OneCommandInitJob>();
             // services.AddHostedService<OneEventInitJob>();
             // services.AddHostedService<TwoMessagesSameHandlerClassInitJob>();
-            services.AddHostedService<ASagaInitJob>();
+            // services.AddHostedService<ASagaInitJob>();
             // services.AddHostedService<AGenericJob>();
             services.AddLogging();
         })

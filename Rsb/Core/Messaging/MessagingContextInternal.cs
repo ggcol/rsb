@@ -1,11 +1,11 @@
 ﻿using Rsb.Core.Enablers.Entities;
 
-namespace Rsb.Services;
+namespace Rsb.Core.Messaging;
 
-internal sealed class MessagingContext : IMessagingContext, ICollectMessage
+internal sealed class MessagingContextInternal : IMessagingContext, ICollectMessage
 {
     public Queue<IRsbMessage> Messages { get; } = new();
-    public Guid CorrelationId { get; } = Guid.NewGuid();
+    public Guid CorrelationId { get; init; } = Guid.NewGuid();
     
     public async Task Send<TCommand>(TCommand message,
         CancellationToken cancellationToken = default)

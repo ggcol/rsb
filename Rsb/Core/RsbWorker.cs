@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Rsb.Core.Caching;
 using Rsb.Core.Enablers;
 using Rsb.Core.Enablers.Entities;
+using Rsb.Core.Messaging;
 using Rsb.Core.Sagas;
 using Rsb.Core.TypesHandling;
 using Rsb.Core.TypesHandling.Entities;
@@ -192,11 +193,13 @@ internal sealed class RsbWorker : IHostedService
         var implListener = ActivatorUtilities.CreateInstance(
             serviceProvider, handlerType.Type);
 
-        var implType = typeof(HandlerBroker<>)
+        var brokerImplType = typeof(HandlerBroker<>)
             .MakeGenericType(handlerType.MessageType.Type);
-
+        
+        var context = new MessagingContextInternal();
+        
         return (IHandlerBroker)ActivatorUtilities.CreateInstance(
-            serviceProvider, implType, implListener);
+            serviceProvider, brokerImplType, implListener, context);
     }
 
     private ISagaBroker GetBroker(IServiceProvider serviceProvider,
@@ -208,8 +211,13 @@ internal sealed class RsbWorker : IHostedService
         var brokerImplType = typeof(SagaBroker<,>).MakeGenericType(
             sagaType.SagaDataType, listenerType.MessageType.Type);
 
+        var context = new MessagingContextInternal()
+        {
+            CorrelationId = correlationId
+        };
+        
         return (ISagaBroker)ActivatorUtilities.CreateInstance(serviceProvider,
-            brokerImplType, implSaga);
+            brokerImplType, implSaga, context);
     }
 
     private object? GetSagaImplementation(IServiceProvider serviceProvider,

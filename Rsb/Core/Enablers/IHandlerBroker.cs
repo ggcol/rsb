@@ -1,4 +1,4 @@
-﻿using Rsb.Services;
+﻿using Rsb.Core.Messaging;
 
 namespace Rsb.Core.Enablers;
 

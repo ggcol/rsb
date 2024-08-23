@@ -1,8 +1,9 @@
 ﻿using System.Text.Json;
 using Azure.Messaging.ServiceBus;
 using Rsb.Core.Enablers.Entities;
+using Rsb.Services;
 
-namespace Rsb.Services;
+namespace Rsb.Core.Messaging;
 
 internal sealed class MessageEmitter : IMessageEmitter
 {

@@ -1,4 +1,4 @@
-﻿namespace Rsb.Services;
+﻿namespace Rsb.Core.Messaging;
 
 internal interface IMessageEmitter
 {

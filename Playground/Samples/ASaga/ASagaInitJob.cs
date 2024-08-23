@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Rsb;
-using Rsb.Services;
+using Rsb.Core.Messaging;
 
 namespace Playground.Samples.ASaga;
 

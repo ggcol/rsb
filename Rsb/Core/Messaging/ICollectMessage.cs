@@ -1,6 +1,6 @@
 ﻿using Rsb.Core.Enablers.Entities;
 
-namespace Rsb.Services;
+namespace Rsb.Core.Messaging;
 
 internal interface ICollectMessage
 {

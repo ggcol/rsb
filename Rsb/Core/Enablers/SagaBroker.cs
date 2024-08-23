@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using Rsb.Core.Enablers.Entities;
-using Rsb.Services;
+using Rsb.Core.Messaging;
 
 namespace Rsb.Core.Enablers;
 
