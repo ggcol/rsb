@@ -31,9 +31,10 @@ internal sealed class RsbTypesLoader : IRsbTypesLoader
             .GetTypes()
             .Where(t => t is { IsClass: true, IsAbstract: false })
             .Where(t =>
-                t.GetInterfaces().Any(i =>
-                    i.IsGenericType && i.GetGenericTypeDefinition() ==
-                    typeof(IHandleMessage<>))
+                t.GetInterfaces()
+                    .Any(i =>
+                        i.IsGenericType && i.GetGenericTypeDefinition() ==
+                        typeof(IHandleMessage<>))
             )
             //exclude what's already under a saga scope
             .Where(t =>
@@ -57,11 +58,12 @@ internal sealed class RsbTypesLoader : IRsbTypesLoader
         var sagas = assembly?
             .GetTypes()
             .Where(t => t is { IsClass: true, IsAbstract: false })
-            .Where(t => t.BaseType != null &&
-                        t.BaseType != typeof(object) &&
-                        t.BaseType.IsGenericType &&
-                        t.BaseType.GetGenericTypeDefinition() ==
-                        typeof(Saga<>))
+            .Where(t =>
+                t.BaseType != null &&
+                t.BaseType != typeof(object) &&
+                t.BaseType.IsGenericType &&
+                t.BaseType.GetGenericTypeDefinition() ==
+                typeof(Saga<>))
             .ToArray();
 
         if (sagas is null || !sagas.Any()) yield break;

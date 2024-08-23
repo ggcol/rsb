@@ -4,9 +4,9 @@ public interface IMessagingContext
 {
     public Guid CorrelationId { get; }
     
-    public Task Send<TMessage>(TMessage message,
+    public Task Send<TCommand>(TCommand message,
         CancellationToken cancellationToken = default)
-        where TMessage : IAmACommand;
+        where TCommand : IAmACommand;
 
     public Task Publish<TEvent>(TEvent message,
         CancellationToken cancellationToken = default)

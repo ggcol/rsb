@@ -2,7 +2,7 @@
 
 namespace Rsb.Core.Enablers;
 
-internal interface IListenerBroker
+internal interface IHandlerBroker
 {
     internal ICollectMessage Collector { get; }
 
@@ -13,6 +13,6 @@ internal interface IListenerBroker
         CancellationToken cancellationToken);
 }
 
-internal interface IHandlerBroker<T> : IListenerBroker
+internal interface IHandlerBroker<T> : IHandlerBroker
 {
 }

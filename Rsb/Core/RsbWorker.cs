@@ -186,7 +186,7 @@ internal sealed class RsbWorker : IHostedService
         return corrId.CorrelationId;
     }
 
-    private static IListenerBroker GetBroker(IServiceProvider serviceProvider,
+    private static IHandlerBroker GetBroker(IServiceProvider serviceProvider,
         HandlerType handlerType)
     {
         var implListener = ActivatorUtilities.CreateInstance(
@@ -195,7 +195,7 @@ internal sealed class RsbWorker : IHostedService
         var implType = typeof(HandlerBroker<>)
             .MakeGenericType(handlerType.MessageType.Type);
 
-        return (IListenerBroker)ActivatorUtilities.CreateInstance(
+        return (IHandlerBroker)ActivatorUtilities.CreateInstance(
             serviceProvider, implType, implListener);
     }
 
