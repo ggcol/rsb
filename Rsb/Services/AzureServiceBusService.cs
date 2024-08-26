@@ -3,7 +3,6 @@ using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.Extensions.Options;
 using Rsb.Configurations;
-using Rsb.Core;
 using Rsb.Core.Caching;
 using Rsb.Services.Options;
 
@@ -29,15 +28,17 @@ internal sealed class AzureServiceBusService<TSettings>
             _myOptions.SbClientOptions);
     }
 
-    public async Task<string> ConfigureQueue(string queueName)
+    public async Task<string> ConfigureQueue(string queueName, 
+        CancellationToken cancellationToken = default)
     {
         if (_cache.TryGetValue(queueName, out string queue)) return queue;
 
         var admClient = MakeAdmClient();
 
-        if (!await admClient.QueueExistsAsync(queueName))
+        if (!await admClient.QueueExistsAsync(queueName, cancellationToken))
         {
-            var rx = await admClient.CreateQueueAsync(queueName);
+            var rx = await admClient.CreateQueueAsync(
+                queueName, cancellationToken);
             queueName = rx.Value.Name;
         }
 
@@ -45,16 +46,18 @@ internal sealed class AzureServiceBusService<TSettings>
             _myOptions.CacheOptions.RsbCacheDefaultExpiration);
     }
 
-    public async Task<string> ConfigureTopicForSender(string topicName)
+    public async Task<string> ConfigureTopicForSender(string topicName, 
+        CancellationToken cancellationToken = default)
     {
         if (_cache.TryGetValue(topicName, out string topic)) return topic;
 
         var admClient = MakeAdmClient();
 
-        if (!await admClient.TopicExistsAsync(topicName))
+        if (!await admClient.TopicExistsAsync(topicName, cancellationToken))
         {
             //A message sent to a topic without subscription is lost :/
-            var rx = await admClient.CreateTopicAsync(topicName);
+            var rx = await admClient.CreateTopicAsync(
+                topicName, cancellationToken);
             topicName = rx.Value.Name;
         }
 
@@ -63,7 +66,7 @@ internal sealed class AzureServiceBusService<TSettings>
     }
 
     public async Task<TopicConfiguration> ConfigureTopicForReceiver(
-        MemberInfo messageType)
+        MemberInfo messageType, CancellationToken cancellationToken = default)
     {
         var config = new TopicConfiguration(messageType.Name,
             Assembly.GetEntryAssembly()?.GetName().Name);
@@ -76,16 +79,18 @@ internal sealed class AzureServiceBusService<TSettings>
 
         var admClient = MakeAdmClient();
 
-        if (!await admClient.TopicExistsAsync(config.Name))
+        if (!await admClient.TopicExistsAsync(config.Name, cancellationToken))
         {
-            var rx = await admClient.CreateTopicAsync(config.Name);
+            var rx = await admClient.CreateTopicAsync(
+                config.Name, cancellationToken);
         }
 
         if (!await admClient.SubscriptionExistsAsync(config.Name,
-                config.SubscriptionName))
+                config.SubscriptionName, cancellationToken))
         {
             var rxSub = await admClient
-                .CreateSubscriptionAsync(config.Name, config.SubscriptionName);
+                .CreateSubscriptionAsync(config.Name, config.SubscriptionName, 
+                    cancellationToken);
         }
 
         return _cache.Set(cacheKey, config,

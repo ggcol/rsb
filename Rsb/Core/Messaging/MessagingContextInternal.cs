@@ -2,7 +2,8 @@
 
 namespace Rsb.Core.Messaging;
 
-internal sealed class MessagingContextInternal : IMessagingContext, ICollectMessage
+internal sealed class MessagingContextInternal 
+    : IMessagingContext, ICollectMessage
 {
     public Queue<IRsbMessage> Messages { get; } = new();
     public Guid CorrelationId { get; init; } = Guid.NewGuid();

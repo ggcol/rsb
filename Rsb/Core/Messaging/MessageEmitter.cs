@@ -50,7 +50,7 @@ internal sealed class MessageEmitter : IMessageEmitter
     }
     
     private async Task Emit(IRsbMessage message, string destination,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         var sender = _serviceBusService.GetSender(destination);
 

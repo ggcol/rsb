@@ -20,7 +20,7 @@ internal sealed class SagaBroker<TSagaData, TMessage> : ISagaBroker
     }
 
     public async Task Handle(BinaryData binaryData,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var method = _saga
             .GetType()
@@ -45,7 +45,7 @@ internal sealed class SagaBroker<TSagaData, TMessage> : ISagaBroker
     }
 
     public async Task HandleError(Exception ex,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
         var method = _saga
             .GetType()
