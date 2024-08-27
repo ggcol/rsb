@@ -4,6 +4,7 @@ using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.Extensions.Options;
 using Rsb.Configurations;
 using Rsb.Core.Caching;
+using Rsb.Core.TypesHandling.Entities;
 using Rsb.Services.Options;
 
 namespace Rsb.Services;
@@ -28,7 +29,36 @@ internal sealed class AzureServiceBusService<TSettings>
             _myOptions.SbClientOptions);
     }
 
-    public async Task<string> ConfigureQueue(string queueName, 
+    public async Task<ServiceBusProcessor> GetProcessor(
+        ListenerType handler, CancellationToken cancellationToken = default)
+    {
+        switch (handler.MessageType.IsCommand)
+        {
+            case true:
+            {
+                var queue = await ConfigureQueue(
+                        handler.MessageType.Type.Name, cancellationToken)
+                    .ConfigureAwait(false);
+                
+                //TODO check this
+                //It does not make sense to cache processors
+                return _sbClient.CreateProcessor(queue);
+            }
+            case false:
+            {
+                var topicConfig = await ConfigureTopicForReceiver(
+                        handler.MessageType.Type, cancellationToken)
+                    .ConfigureAwait(false);
+
+                //TODO check this
+                //It does not make sense to cache processors
+                return _sbClient.CreateProcessor(topicConfig.Name,
+                    topicConfig.SubscriptionName);
+            }
+        }
+    }
+
+    public async Task<string> ConfigureQueue(string queueName,
         CancellationToken cancellationToken = default)
     {
         if (_cache.TryGetValue(queueName, out string queue)) return queue;
@@ -46,7 +76,7 @@ internal sealed class AzureServiceBusService<TSettings>
             _myOptions.CacheOptions.RsbCacheDefaultExpiration);
     }
 
-    public async Task<string> ConfigureTopicForSender(string topicName, 
+    public async Task<string> ConfigureTopicForSender(string topicName,
         CancellationToken cancellationToken = default)
     {
         if (_cache.TryGetValue(topicName, out string topic)) return topic;
@@ -65,7 +95,7 @@ internal sealed class AzureServiceBusService<TSettings>
             _myOptions.CacheOptions.RsbCacheDefaultExpiration);
     }
 
-    public async Task<TopicConfiguration> ConfigureTopicForReceiver(
+    private async Task<TopicConfiguration> ConfigureTopicForReceiver(
         MemberInfo messageType, CancellationToken cancellationToken = default)
     {
         var config = new TopicConfiguration(messageType.Name,
@@ -89,7 +119,7 @@ internal sealed class AzureServiceBusService<TSettings>
                 config.SubscriptionName, cancellationToken))
         {
             var rxSub = await admClient
-                .CreateSubscriptionAsync(config.Name, config.SubscriptionName, 
+                .CreateSubscriptionAsync(config.Name, config.SubscriptionName,
                     cancellationToken);
         }
 
@@ -114,21 +144,6 @@ internal sealed class AzureServiceBusService<TSettings>
             ? sender
             : _cache.Set(cacheKey, _sbClient.CreateSender(destination),
                 _myOptions.CacheOptions.RsbCacheDefaultExpiration);
-    }
-
-    public ServiceBusProcessor GetProcessor(string queueName)
-    {
-        //TODO check this
-        //It does not make sense to cache processors
-       return _sbClient.CreateProcessor(queueName);
-    }
-
-    public ServiceBusProcessor GetProcessor(string topicName,
-        string subscriptionName)
-    {
-        //TODO check this
-        //It does not make sense to cache processors
-        return _sbClient.CreateProcessor(topicName, subscriptionName);
     }
 
     private string CacheKey(params string[] values)

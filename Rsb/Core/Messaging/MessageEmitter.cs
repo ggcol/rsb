@@ -13,7 +13,7 @@ internal sealed class MessageEmitter : IMessageEmitter
     {
         _serviceBusService = serviceBusService;
     }
-    
+
     public async Task FlushAll(ICollectMessage collector,
         CancellationToken cancellationToken = default)
     {
@@ -25,15 +25,17 @@ internal sealed class MessageEmitter : IMessageEmitter
 
                 var destination = rsbMessage.IsCommand
                     ? await _serviceBusService
-                        .ConfigureQueue(rsbMessage.MessageName)
+                        .ConfigureQueue(rsbMessage.MessageName,
+                            cancellationToken)
                         .ConfigureAwait(false)
                     : await _serviceBusService
-                        .ConfigureTopicForSender(rsbMessage.MessageName)
+                        .ConfigureTopicForSender(rsbMessage.MessageName,
+                            cancellationToken)
                         .ConfigureAwait(false);
 
                 await Emit(rsbMessage, destination, cancellationToken)
                     .ConfigureAwait(false);
-                
+
                 collector.Messages.Dequeue();
             }
             catch (Exception ex)
@@ -48,20 +50,19 @@ internal sealed class MessageEmitter : IMessageEmitter
             }
         }
     }
-    
+
     private async Task Emit(IRsbMessage message, string destination,
         CancellationToken cancellationToken)
     {
         var sender = _serviceBusService.GetSender(destination);
 
-        var sbm = CreateMessage(message);
+        var sbm = ToSdkMessage(message);
 
         await sender.SendMessageAsync(sbm, cancellationToken)
             .ConfigureAwait(false);
     }
 
-    //TODO rename
-    private static ServiceBusMessage CreateMessage(object message)
+    private static ServiceBusMessage ToSdkMessage(object message)
     {
         var serialized = JsonSerializer.Serialize(message);
         return new ServiceBusMessage(serialized);

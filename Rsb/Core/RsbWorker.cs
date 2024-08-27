@@ -41,10 +41,8 @@ internal sealed class RsbWorker : IHostedService
 
         foreach (var handler in rsbTypesLoader.Handlers)
         {
-            var processor = GetProcessor(
-                    azureServiceBusService,
-                    handler,
-                    hostApplicationLifetime.ApplicationStopping)
+            var processor = azureServiceBusService.GetProcessor(
+                    handler, hostApplicationLifetime.ApplicationStopping)
                 .ConfigureAwait(false).GetAwaiter().GetResult();
 
             processor.ProcessMessageAsync += async (args)
@@ -60,10 +58,9 @@ internal sealed class RsbWorker : IHostedService
         {
             foreach (var listener in saga.Listeners)
             {
-                var processor = GetProcessor(
-                        azureServiceBusService,
-                        listener,
-                        hostApplicationLifetime.ApplicationStopping)
+                var processor = azureServiceBusService
+                    .GetProcessor(
+                        listener, hostApplicationLifetime.ApplicationStopping)
                     .ConfigureAwait(false).GetAwaiter().GetResult();
 
                 processor.ProcessMessageAsync += async (args) =>
@@ -96,30 +93,6 @@ internal sealed class RsbWorker : IHostedService
         }
 
         _hostApplicationLifetime.StopApplication();
-    }
-
-    private static async Task<ServiceBusProcessor> GetProcessor(
-        IAzureServiceBusService azureServiceBusService, ListenerType handler,
-        CancellationToken cancellationToken)
-    {
-        switch (handler.MessageType.IsCommand)
-        {
-            case true:
-            {
-                var queue = await azureServiceBusService
-                    .ConfigureQueue(handler.MessageType.Type.Name)
-                    .ConfigureAwait(false);
-                return azureServiceBusService.GetProcessor(queue);
-            }
-            case false:
-            {
-                var topicConfig = await azureServiceBusService
-                    .ConfigureTopicForReceiver(handler.MessageType.Type)
-                    .ConfigureAwait(false);
-                return azureServiceBusService.GetProcessor(topicConfig.Name,
-                    topicConfig.SubscriptionName);
-            }
-        }
     }
 
     private async Task ProcessError(HandlerType handlerType,
