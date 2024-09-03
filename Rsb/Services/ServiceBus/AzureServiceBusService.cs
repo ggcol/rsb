@@ -7,7 +7,7 @@ using Rsb.Core.Caching;
 using Rsb.Core.TypesHandling.Entities;
 using Rsb.Services.Options;
 
-namespace Rsb.Services;
+namespace Rsb.Services.ServiceBus;
 
 internal sealed class AzureServiceBusService<TSettings>
     : IAzureServiceBusService

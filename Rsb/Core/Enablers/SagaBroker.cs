@@ -1,28 +1,19 @@
-﻿using System.Text.Json;
-using Rsb.Core.Enablers.Entities;
-using Rsb.Core.Messaging;
+﻿using Rsb.Accessories.Heavy;
 
 namespace Rsb.Core.Enablers;
 
-internal sealed class SagaBroker<TSagaData, TMessage> : ISagaBroker
+internal sealed class SagaBroker<TSagaData, TMessage>(
+    Saga<TSagaData> saga,
+    IMessagingContext context,
+    IHeavyIO heavyIo)
+    : BrokerBehavior<TMessage>(context, heavyIo), ISagaBroker
     where TSagaData : SagaData, new()
     where TMessage : IAmAMessage
 {
-    public ICollectMessage Collector => (ICollectMessage)_context;
-    private readonly Saga<TSagaData> _saga;
-    private readonly IMessagingContext _context;
-
-    public SagaBroker(Saga<TSagaData> saga,
-        IMessagingContext context)
-    {
-        _saga = saga;
-        _context = context;
-    }
-
     public async Task Handle(BinaryData binaryData,
         CancellationToken cancellationToken = default)
     {
-        var method = _saga
+        var method = saga
             .GetType()
             .GetMethods()
             /*
@@ -35,19 +26,22 @@ internal sealed class SagaBroker<TSagaData, TMessage> : ISagaBroker
                                  typeof(TMessage)
             );
 
-        var rsbMessage = await Deserialize(binaryData, cancellationToken);
+        var rsbMessage = await GetFrom(binaryData, cancellationToken)
+            .ConfigureAwait(false);
 
         if (method is not null)
         {
-            await (Task)method.Invoke(_saga,
-                new object[] { rsbMessage.Message, _context, cancellationToken });
+            await (Task)method.Invoke(saga,
+                [
+                    rsbMessage.Message, _context, cancellationToken
+                ]);
         }
     }
 
     public async Task HandleError(Exception ex,
         CancellationToken cancellationToken = default)
     {
-        var method = _saga
+        var method = saga
             .GetType()
             .GetMethods()
             /*
@@ -62,17 +56,10 @@ internal sealed class SagaBroker<TSagaData, TMessage> : ISagaBroker
 
         if (method is not null)
         {
-            await (Task)method.Invoke(_saga,
-                new object[] { ex, _context, cancellationToken });
+            await (Task)method.Invoke(saga,
+                [
+                    ex, _context, cancellationToken
+                ]);
         }
-    }
-
-    private static async Task<RsbMessage<TMessage>?> Deserialize(BinaryData binaryData,
-        CancellationToken cancellationToken)
-    {
-        return await JsonSerializer
-            .DeserializeAsync<RsbMessage<TMessage>>(binaryData.ToStream(),
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
     }
 }

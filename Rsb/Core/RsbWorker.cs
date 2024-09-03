@@ -2,6 +2,7 @@
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Rsb.Accessories.Heavy;
 using Rsb.Core.Caching;
 using Rsb.Core.Enablers;
 using Rsb.Core.Enablers.Entities;
@@ -9,7 +10,7 @@ using Rsb.Core.Messaging;
 using Rsb.Core.Sagas;
 using Rsb.Core.TypesHandling;
 using Rsb.Core.TypesHandling.Entities;
-using Rsb.Services;
+using Rsb.Services.ServiceBus;
 
 namespace Rsb.Core;
 
@@ -20,6 +21,7 @@ internal sealed class RsbWorker : IHostedService
     private readonly IMessageEmitter _messageEmitter;
     private readonly IRsbCache _cache;
     private readonly ISagaBehaviour _sagaBehaviour;
+    private readonly IHeavyIO _heavyIo;
 
     private readonly IDictionary<ListenerType, ServiceBusProcessor>
         _processors = new Dictionary<ListenerType, ServiceBusProcessor>();
@@ -31,13 +33,14 @@ internal sealed class RsbWorker : IHostedService
         IMessageEmitter messageEmitter,
         IRsbTypesLoader rsbTypesLoader,
         IRsbCache cache,
-        ISagaBehaviour sagaBehaviour)
+        ISagaBehaviour sagaBehaviour, IHeavyIO heavyIo)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _serviceProvider = serviceProvider;
         _messageEmitter = messageEmitter;
         _cache = cache;
         _sagaBehaviour = sagaBehaviour;
+        _heavyIo = heavyIo;
 
         foreach (var handler in rsbTypesLoader.Handlers)
         {
@@ -160,7 +163,7 @@ internal sealed class RsbWorker : IHostedService
         return corrId.CorrelationId;
     }
 
-    private static IHandlerBroker GetBroker(IServiceProvider serviceProvider,
+    private IHandlerBroker GetBroker(IServiceProvider serviceProvider,
         HandlerType handlerType)
     {
         var implListener = ActivatorUtilities.CreateInstance(
@@ -169,7 +172,7 @@ internal sealed class RsbWorker : IHostedService
         var brokerImplType = typeof(HandlerBroker<>)
             .MakeGenericType(handlerType.MessageType.Type);
         
-        var context = new MessagingContextInternal();
+        var context = new MessagingContextInternal(_heavyIo);
         
         return (IHandlerBroker)ActivatorUtilities.CreateInstance(
             serviceProvider, brokerImplType, implListener, context);
@@ -184,7 +187,7 @@ internal sealed class RsbWorker : IHostedService
         var brokerImplType = typeof(SagaBroker<,>).MakeGenericType(
             sagaType.SagaDataType, listenerType.MessageType.Type);
 
-        var context = new MessagingContextInternal()
+        var context = new MessagingContextInternal(_heavyIo)
         {
             CorrelationId = correlationId
         };

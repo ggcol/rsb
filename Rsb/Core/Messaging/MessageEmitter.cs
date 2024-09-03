@@ -1,19 +1,13 @@
 ﻿using System.Text.Json;
 using Azure.Messaging.ServiceBus;
 using Rsb.Core.Enablers.Entities;
-using Rsb.Services;
+using Rsb.Services.ServiceBus;
 
 namespace Rsb.Core.Messaging;
 
-internal sealed class MessageEmitter : IMessageEmitter
+internal sealed class MessageEmitter(IAzureServiceBusService serviceBusService)
+    : IMessageEmitter
 {
-    private readonly IAzureServiceBusService _serviceBusService;
-
-    public MessageEmitter(IAzureServiceBusService serviceBusService)
-    {
-        _serviceBusService = serviceBusService;
-    }
-
     public async Task FlushAll(ICollectMessage collector,
         CancellationToken cancellationToken = default)
     {
@@ -24,11 +18,11 @@ internal sealed class MessageEmitter : IMessageEmitter
                 var rsbMessage = collector.Messages.FirstOrDefault();
 
                 var destination = rsbMessage.IsCommand
-                    ? await _serviceBusService
+                    ? await serviceBusService
                         .ConfigureQueue(rsbMessage.MessageName,
                             cancellationToken)
                         .ConfigureAwait(false)
-                    : await _serviceBusService
+                    : await serviceBusService
                         .ConfigureTopicForSender(rsbMessage.MessageName,
                             cancellationToken)
                         .ConfigureAwait(false);
@@ -54,7 +48,7 @@ internal sealed class MessageEmitter : IMessageEmitter
     private async Task Emit(IRsbMessage message, string destination,
         CancellationToken cancellationToken)
     {
-        var sender = _serviceBusService.GetSender(destination);
+        var sender = serviceBusService.GetSender(destination);
 
         var sbm = ToSdkMessage(message);
 
