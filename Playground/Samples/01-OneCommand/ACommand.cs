@@ -1,6 +1,6 @@
 ﻿using Rsb;
 
-namespace Playground.Samples.OneCommand;
+namespace Playground.Samples._01_OneCommand;
 
 public class ACommand : IAmACommand
 {

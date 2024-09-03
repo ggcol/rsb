@@ -1,6 +1,6 @@
 ﻿using Rsb;
 
-namespace Playground.Samples.TwoMessagesSameHandlerClass;
+namespace Playground.Samples._03_TwoMessagesSameHandlerClass;
 
 public class AnHandlerDouble : IHandleMessage<Message1>,
     IHandleMessage<Message2>

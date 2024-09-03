@@ -1,6 +1,6 @@
 ﻿using Rsb;
 
-namespace Playground.Samples.OneEvent;
+namespace Playground.Samples._02_OneEvent;
 
 public class AnEvent : IAmAnEvent
 {

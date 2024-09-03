@@ -1,40 +1,32 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Rsb;
-using Rsb.Core.Messaging;
 
-namespace Playground.Samples.OneEvent;
+namespace Playground.Samples._01_OneCommand;
 
-internal class OneEventInitJob : IHostedService
+internal class OneCommandInitJob : IHostedService
 {
     private readonly IMessagingContext _context;
-    private readonly IMessageEmitter _emitter;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
 
-    public OneEventInitJob(IMessagingContext context,
-        IMessageEmitter emitter,
+    public OneCommandInitJob(IMessagingContext context,
         IHostApplicationLifetime hostApplicationLifetime)
     {
         _context = context;
-        _emitter = emitter;
         _hostApplicationLifetime = hostApplicationLifetime;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var max = new Random().Next(1, 5);
+        var max = new Random().Next(5);
 
         for (var i = 0; i <= max; i++)
         {
-            await _context.Publish(new AnEvent()
+            await _context.Send(new ACommand()
                 {
                     Something = $"{i} - Hello world!"
                 }, cancellationToken)
                 .ConfigureAwait(false);
         }
-        
-
-        await _emitter.FlushAll((ICollectMessage)_context, cancellationToken)
-            .ConfigureAwait(false);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)

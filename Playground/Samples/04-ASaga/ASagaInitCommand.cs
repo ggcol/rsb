@@ -1,6 +1,6 @@
 using Rsb;
 
-namespace Playground.Samples.ASaga;
+namespace Playground.Samples._04_ASaga;
 
 public class ASagaInitCommand : IAmACommand
 {

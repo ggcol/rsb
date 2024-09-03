@@ -2,16 +2,15 @@
 using Rsb;
 using Rsb.Core.Messaging;
 
-namespace Playground.Samples.TwoMessagesSameHandlerClass;
+namespace Playground.Samples._04_ASaga;
 
-internal class TwoMessagesSameHandlerClassInitJob : IHostedService
+internal class ASagaInitJob : IHostedService
 {
     private readonly IMessagingContext _context;
     private readonly IMessageEmitter _emitter;
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
 
-    public TwoMessagesSameHandlerClassInitJob(IMessagingContext context,
-        IMessageEmitter emitter,
+    public ASagaInitJob(IMessagingContext context, IMessageEmitter emitter,
         IHostApplicationLifetime hostApplicationLifetime)
     {
         _context = context;
@@ -21,16 +20,13 @@ internal class TwoMessagesSameHandlerClassInitJob : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await _context.Send(new Message1(), cancellationToken)
-            .ConfigureAwait(false);
-        
-        await _context.Send(new Message2(), cancellationToken)
+        await _context.Send(new ASagaInitCommand(), cancellationToken)
             .ConfigureAwait(false);
 
         await _emitter.FlushAll((ICollectMessage)_context, cancellationToken)
             .ConfigureAwait(false);
     }
-
+    
     public async Task StopAsync(CancellationToken cancellationToken)
     {
         _hostApplicationLifetime.StopApplication();
