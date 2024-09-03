@@ -1,4 +1,4 @@
-﻿using Rsb.Core.Enablers.Entities;
+﻿using Rsb.Core.Entities;
 
 namespace Rsb.Core.Messaging;
 

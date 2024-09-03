@@ -1,6 +1,6 @@
 ﻿using Rsb.Accessories.Heavy;
 
-namespace Rsb.Core.Enablers.Entities;
+namespace Rsb.Core.Entities;
 
 internal interface IRsbMessage
 {

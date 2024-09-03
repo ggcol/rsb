@@ -5,7 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Rsb.Accessories.Heavy;
 using Rsb.Core.Caching;
 using Rsb.Core.Enablers;
-using Rsb.Core.Enablers.Entities;
+using Rsb.Core.Entities;
 using Rsb.Core.Messaging;
 using Rsb.Core.Sagas;
 using Rsb.Core.TypesHandling;

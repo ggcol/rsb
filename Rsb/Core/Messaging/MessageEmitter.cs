@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using Azure.Messaging.ServiceBus;
-using Rsb.Core.Enablers.Entities;
+using Rsb.Core.Entities;
 using Rsb.Services.ServiceBus;
 
 namespace Rsb.Core.Messaging;

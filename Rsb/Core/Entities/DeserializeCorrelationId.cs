@@ -1,4 +1,4 @@
-﻿namespace Rsb.Core.Enablers.Entities;
+﻿namespace Rsb.Core.Entities;
 
 internal sealed class DeserializeCorrelationId
 {
