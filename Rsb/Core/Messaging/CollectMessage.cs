@@ -1,4 +1,5 @@
 ﻿using Rsb.Accessories.Heavy;
+using Rsb.Configurations;
 using Rsb.Core.Entities;
 
 namespace Rsb.Core.Messaging;
@@ -20,13 +21,13 @@ internal abstract class CollectMessage(IHeavyIO heavyIo)
             _isUserDefinedCorrelationId = true;
         }
     }
-    
+
     //TODO rename
     protected async Task InnerProcessing<TMessage>(TMessage message,
         CancellationToken cancellationToken) where TMessage : IAmAMessage
     {
         var messageId = Guid.NewGuid();
-
+        
         var heaviesRef = await heavyIo
             .Unload(message, messageId, cancellationToken)
             .ConfigureAwait(false);

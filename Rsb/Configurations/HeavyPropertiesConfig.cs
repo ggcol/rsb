@@ -1,6 +1,6 @@
 ﻿namespace Rsb.Configurations;
 
-public interface IUseHeavyProperties
+public sealed class HeavyPropertiesConfig : IConfigureHeavyProperties
 {
     public string? DataStorageConnectionString { get; set; }
     public string? DataStorageContainer { get; set; }

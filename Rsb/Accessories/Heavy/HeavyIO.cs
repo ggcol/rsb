@@ -7,11 +7,8 @@ using Rsb.Services.StorageAccount;
 namespace Rsb.Accessories.Heavy;
 
 // ReSharper disable once InconsistentNaming
-internal class HeavyIO<TSettings>(
-    IOptions<TSettings> options,
-    IAzureBlobStorageService storage)
+internal sealed class HeavyIO(IAzureBlobStorageService storage)
     : IHeavyIO
-    where TSettings : class, IUseHeavyProperties, new()
 {
     public async Task<IReadOnlyList<HeavyRef>> Unload<TMessage>(
         TMessage message, Guid messageId,
@@ -36,7 +33,7 @@ internal class HeavyIO<TSettings>(
             var heavyRef = (value as Heavy).Ref;
 
             await storage.Save(value,
-                    options.Value.DataStorageContainer,
+                    RsbConfiguration.HeavyProps.DataStorageContainer,
                     string.Join('-', messageId, heavyRef),
                     false,
                     cancellationToken)
@@ -63,7 +60,7 @@ internal class HeavyIO<TSettings>(
         {
             var blobName = string.Join('-', messageId, heavyRef.Ref);
             var read = await storage.Get(
-                    options.Value.DataStorageContainer,
+                    RsbConfiguration.HeavyProps.DataStorageContainer,
                     blobName,
                     cancellationToken)
                 .ConfigureAwait(false);
@@ -83,7 +80,9 @@ internal class HeavyIO<TSettings>(
 
             prop.SetValue(message, value);
 
-            await storage.Delete(options.Value.DataStorageContainer, blobName,
+            await storage.Delete(
+                    RsbConfiguration.HeavyProps.DataStorageContainer, 
+                    blobName,
                     cancellationToken)
                 .ConfigureAwait(false);
         }

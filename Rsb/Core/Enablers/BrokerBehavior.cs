@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Rsb.Accessories.Heavy;
+using Rsb.Configurations;
 using Rsb.Core.Entities;
 using Rsb.Core.Messaging;
 
@@ -7,6 +8,7 @@ namespace Rsb.Core.Enablers;
 
 internal abstract class BrokerBehavior<TMessage>(
     IMessagingContext context,
+    //TODO remove this dependency
     IHeavyIO heavyIo)
     where TMessage : IAmAMessage
 {
@@ -18,7 +20,8 @@ internal abstract class BrokerBehavior<TMessage>(
     {
         var rsbMessage = await Deserialize(binaryData, cancellationToken);
 
-        if (rsbMessage?.Heavies is not null && rsbMessage.Heavies.Any())
+        if (RsbConfiguration.UseHeavyProperties &&
+            rsbMessage?.Heavies is not null && rsbMessage.Heavies.Any())
         {
             await heavyIo.Load(rsbMessage.Message, rsbMessage.Heavies,
                     rsbMessage.MessageId, cancellationToken)
@@ -27,7 +30,7 @@ internal abstract class BrokerBehavior<TMessage>(
 
         return rsbMessage;
     }
-    
+
     private static async Task<RsbMessage<TMessage>?> Deserialize(
         BinaryData binaryData, CancellationToken cancellationToken)
     {
@@ -36,5 +39,4 @@ internal abstract class BrokerBehavior<TMessage>(
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
     }
-
 }

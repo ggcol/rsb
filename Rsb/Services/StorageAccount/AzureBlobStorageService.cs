@@ -1,14 +1,11 @@
 ﻿using System.Text;
 using System.Text.Json;
 using Azure.Storage.Blobs;
-using Microsoft.Extensions.Options;
 using Rsb.Configurations;
 
 namespace Rsb.Services.StorageAccount;
 
-public class AzureBlobStorageService<TSettings>(IOptions<TSettings> options)
-    : IAzureBlobStorageService
-    where TSettings : class, IUseHeavyProperties, new()
+public class AzureBlobStorageService : IAzureBlobStorageService
 {
     public async Task Save<TItem>(TItem item, string containerName,
         string blobName, bool overwrite = default,
@@ -24,7 +21,7 @@ public class AzureBlobStorageService<TSettings>(IOptions<TSettings> options)
          * For ease of test serialization is now json,
          * but option to use bytes should be given!
          */
-        
+
         var jsonString = JsonSerializer.Serialize(item);
 
         // using var serializationStream = new MemoryStream();
@@ -64,9 +61,10 @@ public class AzureBlobStorageService<TSettings>(IOptions<TSettings> options)
                 .ConfigureAwait(false);
         var blobClient = containerClent.GetBlobClient(blobName);
 
-        var rx = await blobClient.DeleteAsync(cancellationToken: cancellationToken)
+        var rx = await blobClient
+            .DeleteAsync(cancellationToken: cancellationToken)
             .ConfigureAwait(false);
-        
+
         //return?
     }
 
@@ -89,6 +87,7 @@ public class AzureBlobStorageService<TSettings>(IOptions<TSettings> options)
 
     private BlobServiceClient MakeServiceClient()
     {
-        return new BlobServiceClient(options.Value.DataStorageConnectionString);
+        return new BlobServiceClient(RsbConfiguration.HeavyProps
+            ?.DataStorageConnectionString);
     }
 }

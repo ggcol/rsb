@@ -1,33 +1,18 @@
 ﻿using System.Reflection;
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
-using Microsoft.Extensions.Options;
 using Rsb.Configurations;
 using Rsb.Core.Caching;
 using Rsb.Core.TypesHandling.Entities;
-using Rsb.Services.Options;
 
 namespace Rsb.Services.ServiceBus;
 
-internal sealed class AzureServiceBusService<TSettings>
+internal sealed class AzureServiceBusService(IRsbCache cache)
     : IAzureServiceBusService
-    where TSettings : class, IConfigureAzureServiceBus, new()
 {
-    private ServiceBusClient _sbClient { get; }
-    private readonly IOptions<TSettings> _options;
-    private readonly AzureServiceBusServiceOptions _myOptions = new();
-    private readonly IRsbCache _cache;
-
-    public AzureServiceBusService(IOptions<TSettings> options,
-        IRsbCache cache)
-    {
-        _options = options;
-        _cache = cache;
-
-        _sbClient = new ServiceBusClient(
-            _options.Value.ConnectionString,
-            _myOptions.SbClientOptions);
-    }
+    private ServiceBusClient _sbClient { get; } = new(
+        RsbConfiguration.ServiceBus.ServiceBusConnectionString,
+        RsbConfiguration.ServiceBus.ClientOptions);
 
     public async Task<ServiceBusProcessor> GetProcessor(
         ListenerType handler, CancellationToken cancellationToken = default)
@@ -39,7 +24,7 @@ internal sealed class AzureServiceBusService<TSettings>
                 var queue = await ConfigureQueue(
                         handler.MessageType.Type.Name, cancellationToken)
                     .ConfigureAwait(false);
-                
+
                 //TODO check this
                 //It does not make sense to cache processors
                 return _sbClient.CreateProcessor(queue);
@@ -61,7 +46,7 @@ internal sealed class AzureServiceBusService<TSettings>
     public async Task<string> ConfigureQueue(string queueName,
         CancellationToken cancellationToken = default)
     {
-        if (_cache.TryGetValue(queueName, out string queue)) return queue;
+        if (cache.TryGetValue(queueName, out string queue)) return queue;
 
         var admClient = MakeAdmClient();
 
@@ -72,14 +57,13 @@ internal sealed class AzureServiceBusService<TSettings>
             queueName = rx.Value.Name;
         }
 
-        return _cache.Set(queueName, queueName,
-            _myOptions.CacheOptions.RsbCacheDefaultExpiration);
+        return cache.Set(queueName, queueName, RsbConfiguration.Cache.Expiration);
     }
 
     public async Task<string> ConfigureTopicForSender(string topicName,
         CancellationToken cancellationToken = default)
     {
-        if (_cache.TryGetValue(topicName, out string topic)) return topic;
+        if (cache.TryGetValue(topicName, out string topic)) return topic;
 
         var admClient = MakeAdmClient();
 
@@ -91,8 +75,7 @@ internal sealed class AzureServiceBusService<TSettings>
             topicName = rx.Value.Name;
         }
 
-        return _cache.Set(topicName, topicName,
-            _myOptions.CacheOptions.RsbCacheDefaultExpiration);
+        return cache.Set(topicName, topicName, RsbConfiguration.Cache.Expiration);
     }
 
     private async Task<TopicConfiguration> ConfigureTopicForReceiver(
@@ -101,10 +84,10 @@ internal sealed class AzureServiceBusService<TSettings>
         var config = new TopicConfiguration(messageType.Name,
             Assembly.GetEntryAssembly()?.GetName().Name);
 
-        var cacheKey = CacheKey(_myOptions.CacheOptions.TopicConfigCachePrefix,
+        var cacheKey = CacheKey(RsbConfiguration.Cache.TopicConfigPrefix,
             config.Name);
 
-        if (_cache.TryGetValue(cacheKey, out TopicConfiguration cachedConfig))
+        if (cache.TryGetValue(cacheKey, out TopicConfiguration cachedConfig))
             return cachedConfig;
 
         var admClient = MakeAdmClient();
@@ -123,27 +106,26 @@ internal sealed class AzureServiceBusService<TSettings>
                     cancellationToken);
         }
 
-        return _cache.Set(cacheKey, config,
-            _myOptions.CacheOptions.RsbCacheDefaultExpiration);
+        return cache.Set(cacheKey, config, RsbConfiguration.Cache.Expiration);
     }
 
     //TODO store? throwaway?
     private ServiceBusAdministrationClient MakeAdmClient()
     {
-        return new ServiceBusAdministrationClient(_options.Value
-            .ConnectionString);
+        return new ServiceBusAdministrationClient(RsbConfiguration.ServiceBus
+            .ServiceBusConnectionString);
     }
 
     public ServiceBusSender GetSender(string destination)
     {
         var cacheKey =
-            CacheKey(_myOptions.CacheOptions.ServiceBusSenderCachePrefix,
+            CacheKey(RsbConfiguration.Cache.ServiceBusSenderCachePrefix,
                 destination);
 
-        return _cache.TryGetValue(cacheKey, out ServiceBusSender sender)
+        return cache.TryGetValue(cacheKey, out ServiceBusSender sender)
             ? sender
-            : _cache.Set(cacheKey, _sbClient.CreateSender(destination),
-                _myOptions.CacheOptions.RsbCacheDefaultExpiration);
+            : cache.Set(cacheKey, _sbClient.CreateSender(destination),
+                RsbConfiguration.Cache.Expiration);
     }
 
     private string CacheKey(params string[] values)

@@ -21,7 +21,7 @@ internal sealed class RsbWorker : IHostedService
     private readonly IMessageEmitter _messageEmitter;
     private readonly IRsbCache _cache;
     private readonly ISagaBehaviour _sagaBehaviour;
-    private readonly IHeavyIO _heavyIo;
+    private readonly IHeavyIO? _heavyIo;
 
     private readonly IDictionary<ListenerType, ServiceBusProcessor>
         _processors = new Dictionary<ListenerType, ServiceBusProcessor>();
@@ -33,7 +33,7 @@ internal sealed class RsbWorker : IHostedService
         IMessageEmitter messageEmitter,
         IRsbTypesLoader rsbTypesLoader,
         IRsbCache cache,
-        ISagaBehaviour sagaBehaviour, IHeavyIO heavyIo)
+        ISagaBehaviour sagaBehaviour, IHeavyIO? heavyIo)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _serviceProvider = serviceProvider;
