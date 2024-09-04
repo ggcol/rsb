@@ -13,6 +13,8 @@ internal interface IHandlerBroker
         CancellationToken cancellationToken);
 }
 
+//TODO check this
+// ReSharper disable once UnusedTypeParameter
 internal interface IHandlerBroker<T> : IHandlerBroker
 {
 }

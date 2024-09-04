@@ -25,7 +25,7 @@ internal class OneEventInitJob : IHostedService
 
         for (var i = 0; i <= max; i++)
         {
-            await _context.Publish(new AnEvent()
+            await _context.Publish(new AnEvent
                 {
                     Something = $"{i} - Hello world!"
                 }, cancellationToken)

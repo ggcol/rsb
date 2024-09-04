@@ -21,7 +21,7 @@ internal class OneCommandInitJob : IHostedService
 
         for (var i = 0; i <= max; i++)
         {
-            await _context.Send(new ACommand()
+            await _context.Send(new ACommand
                 {
                     Something = $"{i} - Hello world!"
                 }, cancellationToken)

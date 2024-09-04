@@ -70,7 +70,7 @@ internal sealed class RsbTypesLoader : IRsbTypesLoader
 
         foreach (var saga in sagas)
         {
-            var sagaType = new SagaType()
+            var sagaType = new SagaType
             {
                 Type = saga,
                 SagaDataType = saga.BaseType.GetGenericArguments().First(),
@@ -87,9 +87,9 @@ internal sealed class RsbTypesLoader : IRsbTypesLoader
             foreach (var i in interfaces)
             {
                 var messageType = i.GetGenericArguments().First();
-                sagaType.Listeners.Add(new SagaHandlerType()
+                sagaType.Listeners.Add(new SagaHandlerType
                 {
-                    MessageType = new MessageType()
+                    MessageType = new MessageType
                     {
                         Type = messageType,
                         IsCommand = messageType.GetInterfaces()
@@ -118,10 +118,10 @@ internal sealed class RsbTypesLoader : IRsbTypesLoader
                 var isCommand = messageType.GetInterfaces()
                     .Any(x => x == typeof(IAmACommand));
 
-                yield return new HandlerType()
+                yield return new HandlerType
                 {
                     Type = handler,
-                    MessageType = new MessageType()
+                    MessageType = new MessageType
                     {
                         Type = messageType,
                         IsCommand = isCommand

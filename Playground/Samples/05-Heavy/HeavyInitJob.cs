@@ -9,7 +9,7 @@ public class HeavyInitJob(
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await _context.Send(new HeavyCommand()
+        await _context.Send(new HeavyCommand
             {
                 AHeavyProp = new("Hello world!")
             }, cancellationToken)

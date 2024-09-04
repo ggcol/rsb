@@ -1,6 +1,6 @@
 ﻿namespace Rsb.Accessories.Heavy;
 
-public abstract class Heavy()
+public abstract class Heavy
 {
     internal Guid Ref = Guid.NewGuid();
 }

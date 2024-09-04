@@ -78,7 +78,7 @@ public static class DependencyInjection
                 ConfigProvider.LoadSettings<TSettings>(hostBuilderContext
                     .Configuration);
 
-            RsbConfiguration.HeavyProps = new HeavyPropertiesConfig()
+            RsbConfiguration.HeavyProps = new HeavyPropertiesConfig
             {
                 DataStorageConnectionString =
                     settings.DataStorageConnectionString,
@@ -125,7 +125,7 @@ public static class DependencyInjection
                 ConfigProvider.LoadSettings<TSettings>(hostBuilderContext
                     .Configuration);
 
-            RsbConfiguration.Cache = new RsbCacheConfig()
+            RsbConfiguration.Cache = new RsbCacheConfig
             {
                 Expiration = settings.Expiration,
                 TopicConfigPrefix = settings.TopicConfigPrefix,

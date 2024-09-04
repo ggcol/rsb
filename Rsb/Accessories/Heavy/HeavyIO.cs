@@ -41,7 +41,7 @@ internal sealed class HeavyIO(IAzureBlobStorageService storage)
 
             heavyProp.SetValue(message, null);
 
-            heaviesRef.Add(new HeavyRef()
+            heaviesRef.Add(new HeavyRef
             {
                 PropName = heavyProp.Name,
                 Ref = heavyRef

@@ -8,7 +8,7 @@ internal abstract class CollectMessage(IHeavyIO heavyIo)
     : ICollectMessage
 {
     private Guid _correlationId = Guid.NewGuid();
-    private bool _isUserDefinedCorrelationId = false;
+    private bool _isUserDefinedCorrelationId;
 
     public Queue<IRsbMessage> Messages { get; } = new();
 
@@ -32,7 +32,7 @@ internal abstract class CollectMessage(IHeavyIO heavyIo)
             .Unload(message, messageId, cancellationToken)
             .ConfigureAwait(false);
 
-        var rsbMessage = new RsbMessage<TMessage>()
+        var rsbMessage = new RsbMessage<TMessage>
         {
             MessageId = messageId,
             MessageName = typeof(TMessage).Name,

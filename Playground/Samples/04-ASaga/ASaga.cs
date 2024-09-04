@@ -16,7 +16,7 @@ public class ASaga : Saga<ASagaData>,
         Console.WriteLine($"{nameof(ASagaInitCommand)} correlationId: {context.CorrelationId}");
         Console.WriteLine($"{nameof(ASagaInitCommand)} message: {comunication}");
         
-        await context.Send(new AnotherCommand()
+        await context.Send(new AnotherCommand
             {
                 Something = comunication
             }, cancellationToken)
