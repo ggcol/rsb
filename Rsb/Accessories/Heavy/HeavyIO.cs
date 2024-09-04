@@ -1,6 +1,4 @@
 ﻿using System.Reflection;
-using System.Text.Json;
-using Microsoft.Extensions.Options;
 using Rsb.Configurations;
 using Rsb.Services.StorageAccount;
 
@@ -33,7 +31,7 @@ internal sealed class HeavyIO(IAzureBlobStorageService storage)
             var heavyRef = (value as Heavy).Ref;
 
             await storage.Save(value,
-                    RsbConfiguration.HeavyProps.DataStorageContainer,
+                    RsbConfiguration.HeavyProps?.DataStorageContainer!,
                     string.Join('-', messageId, heavyRef),
                     false,
                     cancellationToken)
@@ -58,13 +56,6 @@ internal sealed class HeavyIO(IAzureBlobStorageService storage)
     {
         foreach (var heavyRef in heavies)
         {
-            var blobName = string.Join('-', messageId, heavyRef.Ref);
-            var read = await storage.Get(
-                    RsbConfiguration.HeavyProps.DataStorageContainer,
-                    blobName,
-                    cancellationToken)
-                .ConfigureAwait(false);
-
             var prop = message
                 .GetType()
                 .GetProperties()
@@ -73,15 +64,21 @@ internal sealed class HeavyIO(IAzureBlobStorageService storage)
 
             var propType = prop.PropertyType.GetGenericArguments()
                 .First();
-
-            var heavyGeneric = typeof(Heavy<>).MakeGenericType(propType);
-
-            var value = JsonSerializer.Deserialize(read, heavyGeneric);
-
+            
+            var heavyGenericType = typeof(Heavy<>).MakeGenericType(propType);
+            
+            var blobName = string.Join('-', messageId, heavyRef.Ref);
+            var value = await storage.Get(
+                    RsbConfiguration.HeavyProps?.DataStorageContainer!,
+                    blobName,
+                    heavyGenericType,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            
             prop.SetValue(message, value);
 
             await storage.Delete(
-                    RsbConfiguration.HeavyProps.DataStorageContainer, 
+                    RsbConfiguration.HeavyProps?.DataStorageContainer!, 
                     blobName,
                     cancellationToken)
                 .ConfigureAwait(false);

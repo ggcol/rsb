@@ -16,28 +16,15 @@ public class AzureBlobStorageService : IAzureBlobStorageService
                 .ConfigureAwait(false);
         var blobClient = containerClient.GetBlobClient(blobName);
 
-        /*
-         * TODO
-         * For ease of test serialization is now json,
-         * but option to use bytes should be given!
-         */
-
-        var jsonString = JsonSerializer.Serialize(item);
-
-        // using var serializationStream = new MemoryStream();
-        // var serializer = new DataContractSerializer(typeof(TItem));
-        // serializer.WriteObject(serializationStream, item);
-        // var itemBytes = serializationStream.ToArray();
-
-        var itemBytes = Encoding.UTF8.GetBytes(jsonString);
+        var itemBytes = Serialize(item);
 
         using var uploadStream = new MemoryStream(itemBytes);
         await blobClient.UploadAsync(uploadStream, overwrite, cancellationToken)
             .ConfigureAwait(false);
     }
 
-    public async Task<string> Get(string containerName, string blobName,
-        CancellationToken cancellationToken = default)
+    public async Task<object?> Get(string containerName, string blobName,
+        Type returnType, CancellationToken cancellationToken = default)
     {
         var containerClient =
             await MakeContainerClient(containerName, cancellationToken)
@@ -49,8 +36,10 @@ public class AzureBlobStorageService : IAzureBlobStorageService
             .ConfigureAwait(false);
 
         using var reader = new StreamReader(downloadInfo);
-        return await reader.ReadToEndAsync(cancellationToken)
+        var read = await reader.ReadToEndAsync(cancellationToken)
             .ConfigureAwait(false);
+
+        return Deserialize(read, returnType);
     }
 
     public async Task Delete(string containerName, string blobName,
@@ -89,5 +78,16 @@ public class AzureBlobStorageService : IAzureBlobStorageService
     {
         return new BlobServiceClient(RsbConfiguration.HeavyProps
             ?.DataStorageConnectionString);
+    }
+
+    private static byte[] Serialize<TItem>(TItem item)
+    {
+        var jsonString = JsonSerializer.Serialize(item);
+        return Encoding.UTF8.GetBytes(jsonString);
+    }
+
+    private static object? Deserialize(string read, Type returnType)
+    {
+        return JsonSerializer.Deserialize(read, returnType);
     }
 }
