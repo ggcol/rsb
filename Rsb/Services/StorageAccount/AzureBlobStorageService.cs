@@ -61,7 +61,7 @@ public class AzureBlobStorageService : IAzureBlobStorageService
                 .ConfigureAwait(false);
         var blobClient = containerClent.GetBlobClient(blobName);
 
-        var rx = await blobClient
+        _ = await blobClient
             .DeleteAsync(cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 

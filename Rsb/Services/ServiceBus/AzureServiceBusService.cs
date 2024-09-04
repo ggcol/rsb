@@ -17,30 +17,25 @@ internal sealed class AzureServiceBusService(IRsbCache cache)
     public async Task<ServiceBusProcessor> GetProcessor(
         ListenerType handler, CancellationToken cancellationToken = default)
     {
-        switch (handler.MessageType.IsCommand)
+        if (handler.MessageType.IsCommand)
         {
-            case true:
-            {
-                var queue = await ConfigureQueue(
-                        handler.MessageType.Type.Name, cancellationToken)
-                    .ConfigureAwait(false);
+            var queue = await ConfigureQueue(
+                    handler.MessageType.Type.Name, cancellationToken)
+                .ConfigureAwait(false);
 
-                //TODO check this
-                //It does not make sense to cache processors
-                return _sbClient.CreateProcessor(queue);
-            }
-            case false:
-            {
-                var topicConfig = await ConfigureTopicForReceiver(
-                        handler.MessageType.Type, cancellationToken)
-                    .ConfigureAwait(false);
-
-                //TODO check this
-                //It does not make sense to cache processors
-                return _sbClient.CreateProcessor(topicConfig.Name,
-                    topicConfig.SubscriptionName);
-            }
+            //TODO check this
+            //It does not make sense to cache processors
+            return _sbClient.CreateProcessor(queue);
         }
+
+        var topicConfig = await ConfigureTopicForReceiver(
+                handler.MessageType.Type, cancellationToken)
+            .ConfigureAwait(false);
+
+        //TODO check this
+        //It does not make sense to cache processors
+        return _sbClient.CreateProcessor(topicConfig.Name,
+            topicConfig.SubscriptionName);
     }
 
     public async Task<string> ConfigureQueue(string queueName,
@@ -57,7 +52,8 @@ internal sealed class AzureServiceBusService(IRsbCache cache)
             queueName = rx.Value.Name;
         }
 
-        return cache.Set(queueName, queueName, RsbConfiguration.Cache.Expiration);
+        return cache.Set(queueName, queueName,
+            RsbConfiguration.Cache.Expiration);
     }
 
     public async Task<string> ConfigureTopicForSender(string topicName,
@@ -75,7 +71,8 @@ internal sealed class AzureServiceBusService(IRsbCache cache)
             topicName = rx.Value.Name;
         }
 
-        return cache.Set(topicName, topicName, RsbConfiguration.Cache.Expiration);
+        return cache.Set(topicName, topicName,
+            RsbConfiguration.Cache.Expiration);
     }
 
     private async Task<TopicConfiguration> ConfigureTopicForReceiver(
@@ -94,14 +91,14 @@ internal sealed class AzureServiceBusService(IRsbCache cache)
 
         if (!await admClient.TopicExistsAsync(config.Name, cancellationToken))
         {
-            var rx = await admClient.CreateTopicAsync(
+            _ = await admClient.CreateTopicAsync(
                 config.Name, cancellationToken);
         }
 
         if (!await admClient.SubscriptionExistsAsync(config.Name,
                 config.SubscriptionName, cancellationToken))
         {
-            var rxSub = await admClient
+            _ = await admClient
                 .CreateSubscriptionAsync(config.Name, config.SubscriptionName,
                     cancellationToken);
         }
