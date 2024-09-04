@@ -4,5 +4,5 @@ namespace Playground.Settings;
 
 public class ServiceBusSettings : IConfigureAzureServiceBus
 {
-    public string? ConnectionString { get; set; }
+    public string? ServiceBusConnectionString { get; set; }
 }
