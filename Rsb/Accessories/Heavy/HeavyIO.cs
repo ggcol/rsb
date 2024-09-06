@@ -5,7 +5,7 @@ using Rsb.Services.StorageAccount;
 namespace Rsb.Accessories.Heavy;
 
 // ReSharper disable once InconsistentNaming
-internal sealed class HeavyIO(IAzureBlobStorageService storage)
+internal sealed class HeavyIO(HeavyPropsStorageService storage)
     : IHeavyIO
 {
     public async Task<IReadOnlyList<HeavyRef>> Unload<TMessage>(

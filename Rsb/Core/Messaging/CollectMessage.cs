@@ -1,5 +1,4 @@
 ﻿using Rsb.Accessories.Heavy;
-using Rsb.Configurations;
 using Rsb.Core.Entities;
 
 namespace Rsb.Core.Messaging;
@@ -7,20 +6,9 @@ namespace Rsb.Core.Messaging;
 internal abstract class CollectMessage(IHeavyIO heavyIo)
     : ICollectMessage
 {
-    private Guid _correlationId = Guid.NewGuid();
-    private bool _isUserDefinedCorrelationId;
-
     public Queue<IRsbMessage> Messages { get; } = new();
 
-    public Guid CorrelationId
-    {
-        get => _correlationId;
-        set
-        {
-            _correlationId = value;
-            _isUserDefinedCorrelationId = true;
-        }
-    }
+    public Guid CorrelationId { get; set; } = Guid.NewGuid();
 
     //TODO rename
     protected async Task InnerProcessing<TMessage>(TMessage message,

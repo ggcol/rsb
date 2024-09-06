@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Rsb.Accessories.Heavy;
 using Rsb.Configurations;
@@ -59,7 +58,8 @@ public static class DependencyInjection
                     //may be singleton
                     .AddScoped<ISagaBehaviour, SagaBehaviour>()
                     .AddScoped<IMessagingContext, MessagingContext>()
-                    .AddScoped<IMessageEmitter, MessageEmitter>();
+                    .AddScoped<IMessageEmitter, MessageEmitter>()
+                    .AddScoped<ISagaIO, SagaIO>();
 
                 //TODO remove this dependency
                 services.AddScoped<IHeavyIO, UnusedHeavyIO>();
@@ -110,7 +110,7 @@ public static class DependencyInjection
                     typeof(UnusedHeavyIO), ServiceLifetime.Scoped));
 
             services
-                .AddScoped<IAzureBlobStorageService, AzureBlobStorageService>()
+                .AddScoped<HeavyPropsStorageService>()
                 .AddScoped<IHeavyIO, HeavyIO>();
         });
     }
@@ -145,16 +145,45 @@ public static class DependencyInjection
 
         return hostBuilder;
     }
-}
 
-internal static class ConfigProvider
-{
-    internal static TSettings LoadSettings<TSettings>(
-        IConfiguration configuration)
-        where TSettings : class, new()
+    public static IHostBuilder ConfigureSagaPersistence<TSettings>(
+        this IHostBuilder hostBuilder)
+        where TSettings : class, IConfigureSagaPersistence, new()
     {
-        var settings = new TSettings();
-        configuration.GetSection(typeof(TSettings).Name).Bind(settings);
-        return settings;
+        hostBuilder.ConfigureServices((hostBuilderContext, _) =>
+        {
+            var settings = ConfigProvider
+                .LoadSettings<TSettings>(hostBuilderContext.Configuration);
+
+            RsbConfiguration.SagaPersistence = new SagaPersistenceConfig()
+            {
+                DataStorageConnectionString =
+                    settings.DataStorageConnectionString,
+                DataStorageContainer = settings.DataStorageContainer
+            };
+        });
+
+        return ConfigureSagaPersistence(hostBuilder);
+    }
+
+    public static IHostBuilder ConfigureSagaPersistence(
+        this IHostBuilder hostBuilder,
+        SagaPersistenceConfig sagaPersistenceConfig)
+    {
+        if (sagaPersistenceConfig is null)
+            throw new ConfigurationNullException(nameof(sagaPersistenceConfig));
+
+        RsbConfiguration.SagaPersistence = sagaPersistenceConfig;
+
+        return ConfigureSagaPersistence(hostBuilder);
+    }
+
+    private static IHostBuilder ConfigureSagaPersistence(
+        IHostBuilder hostBuilder)
+    {
+        return hostBuilder.ConfigureServices((_, services) =>
+        {
+            services.AddScoped<SagaPersistenceStorageService>();
+        });
     }
 }

@@ -3,6 +3,7 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Rsb.Accessories.Heavy;
+using Rsb.Configurations;
 using Rsb.Core.Caching;
 using Rsb.Core.Enablers;
 using Rsb.Core.Entities;
@@ -22,6 +23,7 @@ internal sealed class RsbWorker : IHostedService
     private readonly IRsbCache _cache;
     private readonly ISagaBehaviour _sagaBehaviour;
     private readonly IHeavyIO? _heavyIo;
+    private readonly ISagaIO _sagaIo;
 
     private readonly IDictionary<ListenerType, ServiceBusProcessor>
         _processors = new Dictionary<ListenerType, ServiceBusProcessor>();
@@ -33,7 +35,7 @@ internal sealed class RsbWorker : IHostedService
         IMessageEmitter messageEmitter,
         IRsbTypesLoader rsbTypesLoader,
         IRsbCache cache,
-        ISagaBehaviour sagaBehaviour, IHeavyIO? heavyIo)
+        ISagaBehaviour sagaBehaviour, IHeavyIO? heavyIo, ISagaIO sagaIo)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _serviceProvider = serviceProvider;
@@ -41,6 +43,7 @@ internal sealed class RsbWorker : IHostedService
         _cache = cache;
         _sagaBehaviour = sagaBehaviour;
         _heavyIo = heavyIo;
+        _sagaIo = sagaIo;
 
         foreach (var handler in rsbTypesLoader.Handlers)
         {
@@ -110,7 +113,9 @@ internal sealed class RsbWorker : IHostedService
     private async Task ProcessMessage(HandlerType handlerType,
         ProcessMessageEventArgs args)
     {
-        var broker = GetBroker(_serviceProvider, handlerType);
+        var correlationId = await GetCorrelationId(args);
+        
+        var broker = GetBroker(_serviceProvider, handlerType, correlationId);
 
         await broker
             .Handle(args.Message.Body, args.CancellationToken)
@@ -133,12 +138,17 @@ internal sealed class RsbWorker : IHostedService
     }
 
     private async Task ProcessMessage(SagaType sagaType,
-        ListenerType listenerType,
-        ProcessMessageEventArgs args)
+        SagaHandlerType listenerType, ProcessMessageEventArgs args)
     {
         var correlationId = await GetCorrelationId(args);
 
-        var broker = GetBroker(_serviceProvider, sagaType, listenerType,
+        var implSaga =
+            await GetSagaImplementation(_serviceProvider, sagaType,
+                    listenerType, correlationId)
+                .ConfigureAwait(false);
+
+        var broker = GetBroker(_serviceProvider, sagaType, implSaga,
+            listenerType,
             correlationId);
 
         await broker.Handle(args.Message.Body, args.CancellationToken)
@@ -147,6 +157,15 @@ internal sealed class RsbWorker : IHostedService
         await args.CompleteMessageAsync(args.Message, args.CancellationToken)
             .ConfigureAwait(false);
 
+        if (RsbConfiguration.OffloadSagas)
+        {
+            await _sagaIo.Unload(implSaga, correlationId).ConfigureAwait(false);
+        }
+        else
+        {
+            _cache.Set(correlationId, implSaga);
+        }
+        
         await _messageEmitter.FlushAll(broker.Collector, args.CancellationToken)
             .ConfigureAwait(false);
     }
@@ -164,26 +183,29 @@ internal sealed class RsbWorker : IHostedService
     }
 
     private IHandlerBroker GetBroker(IServiceProvider serviceProvider,
-        HandlerType handlerType)
+        HandlerType handlerType, Guid? correlationId = null)
     {
         var implListener = ActivatorUtilities.CreateInstance(
             serviceProvider, handlerType.Type);
 
         var brokerImplType = typeof(HandlerBroker<>)
             .MakeGenericType(handlerType.MessageType.Type);
-        
+
         var context = new MessagingContextInternal(_heavyIo);
         
+        if (correlationId is not null)
+        {
+            context.CorrelationId = correlationId.Value;
+        };
+
         return (IHandlerBroker)ActivatorUtilities.CreateInstance(
             serviceProvider, brokerImplType, implListener, context);
     }
 
     private ISagaBroker GetBroker(IServiceProvider serviceProvider,
-        SagaType sagaType, ListenerType listenerType, Guid correlationId)
+        SagaType sagaType, object? implSaga, ListenerType listenerType,
+        Guid correlationId)
     {
-        var implSaga =
-            GetSagaImplementation(serviceProvider, sagaType, correlationId);
-
         var brokerImplType = typeof(SagaBroker<,>).MakeGenericType(
             sagaType.SagaDataType, listenerType.MessageType.Type);
 
@@ -191,22 +213,32 @@ internal sealed class RsbWorker : IHostedService
         {
             CorrelationId = correlationId
         };
-        
+
         return (ISagaBroker)ActivatorUtilities.CreateInstance(serviceProvider,
             brokerImplType, implSaga, context);
     }
 
-    private object? GetSagaImplementation(IServiceProvider serviceProvider,
-        SagaType sagaType, Guid correlationId)
+    private async Task<object?> GetSagaImplementation(
+        IServiceProvider serviceProvider, SagaType sagaType,
+        SagaHandlerType listenerType, Guid correlationId)
     {
-        if (_cache.TryGetValue(correlationId, out var saga))
+        if (!listenerType.IsInitMessage)
         {
-            return saga;
+            if (RsbConfiguration.OffloadSagas)
+            {
+                return await _sagaIo.Load(correlationId, sagaType)
+                    .ConfigureAwait(false);
+            }
+
+            if (_cache.TryGetValue(correlationId, out var saga))
+            {
+                return saga;
+            }
         }
 
         var implSaga = ActivatorUtilities.CreateInstance(serviceProvider,
             sagaType.Type);
-        
+
         _sagaBehaviour.SetCorrelationId(sagaType, correlationId, implSaga);
 
         _sagaBehaviour.HandleCompletion(sagaType, correlationId, implSaga);

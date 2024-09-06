@@ -1,11 +1,10 @@
 ﻿using System.Text;
 using System.Text.Json;
 using Azure.Storage.Blobs;
-using Rsb.Configurations;
 
 namespace Rsb.Services.StorageAccount;
 
-public class AzureBlobStorageService : IAzureBlobStorageService
+internal abstract class AzureDataStorageService(string connectionString)
 {
     public async Task Save<TItem>(TItem item, string containerName,
         string blobName, bool overwrite = default,
@@ -23,25 +22,12 @@ public class AzureBlobStorageService : IAzureBlobStorageService
             .ConfigureAwait(false);
     }
 
-    public async Task<object?> Get(string containerName, string blobName,
-        Type returnType, CancellationToken cancellationToken = default)
+    private static byte[] Serialize<TItem>(TItem item)
     {
-        var containerClient =
-            await MakeContainerClient(containerName, cancellationToken)
-                .ConfigureAwait(false);
-        var blobClient = containerClient.GetBlobClient(blobName);
-
-        var downloadInfo = await blobClient
-            .OpenReadAsync(cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
-
-        using var reader = new StreamReader(downloadInfo);
-        var read = await reader.ReadToEndAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        return Deserialize(read, returnType);
+        var jsonString = JsonSerializer.Serialize(item);
+        return Encoding.UTF8.GetBytes(jsonString);
     }
-
+    
     public async Task Delete(string containerName, string blobName,
         CancellationToken cancellationToken = default)
     {
@@ -56,8 +42,7 @@ public class AzureBlobStorageService : IAzureBlobStorageService
 
         //return?
     }
-
-    private async Task<BlobContainerClient> MakeContainerClient(
+    protected async Task<BlobContainerClient> MakeContainerClient(
         string containerName, CancellationToken cancellationToken)
     {
         var containerClient =
@@ -76,18 +61,6 @@ public class AzureBlobStorageService : IAzureBlobStorageService
 
     private BlobServiceClient MakeServiceClient()
     {
-        return new BlobServiceClient(RsbConfiguration.HeavyProps
-            ?.DataStorageConnectionString);
-    }
-
-    private static byte[] Serialize<TItem>(TItem item)
-    {
-        var jsonString = JsonSerializer.Serialize(item);
-        return Encoding.UTF8.GetBytes(jsonString);
-    }
-
-    private static object? Deserialize(string read, Type returnType)
-    {
-        return JsonSerializer.Deserialize(read, returnType);
+        return new BlobServiceClient(connectionString);
     }
 }

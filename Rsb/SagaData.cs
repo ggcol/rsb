@@ -1,5 +1,5 @@
 ﻿namespace Rsb;
 
-public abstract class SagaData
+public class SagaData
 {
 }

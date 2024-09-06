@@ -1,7 +1,5 @@
 ﻿namespace Rsb.Configurations;
 
-public interface IConfigureHeavyProperties
+public interface IConfigureHeavyProperties : IConfigureDataStorage
 {
-    public string? DataStorageConnectionString { get; set; }
-    public string? DataStorageContainer { get; set; }
 }

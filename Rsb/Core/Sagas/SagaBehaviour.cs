@@ -5,15 +5,9 @@ using Rsb.Core.TypesHandling.Entities;
 
 namespace Rsb.Core.Sagas;
 
-internal sealed class SagaBehaviour : ISagaBehaviour
+internal sealed class SagaBehaviour(IRsbCache cache, ISagaIO sagaIo)
+    : ISagaBehaviour
 {
-    private readonly IRsbCache _cache;
-
-    public SagaBehaviour(IRsbCache cache)
-    {
-        _cache = cache;
-    }
-
     public void SetCorrelationId(SagaType sagaType,
         Guid correlationId, object implSaga)
     {
@@ -45,14 +39,14 @@ internal sealed class SagaBehaviour : ISagaBehaviour
         var addMethod = completedEvent.GetAddMethod(true);
         if (addMethod != null)
         {
-            addMethod.Invoke(implSaga,
-                new object[] { handler }
+            addMethod.Invoke(implSaga, new object[] { handler }
             );
         }
     }
 
     private void OnSagaCompleted(object sender, SagaCompletedEventArgs e)
     {
-        _cache.Remove(e.CorrelationId);
+        cache.Remove(e.CorrelationId);
+        sagaIo.Delete(e.CorrelationId).ConfigureAwait(false).GetAwaiter();
     }
 }

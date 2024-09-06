@@ -81,8 +81,14 @@ internal sealed class RsbTypesLoader : IRsbTypesLoader
                 .GetInterfaces()
                 .Where(i =>
                     i.IsGenericType &&
-                    i.GetGenericTypeDefinition() ==
-                    typeof(IHandleMessage<>));
+                    (
+                        i.GetGenericTypeDefinition() == typeof(IHandleMessage<>) 
+                        ||
+                        i.GetGenericTypeDefinition() == typeof(IAmStartedBy<>)
+                    )
+                )
+                .GroupBy(i => i.GetGenericArguments().First())
+                .Select(g => g.First());
 
             foreach (var i in interfaces)
             {
@@ -94,7 +100,8 @@ internal sealed class RsbTypesLoader : IRsbTypesLoader
                         Type = messageType,
                         IsCommand = messageType.GetInterfaces()
                             .Any(x => x == typeof(IAmACommand))
-                    }
+                    },
+                    IsInitMessage = i.GetGenericTypeDefinition() == typeof(IAmStartedBy<>)
                 });
             }
 
