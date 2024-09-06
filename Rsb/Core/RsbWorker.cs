@@ -3,7 +3,6 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Rsb.Accessories.Heavy;
-using Rsb.Configurations;
 using Rsb.Core.Caching;
 using Rsb.Core.Enablers;
 using Rsb.Core.Entities;

@@ -1,5 +1,5 @@
 ﻿using System.Text.Json;
-using Rsb.Configurations;
+using Rsb.Core;
 using Rsb.Core.TypesHandling.Entities;
 
 namespace Rsb.Services.StorageAccount;

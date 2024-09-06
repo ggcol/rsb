@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Azure.Messaging.ServiceBus;
 using Azure.Messaging.ServiceBus.Administration;
-using Rsb.Configurations;
+using Rsb.Core;
 using Rsb.Core.Caching;
 using Rsb.Core.TypesHandling.Entities;
 

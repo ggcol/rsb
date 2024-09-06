@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using Rsb.Configurations;
+using Rsb.Core;
 using Rsb.Services.StorageAccount;
 
 namespace Rsb.Accessories.Heavy;

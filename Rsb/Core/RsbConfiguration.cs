@@ -1,7 +1,8 @@
-﻿
-// ReSharper disable InconsistentNaming
+﻿// ReSharper disable InconsistentNaming
 
-namespace Rsb.Configurations;
+using Rsb.Configurations.ConfigObjects;
+
+namespace Rsb.Core;
 
 internal static class RsbConfiguration
 {

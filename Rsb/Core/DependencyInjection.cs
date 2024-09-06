@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using Rsb.Accessories.Heavy;
 using Rsb.Configurations;
+using Rsb.Configurations.ConfigObjects;
 using Rsb.Core.Caching;
 using Rsb.Core.Messaging;
 using Rsb.Core.Sagas;

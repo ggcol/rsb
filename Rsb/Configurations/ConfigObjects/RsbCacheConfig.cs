@@ -1,5 +1,5 @@
 ﻿// ReSharper disable InconsistentNaming
-namespace Rsb.Configurations;
+namespace Rsb.Configurations.ConfigObjects;
 
 public sealed class RsbCacheConfig : IConfigureRsbCache
 {
