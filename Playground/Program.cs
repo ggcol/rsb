@@ -5,6 +5,7 @@ using Playground;
 using Playground.Samples._01_OneCommand;
 using Playground.Samples._04_ASaga;
 using Playground.Samples._05_Heavy;
+using Playground.Samples._06_SagaPersistence;
 using Playground.Settings;
 using Rsb.Configurations;
 using Rsb.Core;
@@ -26,6 +27,12 @@ await Host
     //     DataStorageConnectionString = "",
     //     DataStorageContainer = ""
     // })
+    .ConfigureSagaPersistence<SagaPersistenceSettings>()
+    // .ConfigureSagaPersistence(new SagaPersistenceConfig()
+    // {
+    //     DataStorageConnectionString = "",
+    //     DataStorageContainer = ""
+    // })
     .ConfigureServices(
         (_, services) =>
         {
@@ -34,7 +41,8 @@ await Host
             // services.AddHostedService<TwoMessagesSameHandlerClassInitJob>();
             // services.AddHostedService<ASagaInitJob>();
             // services.AddHostedService<AGenericJob>();
-            services.AddHostedService<HeavyInitJob>();
+            // services.AddHostedService<HeavyInitJob>();
+            services.AddHostedService<APersistedSagaInitJob>();
             services.AddLogging();
         })
     // .ConfigureRsbCache<WholeCacheSettings>()
