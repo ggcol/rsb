@@ -4,12 +4,12 @@ using Rsb;
 namespace Playground.Samples._05_Heavy;
 
 public class HeavyInitJob(
-    IMessagingContext _context,
-    IHostApplicationLifetime _hostApplicationLifetime) : IHostedService
+    IMessagingContext context,
+    IHostApplicationLifetime hostApplicationLifetime) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await _context.Send(new HeavyCommand
+        await context.Send(new HeavyCommand
             {
                 AHeavyProp = new("Hello world!")
             }, cancellationToken)
@@ -18,6 +18,6 @@ public class HeavyInitJob(
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        _hostApplicationLifetime.StopApplication();
+        hostApplicationLifetime.StopApplication();
     }
 }
