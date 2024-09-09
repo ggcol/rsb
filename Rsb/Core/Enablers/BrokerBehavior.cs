@@ -1,8 +1,7 @@
-﻿using System.Text.Json;
-using Rsb.Accessories.Heavy;
-using Rsb.Configurations;
+﻿using Rsb.Accessories.Heavy;
 using Rsb.Core.Entities;
 using Rsb.Core.Messaging;
+using Rsb.Utils;
 
 namespace Rsb.Core.Enablers;
 
@@ -18,7 +17,10 @@ internal abstract class BrokerBehavior<TMessage>(
     protected async Task<RsbMessage<TMessage>?> GetFrom(BinaryData binaryData,
         CancellationToken cancellationToken = default)
     {
-        var rsbMessage = await Deserialize(binaryData, cancellationToken);
+        var rsbMessage = await Serializer
+            .Deserialize<RsbMessage<TMessage>?>(binaryData.ToStream(), 
+                cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
 
         if (RsbConfiguration.UseHeavyProperties &&
             rsbMessage?.Heavies is not null && rsbMessage.Heavies.Any())
@@ -29,14 +31,5 @@ internal abstract class BrokerBehavior<TMessage>(
         }
 
         return rsbMessage;
-    }
-
-    private static async Task<RsbMessage<TMessage>?> Deserialize(
-        BinaryData binaryData, CancellationToken cancellationToken)
-    {
-        return await JsonSerializer
-            .DeserializeAsync<RsbMessage<TMessage>>(binaryData.ToStream(),
-                cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
     }
 }

@@ -1,5 +1,5 @@
-﻿using System.Text.Json;
-using Rsb.Core;
+﻿using Rsb.Core;
+using Rsb.Utils;
 
 namespace Rsb.Services.StorageAccount;
 
@@ -22,11 +22,6 @@ internal class HeavyPropsStorageService()
         var read = await reader.ReadToEndAsync(cancellationToken)
             .ConfigureAwait(false);
     
-        return Deserialize(read, returnType);
-    }
-    
-    private static object? Deserialize(string read, Type returnType)
-    {
-        return JsonSerializer.Deserialize(read, returnType);
+        return Serializer.Deserialize(read, returnType);
     }
 }

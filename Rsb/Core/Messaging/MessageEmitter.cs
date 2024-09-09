@@ -1,7 +1,7 @@
-﻿using System.Text.Json;
-using Azure.Messaging.ServiceBus;
+﻿using Azure.Messaging.ServiceBus;
 using Rsb.Core.Entities;
 using Rsb.Services.ServiceBus;
+using Rsb.Utils;
 
 namespace Rsb.Core.Messaging;
 
@@ -58,7 +58,7 @@ internal sealed class MessageEmitter(IAzureServiceBusService serviceBusService)
 
     private static ServiceBusMessage ToSdkMessage(object message)
     {
-        var serialized = JsonSerializer.Serialize(message);
+        var serialized = Serializer.Serialize(message);
         return new ServiceBusMessage(serialized);
     }
 }

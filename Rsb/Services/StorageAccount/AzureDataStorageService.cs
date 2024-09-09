@@ -1,6 +1,6 @@
 ﻿using System.Text;
-using System.Text.Json;
 using Azure.Storage.Blobs;
+using Rsb.Utils;
 
 namespace Rsb.Services.StorageAccount;
 
@@ -24,7 +24,7 @@ internal abstract class AzureDataStorageService(string connectionString)
 
     private static byte[] Serialize<TItem>(TItem item)
     {
-        var jsonString = JsonSerializer.Serialize(item);
+        var jsonString = Serializer.Serialize(item);
         return Encoding.UTF8.GetBytes(jsonString);
     }
     

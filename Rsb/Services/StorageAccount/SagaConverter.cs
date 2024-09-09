@@ -1,32 +1,27 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using Rsb.Utils;
 
 namespace Rsb.Services.StorageAccount;
 
-public class SagaConverter : JsonConverter<object>
+internal class SagaConverter(Type sagaType, Type sagaDataType)
+    : JsonConverter<object>
 {
-    private readonly Type _sagaType;
-    private readonly Type _sagaDataType;
-
-    public SagaConverter(Type sagaType, Type sagaDataType)
-    {
-        _sagaType = sagaType;
-        _sagaDataType = sagaDataType;
-    }
-
     public override bool CanConvert(Type typeToConvert)
     {
-        return _sagaType.IsAssignableFrom(typeToConvert);
+        return sagaType.IsAssignableFrom(typeToConvert);
     }
 
     public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         var jsonDocument = JsonDocument.ParseValue(ref reader);
+        //TODO hardcoded string
         var sagaDataJson = jsonDocument.RootElement.GetProperty("SagaData").GetRawText();
-        var sagaData = JsonSerializer.Deserialize(sagaDataJson, _sagaDataType, options);
+        var sagaData = Serializer.Deserialize(sagaDataJson, sagaDataType, options);
 
-        var saga = Activator.CreateInstance(_sagaType);
-        var sagaDataProperty = _sagaType.GetProperty("SagaData");
+        var saga = Activator.CreateInstance(sagaType);
+        //TODO hardcoded string
+        var sagaDataProperty = sagaType.GetProperty("SagaData");
         sagaDataProperty.SetValue(saga, sagaData);
 
         return saga;
@@ -37,7 +32,7 @@ public class SagaConverter : JsonConverter<object>
         writer.WriteStartObject();
         writer.WritePropertyName("SagaData");
         var sagaData = value.GetType().GetProperty("SagaData").GetValue(value);
-        JsonSerializer.Serialize(writer, sagaData, _sagaDataType, options);
+        Serializer.Serialize(writer, sagaData, sagaDataType, options);
         writer.WriteEndObject();
     }
 }

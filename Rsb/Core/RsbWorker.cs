@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Azure.Messaging.ServiceBus;
+﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Rsb.Accessories.Heavy;
@@ -11,6 +10,7 @@ using Rsb.Core.Sagas;
 using Rsb.Core.TypesHandling;
 using Rsb.Core.TypesHandling.Entities;
 using Rsb.Services.ServiceBus;
+using Rsb.Utils;
 
 namespace Rsb.Core;
 
@@ -172,8 +172,8 @@ internal sealed class RsbWorker : IHostedService
     private static async Task<Guid> GetCorrelationId(
         ProcessMessageEventArgs args)
     {
-        var corrId = await JsonSerializer
-            .DeserializeAsync<DeserializeCorrelationId>(
+        var corrId = await Serializer
+            .Deserialize<DeserializeCorrelationId>(
                 args.Message.Body.ToStream(),
                 cancellationToken: args.CancellationToken)
             .ConfigureAwait(false);
