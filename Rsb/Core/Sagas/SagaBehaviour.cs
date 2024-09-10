@@ -27,7 +27,7 @@ internal sealed class SagaBehaviour(IRsbCache cache, ISagaIO sagaIo)
                 BindingFlags.Instance | BindingFlags.NonPublic);
 
         if (completedEvent == null) return;
-        
+
         var handlerType = completedEvent.EventHandlerType;
         var methodInfo = GetType()
             .GetMethod(
@@ -47,6 +47,10 @@ internal sealed class SagaBehaviour(IRsbCache cache, ISagaIO sagaIo)
     private void OnSagaCompleted(object sender, SagaCompletedEventArgs e)
     {
         cache.Remove(e.CorrelationId);
-        sagaIo.Delete(e.CorrelationId).ConfigureAwait(false).GetAwaiter();
+        sagaIo.Delete(e.CorrelationId, new SagaType()
+            {
+                Type = e.Type
+            })
+            .ConfigureAwait(false).GetAwaiter();
     }
 }

@@ -14,7 +14,8 @@ public abstract class Saga<T>
     {
         Completed?.Invoke(this, new ()
         {
-            CorrelationId = CorrelationId
+            CorrelationId = CorrelationId,
+            Type = GetType()
         });
     }
 }

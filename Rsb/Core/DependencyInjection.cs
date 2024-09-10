@@ -7,7 +7,9 @@ using Rsb.Core.Caching;
 using Rsb.Core.Messaging;
 using Rsb.Core.Sagas;
 using Rsb.Core.TypesHandling;
+using Rsb.Services;
 using Rsb.Services.ServiceBus;
+using Rsb.Services.SqlServer;
 using Rsb.Services.StorageAccount;
 
 namespace Rsb.Core;
@@ -111,7 +113,11 @@ public static class DependencyInjection
                     typeof(UnusedHeavyIO), ServiceLifetime.Scoped));
 
             services
-                .AddScoped<HeavyPropsStorageService>()
+                .AddScoped<IAzureDataStorageService>(
+                    _ =>
+                        new AzureDataStorageService(
+                            RsbConfiguration.HeavyProps?
+                                .DataStorageConnectionString!))
                 .AddScoped<IHeavyIO, HeavyIO>();
         });
     }
@@ -147,44 +153,93 @@ public static class DependencyInjection
         return hostBuilder;
     }
 
-    public static IHostBuilder ConfigureSagaPersistence<TSettings>(
+    public static IHostBuilder UseDataStorageSagaPersistence<TSettings>(
         this IHostBuilder hostBuilder)
-        where TSettings : class, IConfigureSagaPersistence, new()
+        where TSettings : class, IConfigureDataStorageSagaPersistence, new()
     {
         hostBuilder.ConfigureServices((hostBuilderContext, _) =>
         {
             var settings = ConfigProvider
                 .LoadSettings<TSettings>(hostBuilderContext.Configuration);
 
-            RsbConfiguration.SagaPersistence = new SagaPersistenceConfig()
-            {
-                DataStorageConnectionString =
-                    settings.DataStorageConnectionString,
-                DataStorageContainer = settings.DataStorageContainer
-            };
+            RsbConfiguration.DataStorageSagaPersistence =
+                new DataStorageSagaPersistenceConfig()
+                {
+                    DataStorageConnectionString =
+                        settings.DataStorageConnectionString,
+                    DataStorageContainer = settings.DataStorageContainer
+                };
         });
 
-        return ConfigureSagaPersistence(hostBuilder);
+        return UseDataStorageSagaPersistence(hostBuilder);
     }
 
-    public static IHostBuilder ConfigureSagaPersistence(
-        this IHostBuilder hostBuilder,
-        SagaPersistenceConfig sagaPersistenceConfig)
+    public static IHostBuilder UseDataStorageSagaPersistence(
+        this IHostBuilder hostBuilder, DataStorageSagaPersistenceConfig config)
     {
-        if (sagaPersistenceConfig is null)
-            throw new ConfigurationNullException(nameof(sagaPersistenceConfig));
+        if (config is null)
+            throw new ConfigurationNullException(nameof(config));
 
-        RsbConfiguration.SagaPersistence = sagaPersistenceConfig;
+        RsbConfiguration.DataStorageSagaPersistence = config;
 
-        return ConfigureSagaPersistence(hostBuilder);
+        return UseDataStorageSagaPersistence(hostBuilder);
     }
 
-    private static IHostBuilder ConfigureSagaPersistence(
+    private static IHostBuilder UseDataStorageSagaPersistence(
         IHostBuilder hostBuilder)
     {
         return hostBuilder.ConfigureServices((_, services) =>
         {
-            services.AddScoped<SagaPersistenceStorageService>();
+            services
+                .AddScoped<IAzureDataStorageService>(
+                    x =>
+                        new AzureDataStorageService(RsbConfiguration
+                            .DataStorageSagaPersistence?
+                            .DataStorageConnectionString!))
+                .AddScoped<ISagaPersistenceService,
+                    SagaDataStoragePersistenceService>();
+        });
+    }
+
+    public static IHostBuilder UseSqlServerSagaPersistence<TSettings>(
+        this IHostBuilder hostBuilder)
+        where TSettings : class, IConfigureSqlServerSagaPersistence, new()
+    {
+        hostBuilder.ConfigureServices((hostBuilderContext, _) =>
+        {
+            var settings = ConfigProvider
+                .LoadSettings<TSettings>(hostBuilderContext.Configuration);
+
+            RsbConfiguration.SqlServerSagaPersistence =
+                new SqlServerSagaPersistenceConfig()
+                {
+                    ConnectionString = settings.ConnectionString
+                };
+        });
+
+        return UseSqlServerSagaPersistence(hostBuilder);
+    }
+
+    public static IHostBuilder UseDataStorageSagaPersistence(
+        this IHostBuilder hostBuilder, SqlServerSagaPersistenceConfig config)
+    {
+        if (config is null)
+            throw new ConfigurationNullException(nameof(config));
+
+        RsbConfiguration.SqlServerSagaPersistence = config;
+
+        return UseSqlServerSagaPersistence(hostBuilder);
+    }
+
+    private static IHostBuilder UseSqlServerSagaPersistence(
+        IHostBuilder hostBuilder)
+    {
+        return hostBuilder.ConfigureServices((_, services) =>
+        {
+            services
+                .AddScoped<ISqlServerService, SqlServerService>()
+                .AddScoped<ISagaPersistenceService,
+                    SagaSqlServerPersistenceService>();
         });
     }
 }

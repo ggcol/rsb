@@ -1,6 +1,6 @@
 ﻿namespace Rsb.Configurations;
 
-public interface IConfigureSagaPersistence : IConfigureDataStorage
+public interface IConfigureDataStorageSagaPersistence : IConfigureDataStorage
 {
     //TODO add an option to use both in memory and offloaded
 }

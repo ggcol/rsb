@@ -5,12 +5,12 @@ namespace Rsb.Core.Sagas;
 // ReSharper disable once InconsistentNaming
 internal interface ISagaIO
 {
-    public Task<object?> Load(Guid correlationId, SagaType sagaType,
+    internal Task<object?> Load(Guid correlationId, SagaType sagaType,
         CancellationToken cancellationToken = default);
 
-    public Task Unload(object? implSaga, Guid correlationId,
+    internal Task Unload(object? implSaga, Guid correlationId, SagaType sagaType,
         CancellationToken cancellationToken = default);
 
-    public Task Delete(Guid correlationId,
+    internal Task Delete(Guid correlationId, SagaType sagaType,
         CancellationToken cancellationToken = default);
 }

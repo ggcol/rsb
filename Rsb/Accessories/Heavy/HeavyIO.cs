@@ -5,7 +5,7 @@ using Rsb.Services.StorageAccount;
 namespace Rsb.Accessories.Heavy;
 
 // ReSharper disable once InconsistentNaming
-internal sealed class HeavyIO(HeavyPropsStorageService storage)
+internal sealed class HeavyIO(IAzureDataStorageService storage)
     : IHeavyIO
 {
     public async Task<IReadOnlyList<HeavyRef>> Unload<TMessage>(
@@ -64,21 +64,21 @@ internal sealed class HeavyIO(HeavyPropsStorageService storage)
 
             var propType = prop.PropertyType.GetGenericArguments()
                 .First();
-            
+
             var heavyGenericType = typeof(Heavy<>).MakeGenericType(propType);
-            
+
             var blobName = string.Join('-', messageId, heavyRef.Ref);
             var value = await storage.Get(
                     RsbConfiguration.HeavyProps?.DataStorageContainer!,
                     blobName,
                     heavyGenericType,
-                    cancellationToken)
+                    cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
-            
+
             prop.SetValue(message, value);
 
             await storage.Delete(
-                    RsbConfiguration.HeavyProps?.DataStorageContainer!, 
+                    RsbConfiguration.HeavyProps?.DataStorageContainer!,
                     blobName,
                     cancellationToken)
                 .ConfigureAwait(false);

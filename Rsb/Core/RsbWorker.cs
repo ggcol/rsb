@@ -158,7 +158,7 @@ internal sealed class RsbWorker : IHostedService
 
         if (RsbConfiguration.OffloadSagas)
         {
-            await _sagaIo.Unload(implSaga, correlationId).ConfigureAwait(false);
+            await _sagaIo.Unload(implSaga, correlationId, sagaType).ConfigureAwait(false);
         }
         else
         {

@@ -9,6 +9,7 @@ This is a lightweight messaging framework build on top of Azure Service Bus serv
 - Azure.Messaging.Servicebus
 - Microsoft.Extensions.Hosting
 - Azure.Storage.Blobs
+- Microsoft.Data.SqlClient
 
 ## Minimal setup:
 ```csharp

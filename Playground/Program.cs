@@ -27,7 +27,8 @@ await Host
     //     DataStorageConnectionString = "",
     //     DataStorageContainer = ""
     // })
-    .ConfigureSagaPersistence<SagaPersistenceSettings>()
+    // .UseDataStorageSagaPersistence<DataStorageSagaPersistenceSettings>()
+    .UseSqlServerSagaPersistence<SqlServerSagaPersistenceSettings>()
     // .ConfigureSagaPersistence(new SagaPersistenceConfig()
     // {
     //     DataStorageConnectionString = "",

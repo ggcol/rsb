@@ -2,7 +2,7 @@
 using System.Text.Json.Serialization;
 using Rsb.Utils;
 
-namespace Rsb.Services.StorageAccount;
+namespace Rsb.Core.Sagas;
 
 internal class SagaConverter(Type sagaType, Type sagaDataType)
     : JsonConverter<object>

@@ -2,7 +2,7 @@
 
 namespace Playground.Settings;
 
-public class SagaPersistenceSettings : IConfigureSagaPersistence
+public class DataStorageSagaPersistenceSettings : IConfigureDataStorageSagaPersistence
 {
     public string? DataStorageConnectionString { get; set; }
     public string? DataStorageContainer { get; set; }
