@@ -1,0 +1,42 @@
+name: Publish to NuGet
+
+on:
+    push:
+      branches:
+        - main
+    workflow_dispatch:  
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Pack Rsb.Abstractions
+        run: dotnet pack Rsb.Abstractions/Rsb.Abstractions.csproj --configuration Release --output ./artifacts
+
+      - name: Pack Rsb
+        run: dotnet pack Rsb/Rsb.csproj --configuration Release --output ./artifacts
+
+      - name: Push Rsb.Abstractions to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./artifacts/Rsb.Abstractions.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+
+      - name: Push Rsb to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./artifacts/Rsb.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
