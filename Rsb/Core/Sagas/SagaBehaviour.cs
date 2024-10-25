@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
+using Rsb.Abstractions;
 using Rsb.Core.Caching;
-using Rsb.Core.Sagas.Entities;
 using Rsb.Core.TypesHandling.Entities;
 
 namespace Rsb.Core.Sagas;
@@ -33,10 +33,10 @@ internal sealed class SagaBehaviour(IRsbCache cache, ISagaIO sagaIo)
             .GetMethod(
                 nameof(OnSagaCompleted),
                 BindingFlags.NonPublic | BindingFlags.Instance);
-        var handler =
-            Delegate.CreateDelegate(handlerType, this, methodInfo);
+        var handler = Delegate.CreateDelegate(handlerType, this, methodInfo);
 
         var addMethod = completedEvent.GetAddMethod(true);
+        
         if (addMethod != null)
         {
             addMethod.Invoke(implSaga, new object[] { handler }

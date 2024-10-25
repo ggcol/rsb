@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Rsb.Abstractions;
 using Rsb.Accessories.Heavy;
 using Rsb.Configurations;
 using Rsb.Configurations.ConfigObjects;
@@ -66,6 +67,7 @@ public static class DependencyInjection
 
                 //TODO remove this dependency
                 services.AddScoped<IHeavyIO, UnusedHeavyIO>();
+                services.AddScoped<IHeavyIO>();
 
                 services.AddHostedService<RsbWorker>();
             });

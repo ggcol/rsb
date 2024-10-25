@@ -1,15 +1,14 @@
-﻿using Rsb.Core.Sagas.Entities;
-
-namespace Rsb;
+﻿namespace Rsb.Abstractions;
 
 public abstract class Saga<T>
     where T : SagaData, new()
 {
     public T SagaData { get; internal set; } = new();
 
-    internal Guid CorrelationId { get; set; }
+    public Guid CorrelationId { get; set; }
     internal event EventHandler<SagaCompletedEventArgs>? Completed;
 
+    // ReSharper disable once InconsistentNaming
     protected void IAmComplete()
     {
         Completed?.Invoke(this, new ()
@@ -18,4 +17,10 @@ public abstract class Saga<T>
             Type = GetType()
         });
     }
+}
+
+internal sealed class SagaCompletedEventArgs : EventArgs
+{
+    internal Guid CorrelationId { get; init; }
+    internal Type? Type { get; init; }
 }

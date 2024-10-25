@@ -1,12 +1,12 @@
-﻿using Rsb.Accessories.Heavy;
+﻿using Rsb.Abstractions;
+using Rsb.Accessories.Heavy;
 using Rsb.Core.Entities;
 using Rsb.Core.Messaging;
 using Rsb.Utils;
 
 namespace Rsb.Core.Enablers;
 
-internal abstract class BrokerBehavior<TMessage>(
-    IMessagingContext context,
+internal abstract class BrokerBehavior<TMessage>(IMessagingContext context,
     //TODO remove this dependency
     IHeavyIO heavyIo)
     where TMessage : IAmAMessage

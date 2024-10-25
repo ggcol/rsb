@@ -1,4 +1,4 @@
-﻿using Rsb.Core.Sagas.Entities;
+﻿using Rsb.Abstractions;
 
 namespace Rsb.Tests;
 

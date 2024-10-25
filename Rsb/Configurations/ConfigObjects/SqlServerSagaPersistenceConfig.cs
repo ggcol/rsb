@@ -1,4 +1,4 @@
-﻿namespace Rsb.Configurations;
+﻿namespace Rsb.Configurations.ConfigObjects;
 
 public class SqlServerSagaPersistenceConfig : IConfigureSqlServerSagaPersistence
 {

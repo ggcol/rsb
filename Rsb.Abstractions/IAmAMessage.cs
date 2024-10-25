@@ -1,4 +1,4 @@
-﻿namespace Rsb;
+﻿namespace Rsb.Abstractions;
 
 public interface IAmAMessage { }
 public interface IAmACommand : IAmAMessage { }

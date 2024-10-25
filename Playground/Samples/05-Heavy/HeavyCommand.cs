@@ -1,5 +1,4 @@
-﻿using Rsb;
-using Rsb.Accessories;
+﻿using Rsb.Abstractions;
 using Rsb.Accessories.Heavy;
 
 namespace Playground.Samples._05_Heavy;

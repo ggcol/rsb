@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevelopmentUtils", "Develop
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsb.Tests", "Rsb.Tests\Rsb.Tests.csproj", "{0CE9EB2B-2D5A-4B08-AF6D-11934D21BC5C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsb.Abstractions", "Rsb.Abstractions\Rsb.Abstractions.csproj", "{5BE2A8BC-A3B4-47CE-923E-9D0948C5C5B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{0CE9EB2B-2D5A-4B08-AF6D-11934D21BC5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0CE9EB2B-2D5A-4B08-AF6D-11934D21BC5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0CE9EB2B-2D5A-4B08-AF6D-11934D21BC5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BE2A8BC-A3B4-47CE-923E-9D0948C5C5B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BE2A8BC-A3B4-47CE-923E-9D0948C5C5B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BE2A8BC-A3B4-47CE-923E-9D0948C5C5B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BE2A8BC-A3B4-47CE-923E-9D0948C5C5B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

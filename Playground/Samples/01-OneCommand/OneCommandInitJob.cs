@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Hosting;
-using Rsb;
+using Rsb.Abstractions;
 
 namespace Playground.Samples._01_OneCommand;
 

@@ -1,4 +1,6 @@
-﻿namespace Rsb.Accessories.Heavy;
+﻿using Rsb.Abstractions;
+
+namespace Rsb.Accessories.Heavy;
 
 // ReSharper disable once InconsistentNaming
 internal interface IHeavyIO

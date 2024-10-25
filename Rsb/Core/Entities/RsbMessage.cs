@@ -1,4 +1,5 @@
-﻿using Rsb.Accessories.Heavy;
+﻿using Rsb.Abstractions;
+using Rsb.Accessories.Heavy;
 
 namespace Rsb.Core.Entities;
 

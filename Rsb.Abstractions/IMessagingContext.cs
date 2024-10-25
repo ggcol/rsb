@@ -1,4 +1,4 @@
-﻿namespace Rsb;
+﻿namespace Rsb.Abstractions;
 
 public interface IMessagingContext
 {

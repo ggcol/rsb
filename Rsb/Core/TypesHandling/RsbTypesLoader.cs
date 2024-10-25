@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Rsb.Abstractions;
 using Rsb.Core.TypesHandling.Entities;
 
 namespace Rsb.Core.TypesHandling;
@@ -47,7 +48,7 @@ internal sealed class RsbTypesLoader : IRsbTypesLoader
                         _sagaMessages.Contains(messageType)))
             .ToArray();
 
-        if (handlersTypes is null || !handlersTypes.Any())
+        if (handlersTypes is null || handlersTypes.Length == 0)
             return Array.Empty<HandlerType>();
 
         return GetListeners(handlersTypes);
@@ -66,7 +67,7 @@ internal sealed class RsbTypesLoader : IRsbTypesLoader
                 typeof(Saga<>))
             .ToArray();
 
-        if (sagas is null || !sagas.Any()) yield break;
+        if (sagas is null || sagas.Length == 0) yield break;
 
         foreach (var saga in sagas)
         {
