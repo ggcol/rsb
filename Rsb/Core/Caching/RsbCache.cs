@@ -10,23 +10,35 @@ internal sealed class RsbCache : IRsbCache
     public T? Set<T>(object key, T? obj, TimeSpan? expiresAfter = null)
     {
         var obs = new ObservableCacheItem(key, obj, expiresAfter);
-        
+
         if (obs.HasExpiration)
         {
-            obs.Expired += (_, _) => 
-            {
-                _shelf.Remove(obs.Key);
-            };
+            obs.Expired += (_, _) => { _shelf.Remove(obs.Key); };
         }
 
         _shelf.Add(key, obs);
         return obj;
     }
-    
+
     public object? Set(object key, object? obj,
         TimeSpan? expiresAfter = null)
     {
         return Set<object>(key, obj, expiresAfter);
+    }
+
+    public T? Upsert<T>(object key, T? obj, TimeSpan? expiresAfter = null)
+    {
+        if (_shelf.ContainsKey(key))
+        {
+            Remove(key);
+        }
+
+        return Set(key, obj, expiresAfter);
+    }
+    
+    public object? Upsert(object key, object? obj, TimeSpan? expiresAfter = null)
+    {
+        return Upsert<object>(key, obj, expiresAfter);
     }
 
     public bool TryGetValue<T>(object key, out T? retrieved)
@@ -42,7 +54,7 @@ internal sealed class RsbCache : IRsbCache
         retrieved = default;
         return false;
     }
-    
+
     public bool TryGetValue(object key, out object? retrieved)
     {
         return TryGetValue<object>(key, out retrieved);

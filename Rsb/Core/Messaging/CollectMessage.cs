@@ -1,14 +1,17 @@
 ﻿using Rsb.Abstractions;
 using Rsb.Accessories.Heavy;
 using Rsb.Core.Entities;
+using Rsb.Services.StorageAccount;
 
 namespace Rsb.Core.Messaging;
 
-internal abstract class CollectMessage(IHeavyIO heavyIo)
-    : ICollectMessage
+internal abstract class CollectMessage : ICollectMessage
 {
-    public Queue<IRsbMessage> Messages { get; } = new();
+    private readonly IHeavyIO? _heavyIo = RsbConfiguration.UseHeavyProperties
+        ? new HeavyIO(new AzureDataStorageService(RsbConfiguration.HeavyProps?.DataStorageConnectionString))
+        : null;
 
+    public Queue<IRsbMessage> Messages { get; } = new();
     public Guid CorrelationId { get; set; } = Guid.NewGuid();
 
     //TODO rename
@@ -16,20 +19,24 @@ internal abstract class CollectMessage(IHeavyIO heavyIo)
         CancellationToken cancellationToken) where TMessage : IAmAMessage
     {
         var messageId = Guid.NewGuid();
-        
-        var heaviesRef = await heavyIo
-            .Unload(message, messageId, cancellationToken)
-            .ConfigureAwait(false);
 
-        var rsbMessage = new RsbMessage<TMessage>
+        var heaviesRef = new List<HeavyRef>();
+
+        if (_heavyIo != null)
+        {
+            heaviesRef.AddRange(
+                await _heavyIo
+                    .Unload(message, messageId, cancellationToken)
+                    .ConfigureAwait(false));
+        }
+
+        Messages.Enqueue(new RsbMessage<TMessage>
         {
             MessageId = messageId,
             MessageName = typeof(TMessage).Name,
             Message = message,
             CorrelationId = CorrelationId,
             Heavies = heaviesRef.Count != 0 ? heaviesRef : null
-        };
-
-        Messages.Enqueue(rsbMessage);
+        });
     }
 }

@@ -11,7 +11,7 @@ internal sealed class MessageEmitter(IAzureServiceBusService serviceBusService)
     public async Task FlushAll(ICollectMessage collector,
         CancellationToken cancellationToken = default)
     {
-        while (collector.Messages.Any())
+        while (collector.Messages.Count != 0)
         {
             try
             {
@@ -19,12 +19,10 @@ internal sealed class MessageEmitter(IAzureServiceBusService serviceBusService)
 
                 var destination = rsbMessage.IsCommand
                     ? await serviceBusService
-                        .ConfigureQueue(rsbMessage.MessageName,
-                            cancellationToken)
+                        .ConfigureQueue(rsbMessage.MessageName, cancellationToken)
                         .ConfigureAwait(false)
                     : await serviceBusService
-                        .ConfigureTopicForSender(rsbMessage.MessageName,
-                            cancellationToken)
+                        .ConfigureTopicForSender(rsbMessage.MessageName, cancellationToken)
                         .ConfigureAwait(false);
 
                 await Emit(rsbMessage, destination, cancellationToken)

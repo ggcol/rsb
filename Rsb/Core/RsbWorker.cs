@@ -1,7 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Rsb.Accessories.Heavy;
 using Rsb.Core.Caching;
 using Rsb.Core.Enablers;
 using Rsb.Core.Entities;
@@ -21,8 +20,10 @@ internal sealed class RsbWorker : IHostedService
     private readonly IMessageEmitter _messageEmitter;
     private readonly IRsbCache _cache;
     private readonly ISagaBehaviour _sagaBehaviour;
-    private readonly IHeavyIO? _heavyIo;
-    private readonly ISagaIO _sagaIo;
+
+    private readonly ISagaIO? _sagaIo = RsbConfiguration.OffloadSagas
+        ? new SagaIO()
+        : null;
 
     private readonly IDictionary<ListenerType, ServiceBusProcessor>
         _processors = new Dictionary<ListenerType, ServiceBusProcessor>();
@@ -34,15 +35,13 @@ internal sealed class RsbWorker : IHostedService
         IMessageEmitter messageEmitter,
         IRsbTypesLoader rsbTypesLoader,
         IRsbCache cache,
-        ISagaBehaviour sagaBehaviour, IHeavyIO? heavyIo, ISagaIO sagaIo)
+        ISagaBehaviour sagaBehaviour)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _serviceProvider = serviceProvider;
         _messageEmitter = messageEmitter;
         _cache = cache;
         _sagaBehaviour = sagaBehaviour;
-        _heavyIo = heavyIo;
-        _sagaIo = sagaIo;
 
         foreach (var handler in rsbTypesLoader.Handlers)
         {
@@ -113,7 +112,7 @@ internal sealed class RsbWorker : IHostedService
         ProcessMessageEventArgs args)
     {
         var correlationId = await GetCorrelationId(args);
-        
+
         var broker = GetBroker(_serviceProvider, handlerType, correlationId);
 
         await broker
@@ -156,24 +155,20 @@ internal sealed class RsbWorker : IHostedService
         await args.CompleteMessageAsync(args.Message, args.CancellationToken)
             .ConfigureAwait(false);
 
-        if (RsbConfiguration.OffloadSagas)
+        if (_sagaIo is not null)
         {
             await _sagaIo.Unload(implSaga, correlationId, sagaType).ConfigureAwait(false);
         }
-        else
-        {
-            _cache.Set(correlationId, implSaga);
-        }
+
+        _cache.Upsert(correlationId, implSaga);
         
         await _messageEmitter.FlushAll(broker.Collector, args.CancellationToken)
             .ConfigureAwait(false);
     }
 
-    private static async Task<Guid> GetCorrelationId(
-        ProcessMessageEventArgs args)
+    private static async Task<Guid> GetCorrelationId(ProcessMessageEventArgs args)
     {
-        var corrId = await Serializer
-            .Deserialize<DeserializeCorrelationId>(
+        var corrId = await Serializer.Deserialize<DeserializeCorrelationId>(
                 args.Message.Body.ToStream(),
                 cancellationToken: args.CancellationToken)
             .ConfigureAwait(false);
@@ -190,12 +185,12 @@ internal sealed class RsbWorker : IHostedService
         var brokerImplType = typeof(HandlerBroker<>)
             .MakeGenericType(handlerType.MessageType.Type);
 
-        var context = new MessagingContextInternal(_heavyIo);
-        
+        var context = new MessagingContextInternal();
+
         if (correlationId is not null)
         {
             context.CorrelationId = correlationId.Value;
-        };
+        }
 
         return (IHandlerBroker)ActivatorUtilities.CreateInstance(
             serviceProvider, brokerImplType, implListener, context);
@@ -208,7 +203,7 @@ internal sealed class RsbWorker : IHostedService
         var brokerImplType = typeof(SagaBroker<,>).MakeGenericType(
             sagaType.SagaDataType, listenerType.MessageType.Type);
 
-        var context = new MessagingContextInternal(_heavyIo)
+        var context = new MessagingContextInternal
         {
             CorrelationId = correlationId
         };
@@ -223,15 +218,16 @@ internal sealed class RsbWorker : IHostedService
     {
         if (!listenerType.IsInitMessage)
         {
-            if (RsbConfiguration.OffloadSagas)
-            {
-                return await _sagaIo.Load(correlationId, sagaType)
-                    .ConfigureAwait(false);
-            }
-
+            //check cache first for quicker response
             if (_cache.TryGetValue(correlationId, out var saga))
             {
                 return saga;
+            }
+
+            if (_sagaIo is not null)
+            {
+                return await _sagaIo.Load(correlationId, sagaType)
+                    .ConfigureAwait(false);
             }
         }
 

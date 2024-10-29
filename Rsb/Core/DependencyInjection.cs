@@ -22,8 +22,7 @@ public static class DependencyInjection
     {
         hostBuilder.ConfigureServices((hostBuilderContext, _) =>
         {
-            var settings = ConfigProvider.LoadSettings<TSettings>(
-                hostBuilderContext.Configuration);
+            var settings = ConfigProvider.LoadSettings<TSettings>(hostBuilderContext.Configuration);
 
             RsbConfiguration.ServiceBus = new ServiceBusConfig
             {
@@ -57,17 +56,10 @@ public static class DependencyInjection
                 services
                     .AddSingleton<IRsbCache, RsbCache>()
                     .AddSingleton<IRsbTypesLoader, RsbTypesLoader>()
-                    .AddSingleton<IAzureServiceBusService,
-                        AzureServiceBusService>()
-                    //may be singleton
-                    .AddScoped<ISagaBehaviour, SagaBehaviour>()
-                    .AddScoped<IMessagingContext, MessagingContext>()
-                    .AddScoped<IMessageEmitter, MessageEmitter>()
-                    .AddScoped<ISagaIO, SagaIO>();
-
-                //TODO remove this dependency
-                services.AddScoped<IHeavyIO, UnusedHeavyIO>();
-                services.AddScoped<IHeavyIO>();
+                    .AddSingleton<IAzureServiceBusService, AzureServiceBusService>()
+                    .AddSingleton<ISagaBehaviour, SagaBehaviour>()
+                    .AddSingleton<IMessagingContext, MessagingContext>()
+                    .AddSingleton<IMessageEmitter, MessageEmitter>();
 
                 services.AddHostedService<RsbWorker>();
             });
@@ -79,14 +71,11 @@ public static class DependencyInjection
     {
         hostBuilder.ConfigureServices((hostBuilderContext, _) =>
         {
-            var settings =
-                ConfigProvider.LoadSettings<TSettings>(hostBuilderContext
-                    .Configuration);
+            var settings = ConfigProvider.LoadSettings<TSettings>(hostBuilderContext.Configuration);
 
             RsbConfiguration.HeavyProps = new HeavyPropertiesConfig
             {
-                DataStorageConnectionString =
-                    settings.DataStorageConnectionString,
+                DataStorageConnectionString = settings.DataStorageConnectionString,
                 DataStorageContainer = settings.DataStorageContainer
             };
         });
@@ -109,18 +98,7 @@ public static class DependencyInjection
     {
         return hostBuilder.ConfigureServices((_, services) =>
         {
-            //TODO remove this, check UseRsb()
-            services
-                .Remove(new ServiceDescriptor(typeof(IHeavyIO),
-                    typeof(UnusedHeavyIO), ServiceLifetime.Scoped));
-
-            services
-                .AddScoped<IAzureDataStorageService>(
-                    _ =>
-                        new AzureDataStorageService(
-                            RsbConfiguration.HeavyProps?
-                                .DataStorageConnectionString!))
-                .AddScoped<IHeavyIO, HeavyIO>();
+            services.AddScoped<IHeavyIO, HeavyIO>();
         });
     }
 
@@ -130,16 +108,13 @@ public static class DependencyInjection
     {
         return hostBuilder.ConfigureServices((hostBuilderContext, _) =>
         {
-            var settings =
-                ConfigProvider.LoadSettings<TSettings>(hostBuilderContext
-                    .Configuration);
+            var settings = ConfigProvider.LoadSettings<TSettings>(hostBuilderContext.Configuration);
 
             RsbConfiguration.Cache = new RsbCacheConfig
             {
                 Expiration = settings.Expiration,
                 TopicConfigPrefix = settings.TopicConfigPrefix,
-                ServiceBusSenderCachePrefix =
-                    settings.ServiceBusSenderCachePrefix
+                ServiceBusSenderCachePrefix = settings.ServiceBusSenderCachePrefix
             };
         });
     }
@@ -161,16 +136,13 @@ public static class DependencyInjection
     {
         hostBuilder.ConfigureServices((hostBuilderContext, _) =>
         {
-            var settings = ConfigProvider
-                .LoadSettings<TSettings>(hostBuilderContext.Configuration);
+            var settings = ConfigProvider.LoadSettings<TSettings>(hostBuilderContext.Configuration);
 
-            RsbConfiguration.DataStorageSagaPersistence =
-                new DataStorageSagaPersistenceConfig()
-                {
-                    DataStorageConnectionString =
-                        settings.DataStorageConnectionString,
-                    DataStorageContainer = settings.DataStorageContainer
-                };
+            RsbConfiguration.DataStorageSagaPersistence = new DataStorageSagaPersistenceConfig
+            {
+                DataStorageConnectionString = settings.DataStorageConnectionString,
+                DataStorageContainer = settings.DataStorageContainer
+            };
         });
 
         return UseDataStorageSagaPersistence(hostBuilder);
@@ -209,20 +181,18 @@ public static class DependencyInjection
     {
         hostBuilder.ConfigureServices((hostBuilderContext, _) =>
         {
-            var settings = ConfigProvider
-                .LoadSettings<TSettings>(hostBuilderContext.Configuration);
+            var settings = ConfigProvider.LoadSettings<TSettings>(hostBuilderContext.Configuration);
 
-            RsbConfiguration.SqlServerSagaPersistence =
-                new SqlServerSagaPersistenceConfig()
-                {
-                    ConnectionString = settings.ConnectionString
-                };
+            RsbConfiguration.SqlServerSagaPersistence = new SqlServerSagaPersistenceConfig
+            {
+                ConnectionString = settings.ConnectionString
+            };
         });
 
         return UseSqlServerSagaPersistence(hostBuilder);
     }
 
-    public static IHostBuilder UseDataStorageSagaPersistence(
+    public static IHostBuilder UseSqlServerSagaPersistence(
         this IHostBuilder hostBuilder, SqlServerSagaPersistenceConfig config)
     {
         if (config is null)
@@ -240,8 +210,7 @@ public static class DependencyInjection
         {
             services
                 .AddScoped<ISqlServerService, SqlServerService>()
-                .AddScoped<ISagaPersistenceService,
-                    SagaSqlServerPersistenceService>();
+                .AddScoped<ISagaPersistenceService, SagaSqlServerPersistenceService>();
         });
     }
 }

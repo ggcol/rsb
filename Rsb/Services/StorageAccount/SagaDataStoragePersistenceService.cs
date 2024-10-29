@@ -19,7 +19,6 @@ internal sealed class SagaDataStoragePersistenceService(
             .ConfigureAwait(false);
     }
 
-
     public async Task Save<TItem>(TItem item, SagaType sagaType,
         Guid correlationId,
         CancellationToken cancellationToken = default)

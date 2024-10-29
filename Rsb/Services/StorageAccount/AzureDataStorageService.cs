@@ -5,7 +5,7 @@ using Rsb.Utils;
 
 namespace Rsb.Services.StorageAccount;
 
-internal sealed class AzureDataStorageService(string connectionString)
+internal sealed class AzureDataStorageService(string? connectionString)
     : IAzureDataStorageService
 {
     public async Task Save<TItem>(TItem item, string containerName,
