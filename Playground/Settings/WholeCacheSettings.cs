@@ -1,4 +1,4 @@
-﻿using Rsb.Configurations;
+﻿using Asb.Configurations;
 
 namespace Playground.Settings;
 

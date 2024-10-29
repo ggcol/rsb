@@ -1,8 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Playground.Samples._05_Heavy;
 using Playground.Samples._06_SagaPersistence;
 using Playground.Settings;
-using Rsb.Core;
+using Asb.Core;
 
 await Host
     .CreateDefaultBuilder()
@@ -15,19 +16,14 @@ await Host
     //         TransportType = ServiceBusTransportType.AmqpWebSockets
     //     }
     // })
-    .UseHeavyProps<HeavySettings>()
+    // .UseHeavyProps<HeavySettings>()
     // .UseHeavyProps(new HeavyPropertiesConfig()
     // {
     //     DataStorageConnectionString = "",
     //     DataStorageContainer = ""
     // })
-    // .UseDataStorageSagaPersistence<DataStorageSagaPersistenceSettings>()
-    .UseSqlServerSagaPersistence<SqlServerSagaPersistenceSettings>()
-    // .ConfigureSagaPersistence(new SagaPersistenceConfig()
-    // {
-    //     DataStorageConnectionString = "",
-    //     DataStorageContainer = ""
-    // })
+    .UseDataStorageSagaPersistence<DataStorageSagaPersistenceSettings>()
+    // .UseSqlServerSagaPersistence<SqlServerSagaPersistenceSettings>()
     .ConfigureServices(
         (_, services) =>
         {

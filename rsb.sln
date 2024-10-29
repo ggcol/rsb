@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34408.163
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rsb", "Rsb\Rsb.csproj", "{F33041EA-EA7A-490D-BBCB-561D7237A5BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Asb", "Asb\Asb.csproj", "{F33041EA-EA7A-490D-BBCB-561D7237A5BA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Playground", "Playground\Playground.csproj", "{21E5F450-4ED3-4973-B54C-196F5B23A23A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DevelopmentUtils", "DevelopmentUtils\DevelopmentUtils.csproj", "{3A1F0D10-DF6D-4FC5-885D-BE0CF54A0C3C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsb.Tests", "Rsb.Tests\Rsb.Tests.csproj", "{0CE9EB2B-2D5A-4B08-AF6D-11934D21BC5C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Asb.Tests", "Asb.Tests\Asb.Tests.csproj", "{0CE9EB2B-2D5A-4B08-AF6D-11934D21BC5C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rsb.Abstractions", "Rsb.Abstractions\Rsb.Abstractions.csproj", "{5BE2A8BC-A3B4-47CE-923E-9D0948C5C5B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Asb.Abstractions", "Asb.Abstractions\Asb.Abstractions.csproj", "{5BE2A8BC-A3B4-47CE-923E-9D0948C5C5B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
