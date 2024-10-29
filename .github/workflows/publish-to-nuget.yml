@@ -25,18 +25,18 @@ jobs:
       - name: Build solution
         run: dotnet build --configuration Release --no-restore
 
-      - name: Pack Rsb.Abstractions
-        run: dotnet pack Rsb.Abstractions/Rsb.Abstractions.csproj --configuration Release --output ./artifacts
+      - name: Pack Asb.Abstractions
+        run: dotnet pack Asb.Abstractions/Asb.Abstractions.csproj --configuration Release --output ./artifacts
 
-      - name: Pack Rsb
-        run: dotnet pack Rsb/Rsb.csproj --configuration Release --output ./artifacts
+      - name: Pack Asb
+        run: dotnet pack Asb/Asb.csproj --configuration Release --output ./artifacts
 
-      - name: Push Rsb.Abstractions to NuGet
+      - name: Push Asb.Abstractions to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push ./artifacts/Rsb.Abstractions.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./artifacts/Asb.Abstractions.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
 
-      - name: Push Rsb to NuGet
+      - name: Push Asb to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push ./artifacts/Rsb.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./artifacts/Asb.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
