@@ -65,10 +65,6 @@ public static class DependencyInjection
                     .AddScoped<IMessageEmitter, MessageEmitter>()
                     .AddScoped<ISagaIO, SagaIO>();
 
-                //TODO remove this dependency
-                services.AddScoped<IHeavyIO, UnusedHeavyIO>();
-                services.AddScoped<IHeavyIO>();
-
                 services.AddHostedService<RsbWorker>();
             });
     }
@@ -109,11 +105,6 @@ public static class DependencyInjection
     {
         return hostBuilder.ConfigureServices((_, services) =>
         {
-            //TODO remove this, check UseRsb()
-            services
-                .Remove(new ServiceDescriptor(typeof(IHeavyIO),
-                    typeof(UnusedHeavyIO), ServiceLifetime.Scoped));
-
             services
                 .AddScoped<IAzureDataStorageService>(
                     _ =>

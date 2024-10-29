@@ -1,7 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Rsb.Accessories.Heavy;
 using Rsb.Core.Caching;
 using Rsb.Core.Enablers;
 using Rsb.Core.Entities;
@@ -21,7 +20,6 @@ internal sealed class RsbWorker : IHostedService
     private readonly IMessageEmitter _messageEmitter;
     private readonly IRsbCache _cache;
     private readonly ISagaBehaviour _sagaBehaviour;
-    private readonly IHeavyIO? _heavyIo;
     private readonly ISagaIO _sagaIo;
 
     private readonly IDictionary<ListenerType, ServiceBusProcessor>
@@ -34,14 +32,14 @@ internal sealed class RsbWorker : IHostedService
         IMessageEmitter messageEmitter,
         IRsbTypesLoader rsbTypesLoader,
         IRsbCache cache,
-        ISagaBehaviour sagaBehaviour, IHeavyIO? heavyIo, ISagaIO sagaIo)
+        ISagaBehaviour sagaBehaviour,
+        ISagaIO sagaIo)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
         _serviceProvider = serviceProvider;
         _messageEmitter = messageEmitter;
         _cache = cache;
         _sagaBehaviour = sagaBehaviour;
-        _heavyIo = heavyIo;
         _sagaIo = sagaIo;
 
         foreach (var handler in rsbTypesLoader.Handlers)
@@ -190,7 +188,7 @@ internal sealed class RsbWorker : IHostedService
         var brokerImplType = typeof(HandlerBroker<>)
             .MakeGenericType(handlerType.MessageType.Type);
 
-        var context = new MessagingContextInternal(_heavyIo);
+        var context = new MessagingContextInternal(serviceProvider);
         
         if (correlationId is not null)
         {
@@ -208,7 +206,7 @@ internal sealed class RsbWorker : IHostedService
         var brokerImplType = typeof(SagaBroker<,>).MakeGenericType(
             sagaType.SagaDataType, listenerType.MessageType.Type);
 
-        var context = new MessagingContextInternal(_heavyIo)
+        var context = new MessagingContextInternal(serviceProvider)
         {
             CorrelationId = correlationId
         };

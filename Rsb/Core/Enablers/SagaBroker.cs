@@ -1,13 +1,12 @@
 ﻿using Rsb.Abstractions;
-using Rsb.Accessories.Heavy;
 
 namespace Rsb.Core.Enablers;
 
 internal sealed class SagaBroker<TSagaData, TMessage>(
     Saga<TSagaData> saga,
     IMessagingContext context,
-    IHeavyIO heavyIo)
-    : BrokerBehavior<TMessage>(context, heavyIo), ISagaBroker
+    IServiceProvider serviceProvider)
+    : BrokerBehavior<TMessage>(context, serviceProvider), ISagaBroker
     where TSagaData : SagaData, new()
     where TMessage : IAmAMessage
 {
@@ -33,9 +32,9 @@ internal sealed class SagaBroker<TSagaData, TMessage>(
         if (method is not null)
         {
             await (Task)method.Invoke(saga,
-                [
-                    rsbMessage.Message, _context, cancellationToken
-                ]);
+            [
+                rsbMessage.Message, _context, cancellationToken
+            ]);
         }
     }
 
@@ -58,9 +57,9 @@ internal sealed class SagaBroker<TSagaData, TMessage>(
         if (method is not null)
         {
             await (Task)method.Invoke(saga,
-                [
-                    ex, _context, cancellationToken
-                ]);
+            [
+                ex, _context, cancellationToken
+            ]);
         }
     }
 }
