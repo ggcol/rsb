@@ -188,7 +188,7 @@ internal sealed class RsbWorker : IHostedService
         var brokerImplType = typeof(HandlerBroker<>)
             .MakeGenericType(handlerType.MessageType.Type);
 
-        var context = new MessagingContextInternal(serviceProvider);
+        var context = new MessagingContextInternal();
         
         if (correlationId is not null)
         {
@@ -206,7 +206,7 @@ internal sealed class RsbWorker : IHostedService
         var brokerImplType = typeof(SagaBroker<,>).MakeGenericType(
             sagaType.SagaDataType, listenerType.MessageType.Type);
 
-        var context = new MessagingContextInternal(serviceProvider)
+        var context = new MessagingContextInternal()
         {
             CorrelationId = correlationId
         };

@@ -1,6 +1,5 @@
 ﻿// ReSharper disable InconsistentNaming
 
-using Rsb.Configurations;
 using Rsb.Configurations.ConfigObjects;
 
 namespace Rsb.Core;

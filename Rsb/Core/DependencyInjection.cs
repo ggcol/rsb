@@ -106,11 +106,6 @@ public static class DependencyInjection
         return hostBuilder.ConfigureServices((_, services) =>
         {
             services
-                .AddScoped<IAzureDataStorageService>(
-                    _ =>
-                        new AzureDataStorageService(
-                            RsbConfiguration.HeavyProps?
-                                .DataStorageConnectionString!))
                 .AddScoped<IHeavyIO, HeavyIO>();
         });
     }
@@ -213,7 +208,7 @@ public static class DependencyInjection
         return UseSqlServerSagaPersistence(hostBuilder);
     }
 
-    public static IHostBuilder UseDataStorageSagaPersistence(
+    public static IHostBuilder UseSqlServerSagaPersistence(
         this IHostBuilder hostBuilder, SqlServerSagaPersistenceConfig config)
     {
         if (config is null)

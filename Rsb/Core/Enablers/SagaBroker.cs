@@ -4,9 +4,8 @@ namespace Rsb.Core.Enablers;
 
 internal sealed class SagaBroker<TSagaData, TMessage>(
     Saga<TSagaData> saga,
-    IMessagingContext context,
-    IServiceProvider serviceProvider)
-    : BrokerBehavior<TMessage>(context, serviceProvider), ISagaBroker
+    IMessagingContext context)
+    : BrokerBehavior<TMessage>(context), ISagaBroker
     where TSagaData : SagaData, new()
     where TMessage : IAmAMessage
 {

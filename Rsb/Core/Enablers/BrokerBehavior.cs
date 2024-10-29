@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Rsb.Abstractions;
+﻿using Rsb.Abstractions;
 using Rsb.Accessories.Heavy;
 using Rsb.Core.Entities;
 using Rsb.Core.Messaging;
@@ -9,12 +8,11 @@ using Rsb.Utils;
 namespace Rsb.Core.Enablers;
 
 internal abstract class BrokerBehavior<TMessage>(
-    IMessagingContext context,
-    IServiceProvider serviceProvider)
+    IMessagingContext context)
     where TMessage : IAmAMessage
 {
     private readonly IHeavyIO? _heavyIo = RsbConfiguration.UseHeavyProperties
-        ? new HeavyIO(serviceProvider.GetRequiredService<IAzureDataStorageService>())
+        ? new HeavyIO(new AzureDataStorageService(RsbConfiguration.HeavyProps?.DataStorageConnectionString))
         : null;
 
     protected readonly IMessagingContext _context = context;

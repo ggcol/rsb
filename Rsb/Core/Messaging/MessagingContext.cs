@@ -1,10 +1,9 @@
 ﻿using Rsb.Abstractions;
-using Rsb.Accessories.Heavy;
 
 namespace Rsb.Core.Messaging;
 
-internal sealed class MessagingContext(IMessageEmitter emitter, IServiceProvider serviceProvider)
-    : CollectMessage(serviceProvider), IMessagingContext
+internal sealed class MessagingContext(IMessageEmitter emitter)
+    : CollectMessage(), IMessagingContext
 {
     public async Task Send<TCommand>(TCommand message,
         CancellationToken cancellationToken = default)

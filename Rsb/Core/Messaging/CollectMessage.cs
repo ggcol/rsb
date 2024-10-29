@@ -1,16 +1,15 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Rsb.Abstractions;
+﻿using Rsb.Abstractions;
 using Rsb.Accessories.Heavy;
 using Rsb.Core.Entities;
 using Rsb.Services.StorageAccount;
 
 namespace Rsb.Core.Messaging;
 
-internal abstract class CollectMessage(IServiceProvider serviceProvider)
+internal abstract class CollectMessage()
     : ICollectMessage
 {
     private readonly IHeavyIO? _heavyIo = RsbConfiguration.UseHeavyProperties
-        ? new HeavyIO(serviceProvider.GetRequiredService<IAzureDataStorageService>())
+        ? new HeavyIO(new AzureDataStorageService(RsbConfiguration.HeavyProps?.DataStorageConnectionString))
         : null;
 
     public Queue<IRsbMessage> Messages { get; } = new();
