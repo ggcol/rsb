@@ -5,26 +5,25 @@ using Rsb.Core.TypesHandling.Entities;
 
 namespace Rsb.Core.Sagas;
 
-internal sealed class SagaBehaviour(IRsbCache cache, ISagaIO sagaIo)
+internal sealed class SagaBehaviour(IRsbCache cache)
     : ISagaBehaviour
 {
+    private readonly ISagaIO? _sagaIo = RsbConfiguration.OffloadSagas
+        ? new SagaIO()
+        : null;
+
     public void SetCorrelationId(SagaType sagaType,
         Guid correlationId, object implSaga)
     {
         sagaType.Type
-            //TODO hardcoded string
-            .GetProperty("CorrelationId",
-                BindingFlags.Instance | BindingFlags.NonPublic)
+            .GetProperty(nameof(ISaga.CorrelationId))?
             .SetValue(implSaga, correlationId);
     }
 
     public void HandleCompletion(SagaType sagaType, Guid correlationId,
         object implSaga)
     {
-        var completedEvent = sagaType.Type
-            //TODO hardcoded string 
-            .GetEvent("Completed",
-                BindingFlags.Instance | BindingFlags.NonPublic);
+        var completedEvent = sagaType.Type.GetEvent(nameof(ISaga.Completed));
 
         if (completedEvent == null) return;
 
@@ -36,21 +35,23 @@ internal sealed class SagaBehaviour(IRsbCache cache, ISagaIO sagaIo)
         var handler = Delegate.CreateDelegate(handlerType, this, methodInfo);
 
         var addMethod = completedEvent.GetAddMethod(true);
-        
+
         if (addMethod != null)
         {
-            addMethod.Invoke(implSaga, new object[] { handler }
-            );
+            addMethod.Invoke(implSaga, new object[] { handler });
         }
     }
 
     private void OnSagaCompleted(object sender, SagaCompletedEventArgs e)
     {
         cache.Remove(e.CorrelationId);
-        sagaIo.Delete(e.CorrelationId, new SagaType()
-            {
-                Type = e.Type
-            })
-            .ConfigureAwait(false).GetAwaiter();
+        if (_sagaIo is not null)
+        {
+            _sagaIo.Delete(e.CorrelationId, new SagaType
+                {
+                    Type = e.Type
+                })
+                .ConfigureAwait(false).GetAwaiter();
+        }
     }
 }

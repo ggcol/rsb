@@ -2,8 +2,7 @@
 
 namespace Rsb.Core.Messaging;
 
-internal sealed class MessagingContextInternal()
-    : CollectMessage(), IMessagingContext
+internal sealed class MessagingContextInternal : CollectMessage, IMessagingContext
 {
     public async Task Send<TCommand>(TCommand message,
         CancellationToken cancellationToken = default)

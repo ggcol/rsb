@@ -146,4 +146,41 @@ public class RsbCacheTests
         Assert.That(retrieved1, Is.EqualTo(obj1));
         Assert.That(retrieved2, Is.EqualTo(obj2));
     }
+    
+    [Test]
+    public void Upsert_GivenAKeyAndAnObject_UpdatesCache()
+    {
+        // Arrange
+        var key = Guid.NewGuid();
+        var initialObj = "InitialObject";
+        var updatedObj = "UpdatedObject";
+        _cache.Set(key, initialObj);
+
+        // Act
+        _cache.Upsert(key, updatedObj);
+        var exists = _cache.TryGetValue(key, out var retrieved);
+
+        // Assert
+        Assert.That(exists, Is.True);
+        Assert.That(retrieved, Is.EqualTo(updatedObj));
+    }
+
+    [Test]
+    public void Upsert_GivenAKeyAndAnObjectWithExpiration_UpdatesCacheWithExpiration()
+    {
+        // Arrange
+        var key = Guid.NewGuid();
+        var initialObj = "InitialObject";
+        var updatedObj = "UpdatedObject";
+        var expiresAfter = TimeSpan.FromMilliseconds(10);
+        _cache.Set(key, initialObj, expiresAfter);
+
+        // Act
+        _cache.Upsert(key, updatedObj, expiresAfter);
+        Thread.Sleep(20);
+        var exists = _cache.TryGetValue(key, out _);
+
+        // Assert
+        Assert.That(exists, Is.False);
+    }
 }

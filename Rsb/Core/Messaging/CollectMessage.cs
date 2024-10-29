@@ -5,8 +5,7 @@ using Rsb.Services.StorageAccount;
 
 namespace Rsb.Core.Messaging;
 
-internal abstract class CollectMessage()
-    : ICollectMessage
+internal abstract class CollectMessage : ICollectMessage
 {
     private readonly IHeavyIO? _heavyIo = RsbConfiguration.UseHeavyProperties
         ? new HeavyIO(new AzureDataStorageService(RsbConfiguration.HeavyProps?.DataStorageConnectionString))
