@@ -1,5 +1,5 @@
-﻿using Asb.Abstractions;
-using Asb.Accessories.Heavy;
+﻿using ASureBus.Abstractions;
+using ASureBus.Accessories.Heavy;
 
 namespace Playground.Samples._05_Heavy;
 

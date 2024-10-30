@@ -1,4 +1,4 @@
-﻿using Asb.Abstractions;
+﻿using ASureBus.Abstractions;
 using Microsoft.Extensions.Hosting;
 
 namespace Playground.Samples._05_Heavy;

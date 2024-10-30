@@ -57,18 +57,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Pack Asb.Abstractions
-        run: dotnet pack Asb.Abstractions/Asb.Abstractions.csproj --configuration Release --output ./artifacts /p:PackageVersion=${{ env.NEW_TAG }}
+      - name: Pack ASureBus.Abstractions
+        run: dotnet pack ASureBus.Abstractions/ASureBus.Abstractions.csproj --configuration Release --output ./artifacts /p:PackageVersion=${{ env.NEW_TAG }}
 
-      - name: Pack Asb
-        run: dotnet pack Asb/Asb.csproj --configuration Release --output ./artifacts /p:PackageVersion=${{ env.NEW_TAG }}
+      - name: Pack ASureBus
+        run: dotnet pack ASureBus/ASureBus.csproj --configuration Release --output ./artifacts /p:PackageVersion=${{ env.NEW_TAG }}
 
-      - name: Push Asb.Abstractions to NuGet
+      - name: Push ASureBus.Abstractions to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push ./artifacts/Asb.Abstractions.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./artifacts/ASureBus.Abstractions.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
 
-      - name: Push Asb to NuGet
+      - name: Push ASureBus to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        run: dotnet nuget push ./artifacts/Asb.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push ./artifacts/ASureBus.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json

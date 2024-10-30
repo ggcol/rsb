@@ -1,4 +1,4 @@
-﻿using Asb.Configurations;
+﻿using ASureBus.Configurations;
 
 namespace Playground.Settings;
 

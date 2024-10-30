@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Playground.Samples._05_Heavy;
 using Playground.Samples._06_SagaPersistence;
 using Playground.Settings;
-using Asb.Core;
+using ASureBus.Core;
 
 await Host
     .CreateDefaultBuilder()

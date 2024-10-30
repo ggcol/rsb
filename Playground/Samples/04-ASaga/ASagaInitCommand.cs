@@ -1,4 +1,4 @@
-using Asb.Abstractions;
+using ASureBus.Abstractions;
 
 namespace Playground.Samples._04_ASaga;
 
