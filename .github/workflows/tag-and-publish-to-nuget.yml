@@ -1,0 +1,74 @@
+name: Tag and publish to NuGet
+
+on:
+    workflow_dispatch:
+        inputs:
+            major:
+                description: 'Major version'
+                required: true
+                default: '1'
+            minor:
+                description: 'Minor version'
+                required: true
+                default: '0'
+            patch:
+                description: 'Patch version'
+                required: true
+                default: '0'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --verbosity normal
+
+      - name: Get the latest tag
+        id: get_tag
+        run: echo "::set-output name=TAG::$(git describe --tags --abbrev=0)"
+
+      - name: Create new tag
+        id: create_tag
+        run: |
+          MAJOR=${{ github.event.inputs.major }}
+          MINOR=${{ github.event.inputs.minor }}
+          PATCH=${{ github.event.inputs.patch }}
+          NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+          git tag $NEW_TAG
+          git push origin $NEW_TAG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pack Asb.Abstractions
+        run: dotnet pack Asb.Abstractions/Asb.Abstractions.csproj --configuration Release --output ./artifacts /p:PackageVersion=${{ env.NEW_TAG }}
+
+      - name: Pack Asb
+        run: dotnet pack Asb/Asb.csproj --configuration Release --output ./artifacts /p:PackageVersion=${{ env.NEW_TAG }}
+
+      - name: Push Asb.Abstractions to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./artifacts/Asb.Abstractions.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+
+      - name: Push Asb to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./artifacts/Asb.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
