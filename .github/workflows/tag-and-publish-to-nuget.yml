@@ -55,7 +55,7 @@ jobs:
           git tag $NEW_TAG
           git push origin $NEW_TAG
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ASUREBUS_PAT }}
 
       - name: Pack ASureBus.Abstractions
         run: dotnet pack ASureBus.Abstractions/ASureBus.Abstractions.csproj --configuration Release --output ./artifacts /p:PackageVersion=${{ env.NEW_TAG }}
