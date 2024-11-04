@@ -1,31 +1,44 @@
 name: Tag and publish to NuGet
 
 on:
-  workflow_dispatch:
-    inputs:
-      major:
-        description: 'Major version'
-        required: true
-        default: '1'
-      minor:
-        description: 'Minor version'
-        required: true
-        default: '0'
-      patch:
-        description: 'Patch version'
-        required: true
-        default: '0'
+    workflow_dispatch:
+        inputs:
+            major:
+                description: 'Major version'
+                required: true
+                default: '1'
+            minor:
+                description: 'Minor version'
+                required: true
+                default: '0'
+            patch:
+                description: 'Patch version'
+                required: true
+                default: '0'
 
 jobs:
-  checkout:
+  publish:
     runs-on: ubuntu-latest
-    outputs:
-      new_tag: ${{ steps.create_tag.outputs.new_tag }}
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test --configuration Release --no-build --verbosity normal
 
       - name: Get the latest tag
         id: get_tag
@@ -37,41 +50,25 @@ jobs:
           MAJOR=${{ github.event.inputs.major }}
           MINOR=${{ github.event.inputs.minor }}
           PATCH=${{ github.event.inputs.patch }}
-          NEW_TAG="${MAJOR}.${MINOR}.${PATCH}"
+          NEW_TAG="v${MAJOR}.${MINOR}.${PATCH}"
           echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
-          echo "::set-output name=new_tag::$NEW_TAG"
           git tag $NEW_TAG
           git push origin $NEW_TAG
+        env:
+          GITHUB_TOKEN: ${{ secrets.ASUREBUS_PAT }}
 
-  setup_dotnet:
-    runs-on: ubuntu-latest
-    needs: checkout
-    steps:
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '8.0.x'
+      - name: Pack ASureBus.Abstractions
+        run: dotnet pack ASureBus.Abstractions/ASureBus.Abstractions.csproj --configuration Release --output ./artifacts /p:PackageVersion=${{ env.NEW_TAG }}
 
-  build:
-    runs-on: ubuntu-latest
-    needs: [checkout, setup_dotnet]
-    steps:
-      - name: Restore dependencies
-        run: dotnet restore
+      - name: Pack ASureBus
+        run: dotnet pack ASureBus/ASureBus.csproj --configuration Release --output ./artifacts /p:PackageVersion=${{ env.NEW_TAG }}
 
-      - name: Build solution
-        run: dotnet build --configuration Release --no-restore
+      - name: Push ASureBus.Abstractions to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./artifacts/ASureBus.Abstractions.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
 
-  test:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Run tests
-        run: dotnet test --configuration Release --no-build --verbosity normal
-
-  pack_and_publish:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - name: Pack and publish to NuGet
-        run: dotnet pack ASureBus.Abstractions/ASureBus.Abstractions.csproj --configuration Release --output ./artifacts /p:PackageVersion=${{ needs.checkout.outputs.new_tag }}
+      - name: Push ASureBus to NuGet
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: dotnet nuget push ./artifacts/ASureBus.*.nupkg --api-key $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
