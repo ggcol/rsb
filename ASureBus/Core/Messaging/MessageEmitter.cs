@@ -15,7 +15,7 @@ internal sealed class MessageEmitter(IAzureServiceBusService serviceBusService)
         {
             try
             {
-                var rsbMessage = collector.Messages.FirstOrDefault();
+                var rsbMessage = collector.Messages.First();
 
                 var destination = rsbMessage.IsCommand
                     ? await serviceBusService
@@ -25,8 +25,17 @@ internal sealed class MessageEmitter(IAzureServiceBusService serviceBusService)
                         .ConfigureTopicForSender(rsbMessage.MessageName, cancellationToken)
                         .ConfigureAwait(false);
 
-                await Emit(rsbMessage, destination, cancellationToken)
-                    .ConfigureAwait(false);
+                if (rsbMessage.IsScheduled)
+                {
+                    await EmitScheduled(rsbMessage, destination, rsbMessage.ScheduledTime!.Value, 
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else
+                {
+                    await Emit(rsbMessage, destination, cancellationToken)
+                        .ConfigureAwait(false);
+                }
 
                 collector.Messages.Dequeue();
             }
@@ -38,7 +47,7 @@ internal sealed class MessageEmitter(IAzureServiceBusService serviceBusService)
                  * - ArgumentException (error in sb connection string)
                  */
             {
-                //TODO notify AMS - save message for future reference
+                //TODO notify maintenance - save message for future reference
             }
         }
     }
@@ -47,10 +56,21 @@ internal sealed class MessageEmitter(IAzureServiceBusService serviceBusService)
         CancellationToken cancellationToken)
     {
         var sender = serviceBusService.GetSender(destination);
-
+        
         var sbm = ToSdkMessage(message);
 
         await sender.SendMessageAsync(sbm, cancellationToken)
+            .ConfigureAwait(false);
+    }
+    
+    private async Task EmitScheduled(IRsbMessage message, string destination,
+        DateTimeOffset delay, CancellationToken cancellationToken)
+    {
+        var sender = serviceBusService.GetSender(destination);
+        
+        var sbm = ToSdkMessage(message);
+
+        await sender.ScheduleMessageAsync(sbm, delay, cancellationToken)
             .ConfigureAwait(false);
     }
 

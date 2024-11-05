@@ -15,28 +15,57 @@ internal abstract class CollectMessage : ICollectMessage
     public Guid CorrelationId { get; set; } = Guid.NewGuid();
 
     //TODO rename
-    protected async Task InnerProcessing<TMessage>(TMessage message,
-        CancellationToken cancellationToken) where TMessage : IAmAMessage
+    protected async Task Enqueue<TMessage>(TMessage message,
+        CancellationToken cancellationToken)
+        where TMessage : IAmAMessage
     {
         var messageId = Guid.NewGuid();
 
-        var heaviesRef = new List<HeavyRef>();
+        var heaviesRef = await UnloadHeavies(message, messageId, cancellationToken)
+            .ConfigureAwait(false);
 
-        if (_heavyIo != null)
-        {
-            heaviesRef.AddRange(
-                await _heavyIo
-                    .Unload(message, messageId, cancellationToken)
-                    .ConfigureAwait(false));
-        }
+        Messages.Enqueue(ToInternalMessage(message, messageId, heaviesRef));
+    }
 
-        Messages.Enqueue(new RsbMessage<TMessage>
+    protected async Task Enqueue<TMessage>(TMessage message, DateTimeOffset scheduledTime,
+        CancellationToken cancellationToken)
+        where TMessage : IAmAMessage
+    {
+        var messageId = Guid.NewGuid();
+
+        var heaviesRef = await UnloadHeavies(message, messageId, cancellationToken)
+            .ConfigureAwait(false);
+
+        Messages.Enqueue(ToInternalMessage(message, messageId, heaviesRef, scheduledTime));
+    }
+
+    private RsbMessage<TMessage> ToInternalMessage<TMessage>(TMessage message, Guid messageId,
+        IReadOnlyList<HeavyRef>? heavies = null, DateTimeOffset? scheduledTime = null)
+        where TMessage : IAmAMessage
+    {
+        return new RsbMessage<TMessage>
         {
             MessageId = messageId,
             MessageName = typeof(TMessage).Name,
             Message = message,
             CorrelationId = CorrelationId,
-            Heavies = heaviesRef.Count != 0 ? heaviesRef : null
-        });
+            Heavies = heavies,
+            ScheduledTime = scheduledTime
+        };
+    }
+
+    private async Task<IReadOnlyList<HeavyRef>> UnloadHeavies<TMessage>(TMessage message,
+        Guid messageId, CancellationToken cancellationToken)
+        where TMessage : IAmAMessage
+    {
+        var heaviesRef = new List<HeavyRef>();
+
+        if (_heavyIo is not null)
+        {
+            heaviesRef.AddRange(await _heavyIo.Unload(message, messageId, cancellationToken)
+                .ConfigureAwait(false));
+        }
+
+        return heaviesRef;
     }
 }

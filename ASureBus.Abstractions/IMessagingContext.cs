@@ -3,12 +3,26 @@
 public interface IMessagingContext
 {
     public Guid CorrelationId { get; }
-    
-    public Task Send<TCommand>(TCommand message,
+
+    public Task Send<TCommand>(TCommand message, CancellationToken cancellationToken = default)
+        where TCommand : IAmACommand;
+
+    public Task SendAfter<TCommand>(TCommand message, TimeSpan delay,
         CancellationToken cancellationToken = default)
         where TCommand : IAmACommand;
 
-    public Task Publish<TEvent>(TEvent message,
+    public Task SendScheduled<TCommand>(TCommand message, DateTimeOffset scheduledTime,
+        CancellationToken cancellationToken = default)
+        where TCommand : IAmACommand;
+
+    public Task Publish<TEvent>(TEvent message, CancellationToken cancellationToken = default)
+        where TEvent : IAmAnEvent;
+    
+    public Task PublishAfter<TEvent>(TEvent message, TimeSpan delay,
+        CancellationToken cancellationToken = default)
+        where TEvent : IAmAnEvent;
+    
+    public Task PublishScheduled<TEvent>(TEvent message, DateTimeOffset scheduledTime,
         CancellationToken cancellationToken = default)
         where TEvent : IAmAnEvent;
 }

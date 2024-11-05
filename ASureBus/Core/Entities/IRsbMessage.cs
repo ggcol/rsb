@@ -9,4 +9,6 @@ internal interface IRsbMessage
     internal string MessageName { get; init; }
     public bool IsCommand { get; }
     public IReadOnlyList<HeavyRef>? Heavies { get; init; }
+    public bool IsScheduled { get; }
+    public DateTimeOffset? ScheduledTime { get; init; }
 }
