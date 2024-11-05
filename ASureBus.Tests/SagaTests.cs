@@ -57,7 +57,7 @@ public class SagaTests
         _saga.CorrelationId = correlationId;
         SagaCompletedEventArgs? eventArgs = null;
 
-        _saga.Completed += (sender, args) =>
+        _saga.Completed += (_, args) =>
         {
             eventArgs = args;
         };
