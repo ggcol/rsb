@@ -12,7 +12,8 @@ internal class SagaConverter(Type sagaType, Type sagaDataType)
         return sagaType.IsAssignableFrom(typeToConvert);
     }
 
-    public override object Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override object Read(ref Utf8JsonReader reader, Type typeToConvert,
+        JsonSerializerOptions options)
     {
         var jsonDocument = JsonDocument.ParseValue(ref reader);
         //TODO hardcoded string
@@ -30,6 +31,7 @@ internal class SagaConverter(Type sagaType, Type sagaDataType)
     public override void Write(Utf8JsonWriter writer, object value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
+        //TODO hardcoded string
         writer.WritePropertyName("SagaData");
         var sagaData = value.GetType().GetProperty("SagaData").GetValue(value);
         Serializer.Serialize(writer, sagaData, sagaDataType, options);

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace ASureBus.Core;
+namespace ASureBus.Utils;
 
 internal static class ConfigProvider
 {

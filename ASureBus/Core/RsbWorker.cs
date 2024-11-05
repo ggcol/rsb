@@ -33,7 +33,7 @@ internal sealed class RsbWorker : IHostedService
         IServiceProvider serviceProvider,
         IAzureServiceBusService azureServiceBusService,
         IMessageEmitter messageEmitter,
-        IRsbTypesLoader rsbTypesLoader,
+        ITypesLoader typesLoader,
         IRsbCache cache,
         ISagaBehaviour sagaBehaviour)
     {
@@ -43,7 +43,7 @@ internal sealed class RsbWorker : IHostedService
         _cache = cache;
         _sagaBehaviour = sagaBehaviour;
 
-        foreach (var handler in rsbTypesLoader.Handlers)
+        foreach (var handler in typesLoader.Handlers)
         {
             var processor = azureServiceBusService.GetProcessor(
                     handler, hostApplicationLifetime.ApplicationStopping)
@@ -58,7 +58,7 @@ internal sealed class RsbWorker : IHostedService
             _processors.Add(handler, processor);
         }
 
-        foreach (var saga in rsbTypesLoader.Sagas)
+        foreach (var saga in typesLoader.Sagas)
         {
             foreach (var listener in saga.Listeners)
             {

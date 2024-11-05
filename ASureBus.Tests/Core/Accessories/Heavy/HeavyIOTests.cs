@@ -122,10 +122,15 @@ public class HeavyIOTests
         // Arrange
         var messageId = Guid.NewGuid();
         var heavyRef = new HeavyRef
-            { PropName = nameof(AFakeMessage.AStringProp), Ref = Guid.NewGuid() };
+        {
+            PropName = nameof(AFakeMessage.AStringProp), 
+            Ref = Guid.NewGuid()
+        };
+        
         var heavies = new List<HeavyRef> { heavyRef };
 
         var storageMock = new Mock<IAzureDataStorageService>();
+        
         var message = new AFakeMessage();
 
         var heavyIo = new HeavyIO(storageMock.Object);
@@ -170,7 +175,11 @@ public class HeavyIOTests
         // Arrange
         var messageId = Guid.NewGuid();
         var heavyRef = new HeavyRef
-            { PropName = nameof(AFakeMessage.AStringProp), Ref = Guid.NewGuid() };
+        {
+            PropName = nameof(AFakeMessage.AStringProp), 
+            Ref = Guid.NewGuid()
+        };
+        
         var heavies = new List<HeavyRef> { heavyRef };
 
         var storageMock = new Mock<IAzureDataStorageService>();

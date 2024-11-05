@@ -2,7 +2,7 @@
 
 namespace ASureBus.Core.TypesHandling;
 
-internal interface IRsbTypesLoader
+internal interface ITypesLoader
 {
     internal HashSet<HandlerType> Handlers { get; }
     internal HashSet<SagaType> Sagas { get; }

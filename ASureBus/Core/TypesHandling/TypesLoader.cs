@@ -4,7 +4,7 @@ using ASureBus.Core.TypesHandling.Entities;
 
 namespace ASureBus.Core.TypesHandling;
 
-internal sealed class RsbTypesLoader : IRsbTypesLoader
+internal sealed class TypesLoader : ITypesLoader
 {
     public HashSet<HandlerType> Handlers { get; }
     public HashSet<SagaType> Sagas { get; }
@@ -18,7 +18,7 @@ internal sealed class RsbTypesLoader : IRsbTypesLoader
         .Select(x => x.MessageType.Type)
         .ToHashSet();
 
-    public RsbTypesLoader()
+    public TypesLoader()
     {
         var assembly = Assembly.GetEntryAssembly();
         Sagas = GetSagas(assembly).ToHashSet();

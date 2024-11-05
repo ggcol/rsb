@@ -116,7 +116,7 @@ public class RsbCacheTests
         // Arrange
         var key = Guid.NewGuid();
         var obj = It.IsAny<object>();
-        var expiresAfter = TimeSpan.FromMilliseconds(10);
+        var expiresAfter = TimeSpan.FromMilliseconds(2);
         _cache.Set(key, obj, expiresAfter);
 
         // Act
@@ -172,7 +172,7 @@ public class RsbCacheTests
         var key = Guid.NewGuid();
         var initialObj = "InitialObject";
         var updatedObj = "UpdatedObject";
-        var expiresAfter = TimeSpan.FromMilliseconds(10);
+        var expiresAfter = TimeSpan.FromMilliseconds(2);
         _cache.Set(key, initialObj, expiresAfter);
 
         // Act
