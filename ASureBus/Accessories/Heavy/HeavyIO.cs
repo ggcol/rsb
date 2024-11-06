@@ -29,7 +29,7 @@ internal sealed class HeavyIO(IAzureDataStorageService storage)
         foreach (var heavyProp in heavyProps)
         {
             var value = heavyProp.GetValue(message);
-            var heavyRef = (value as Heavy).Ref;
+            var heavyRef = (value as Abstractions.Heavy).Ref;
 
             await storage.Save(value,
                     AsbConfiguration.HeavyProps?.DataStorageContainer!,

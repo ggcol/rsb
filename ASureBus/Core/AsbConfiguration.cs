@@ -1,6 +1,6 @@
 ﻿// ReSharper disable InconsistentNaming
 
-using ASureBus.Configurations.ConfigObjects;
+using ASureBus.Abstractions.Configurations.ConfigObjects;
 
 namespace ASureBus.Core;
 

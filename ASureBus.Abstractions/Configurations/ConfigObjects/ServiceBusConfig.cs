@@ -1,6 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
 
-namespace ASureBus.Configurations.ConfigObjects;
+namespace ASureBus.Abstractions.Configurations.ConfigObjects;
 
 public sealed class ServiceBusConfig : IConfigureAzureServiceBus
 {

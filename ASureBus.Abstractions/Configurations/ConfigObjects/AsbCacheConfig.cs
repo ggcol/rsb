@@ -1,5 +1,5 @@
 ﻿// ReSharper disable InconsistentNaming
-namespace ASureBus.Configurations.ConfigObjects;
+namespace ASureBus.Abstractions.Configurations.ConfigObjects;
 
 public sealed class AsbCacheConfig : IConfigureAsbCache
 {

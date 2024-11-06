@@ -1,4 +1,4 @@
-﻿namespace ASureBus.Configurations;
+﻿namespace ASureBus.Abstractions.Configurations;
 
 public interface IConfigureSqlServerSagaPersistence
 {

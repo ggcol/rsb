@@ -1,5 +1,4 @@
-﻿using ASureBus.Configurations.ConfigObjects;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Playground.Samples._06_SagaPersistence;
 using Playground.Settings;

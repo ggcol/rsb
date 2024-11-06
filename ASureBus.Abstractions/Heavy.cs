@@ -1,4 +1,4 @@
-﻿namespace ASureBus.Accessories.Heavy;
+﻿namespace ASureBus.Abstractions;
 
 public abstract class Heavy
 {

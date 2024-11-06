@@ -1,4 +1,4 @@
-﻿using ASureBus.Configurations.ConfigObjects;
+﻿using ASureBus.Abstractions.Configurations.ConfigObjects;
 using ASureBus.Core;
 
 namespace ASureBus.Tests.Core;

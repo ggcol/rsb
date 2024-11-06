@@ -1,6 +1,6 @@
 ﻿using ASureBus.Abstractions;
-using ASureBus.Configurations;
-using ASureBus.Configurations.ConfigObjects;
+using ASureBus.Abstractions.Configurations;
+using ASureBus.Abstractions.Configurations.ConfigObjects;
 using ASureBus.Core.Caching;
 using ASureBus.Core.Messaging;
 using ASureBus.Core.Sagas;
@@ -17,6 +17,34 @@ public static class MinimalSetup
     public static IHostBuilder UseAsb<TSettings>(this IHostBuilder hostBuilder)
         where TSettings : class, IConfigureAzureServiceBus, new()
     {
+        LoadSettings<TSettings>(hostBuilder);
+        return UseAsb(hostBuilder);
+    }
+
+    public static IHostBuilder UseSendOnlyAsb<TSettings>(this IHostBuilder hostBuilder)
+        where TSettings : class, IConfigureAzureServiceBus, new()
+    {
+        LoadSettings<TSettings>(hostBuilder);
+        return UseAsb(hostBuilder, true);
+    }
+
+    public static IHostBuilder UseAsb(this IHostBuilder hostBuilder,
+        ServiceBusConfig? serviceBusConfig)
+    {
+        LoadSettings(serviceBusConfig);
+        return UseAsb(hostBuilder);
+    }
+
+    public static IHostBuilder UseSendOnlyAsb(this IHostBuilder hostBuilder,
+        ServiceBusConfig? serviceBusConfig)
+    {
+        LoadSettings(serviceBusConfig);
+        return UseAsb(hostBuilder, true);
+    }
+
+    private static void LoadSettings<TSettings>(IHostBuilder hostBuilder)
+        where TSettings : class, IConfigureAzureServiceBus, new()
+    {
         hostBuilder.ConfigureServices((hostBuilderContext, _) =>
         {
             var settings = ConfigProvider.LoadSettings<TSettings>(hostBuilderContext.Configuration);
@@ -26,22 +54,17 @@ public static class MinimalSetup
                 ServiceBusConnectionString = settings.ServiceBusConnectionString
             };
         });
-
-        return UseAsb(hostBuilder);
     }
 
-    public static IHostBuilder UseAsb(this IHostBuilder hostBuilder,
-        ServiceBusConfig? serviceBusConfig)
+    private static void LoadSettings(ServiceBusConfig? serviceBusConfig)
     {
         if (serviceBusConfig is null)
             throw new ConfigurationNullException(nameof(ServiceBusConfig));
 
         AsbConfiguration.ServiceBus = serviceBusConfig;
-
-        return UseAsb(hostBuilder);
     }
 
-    private static IHostBuilder UseAsb(IHostBuilder hostBuilder)
+    private static IHostBuilder UseAsb(IHostBuilder hostBuilder, bool isSendOnly = false)
     {
         return hostBuilder
             .ConfigureServices((_, services) =>
@@ -58,7 +81,10 @@ public static class MinimalSetup
                     .AddSingleton<IMessagingContext, MessagingContext>()
                     .AddSingleton<IMessageEmitter, MessageEmitter>();
 
-                services.AddHostedService<AsbWorker>();
+                if (!isSendOnly)
+                {
+                    services.AddHostedService<AsbWorker>();
+                }
             });
     }
 }
