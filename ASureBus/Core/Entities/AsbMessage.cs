@@ -3,7 +3,7 @@ using ASureBus.Accessories.Heavy;
 
 namespace ASureBus.Core.Entities;
 
-internal class RsbMessage<TMessage> : IRsbMessage
+internal class AsbMessage<TMessage> : IAsbMessage
     where TMessage : IAmAMessage
 {
     public Guid MessageId { get; set; }

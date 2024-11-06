@@ -2,7 +2,7 @@
 
 namespace ASureBus.Core.Entities;
 
-internal interface IRsbMessage
+internal interface IAsbMessage
 {
     internal Guid MessageId { get; set; }
     internal Guid CorrelationId { get; init; }

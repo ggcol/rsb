@@ -7,7 +7,7 @@ using Azure.Messaging.ServiceBus.Administration;
 
 namespace ASureBus.Services.ServiceBus;
 
-internal sealed class AzureServiceBusService(IRsbCache cache)
+internal sealed class AzureServiceBusService(IAsbCache cache)
     : IAzureServiceBusService
 {
     private ServiceBusClient _sbClient { get; } = new(

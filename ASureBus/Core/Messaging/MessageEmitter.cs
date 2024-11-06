@@ -52,7 +52,7 @@ internal sealed class MessageEmitter(IAzureServiceBusService serviceBusService)
         }
     }
 
-    private async Task Emit(IRsbMessage message, string destination,
+    private async Task Emit(IAsbMessage message, string destination,
         CancellationToken cancellationToken)
     {
         var sender = serviceBusService.GetSender(destination);
@@ -63,7 +63,7 @@ internal sealed class MessageEmitter(IAzureServiceBusService serviceBusService)
             .ConfigureAwait(false);
     }
     
-    private async Task EmitScheduled(IRsbMessage message, string destination,
+    private async Task EmitScheduled(IAsbMessage message, string destination,
         DateTimeOffset delay, CancellationToken cancellationToken)
     {
         var sender = serviceBusService.GetSender(destination);

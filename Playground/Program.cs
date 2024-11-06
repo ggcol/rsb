@@ -39,9 +39,9 @@ await Host
             services.AddHostedService<DelayedAndScheduledInitJob>();
             services.AddLogging();
         })
-    // .ConfigureRsbCache<WholeCacheSettings>()
-    // .ConfigureRsbCache<PartialCacheSettings>()
-    // .ConfigureRsbCache(new RsbCacheConfig()
+    // .ConfigureAsbCache<WholeCacheSettings>()
+    // .ConfigureAsbCache<PartialCacheSettings>()
+    // .ConfigureAsbCache(new RsbCacheConfig()
     // {
     //     //all these 3 are optional, they are init as default if not mentioned
     //     Expiration = TimeSpan.FromHours(2),

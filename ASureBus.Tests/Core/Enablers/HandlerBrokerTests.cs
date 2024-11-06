@@ -35,7 +35,7 @@ public class HandlerBrokerTests
             AProperty = "TestValue"
         };
         
-        var rsbMessage = new RsbMessage<HandlerBrokerTestsMessage>
+        var rsbMessage = new AsbMessage<HandlerBrokerTestsMessage>
         {
             Message = testMessage,
             Heavies = new List<HeavyRef>(),

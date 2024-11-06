@@ -11,7 +11,7 @@ internal abstract class CollectMessage : ICollectMessage
         ? new HeavyIO(new AzureDataStorageService(RsbConfiguration.HeavyProps?.DataStorageConnectionString))
         : null;
 
-    public Queue<IRsbMessage> Messages { get; } = new();
+    public Queue<IAsbMessage> Messages { get; } = new();
     public Guid CorrelationId { get; set; } = Guid.NewGuid();
 
     //TODO rename
@@ -39,11 +39,11 @@ internal abstract class CollectMessage : ICollectMessage
         Messages.Enqueue(ToInternalMessage(message, messageId, heaviesRef, scheduledTime));
     }
 
-    private RsbMessage<TMessage> ToInternalMessage<TMessage>(TMessage message, Guid messageId,
+    private AsbMessage<TMessage> ToInternalMessage<TMessage>(TMessage message, Guid messageId,
         IReadOnlyList<HeavyRef>? heavies = null, DateTimeOffset? scheduledTime = null)
         where TMessage : IAmAMessage
     {
-        return new RsbMessage<TMessage>
+        return new AsbMessage<TMessage>
         {
             MessageId = messageId,
             MessageName = typeof(TMessage).Name,

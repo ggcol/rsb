@@ -1,6 +1,6 @@
 ﻿namespace ASureBus.Core.Caching;
 
-internal interface IRsbCache
+internal interface IAsbCache
 {
     internal object? Set(object key, object? obj, TimeSpan? expiresAfter = null);
     internal T? Set<T>(object key, T? obj, TimeSpan? expiresAfter = null);

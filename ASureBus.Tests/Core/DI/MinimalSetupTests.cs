@@ -60,7 +60,7 @@ public class MinimalSetupTests
 
         // Assert
         _mockServiceCollection.Verify(
-            s => s.Add(It.Is<ServiceDescriptor>(d => d.ServiceType == typeof(IRsbCache))),
+            s => s.Add(It.Is<ServiceDescriptor>(d => d.ServiceType == typeof(IAsbCache))),
             Times.Once);
         _mockServiceCollection.Verify(
             s => s.Add(It.Is<ServiceDescriptor>(d => d.ServiceType == typeof(ITypesLoader))),
@@ -104,7 +104,7 @@ public class MinimalSetupTests
 
         // Assert
         _mockServiceCollection.Verify(
-            s => s.Add(It.Is<ServiceDescriptor>(d => d.ServiceType == typeof(IRsbCache))),
+            s => s.Add(It.Is<ServiceDescriptor>(d => d.ServiceType == typeof(IAsbCache))),
             Times.Once);
         _mockServiceCollection.Verify(
             s => s.Add(It.Is<ServiceDescriptor>(d => d.ServiceType == typeof(ITypesLoader))),

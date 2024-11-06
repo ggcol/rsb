@@ -4,14 +4,14 @@ using ASureBus.Core.Caching;
 namespace ASureBus.Tests.Core.Caching;
 
 [TestFixture]
-public class RsbCacheTests
+public class AsbCacheTests
 {
-    private IRsbCache _cache;
+    private IAsbCache _cache;
     
     [SetUp]
     public void SetUp()
     {
-        _cache = new RsbCache();
+        _cache = new AsbCache();
     }
     
     [Test]

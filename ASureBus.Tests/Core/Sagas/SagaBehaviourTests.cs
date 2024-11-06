@@ -11,7 +11,7 @@ namespace ASureBus.Tests.Core.Sagas;
 [TestFixture]
 public class SagaBehaviourTests
 {
-    private Mock<IRsbCache> _mockCache;
+    private Mock<IAsbCache> _mockCache;
     private Mock<ISagaIO> _mockSagaIo;
     private SagaBehaviour _sagaBehaviour;
 
@@ -20,7 +20,7 @@ public class SagaBehaviourTests
     {
         RsbConfiguration.DataStorageSagaPersistence = new DataStorageSagaPersistenceConfig();
 
-        _mockCache = new Mock<IRsbCache>();
+        _mockCache = new Mock<IAsbCache>();
         _mockSagaIo = new Mock<ISagaIO>();
         _sagaBehaviour = new SagaBehaviour(_mockCache.Object);
     }

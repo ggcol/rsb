@@ -4,5 +4,5 @@ namespace ASureBus.Core.Messaging;
 
 internal interface ICollectMessage
 {
-    internal Queue<IRsbMessage> Messages { get; }
+    internal Queue<IAsbMessage> Messages { get; }
 }

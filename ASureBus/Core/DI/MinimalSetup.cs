@@ -51,7 +51,7 @@ public static class MinimalSetup
                  * what's registered here is broad-wide available in the application...
                  */
                 services
-                    .AddSingleton<IRsbCache, RsbCache>()
+                    .AddSingleton<IAsbCache, AsbCache>()
                     .AddSingleton<ITypesLoader, TypesLoader>()
                     .AddSingleton<IAzureServiceBusService, AzureServiceBusService>()
                     .AddSingleton<ISagaBehaviour, SagaBehaviour>()

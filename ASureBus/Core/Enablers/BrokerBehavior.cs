@@ -19,11 +19,11 @@ internal abstract class BrokerBehavior<TMessage>(
     
     public ICollectMessage Collector => (ICollectMessage)_context;
 
-    protected async Task<RsbMessage<TMessage>?> GetFrom(BinaryData binaryData,
+    protected async Task<AsbMessage<TMessage>?> GetFrom(BinaryData binaryData,
         CancellationToken cancellationToken = default)
     {
         var rsbMessage = await Serializer
-            .Deserialize<RsbMessage<TMessage>?>(binaryData.ToStream(),
+            .Deserialize<AsbMessage<TMessage>?>(binaryData.ToStream(),
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 

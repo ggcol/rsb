@@ -18,7 +18,7 @@ internal sealed class RsbWorker : IHostedService
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly IServiceProvider _serviceProvider;
     private readonly IMessageEmitter _messageEmitter;
-    private readonly IRsbCache _cache;
+    private readonly IAsbCache _cache;
     private readonly ISagaBehaviour _sagaBehaviour;
 
     private readonly ISagaIO? _sagaIo = RsbConfiguration.OffloadSagas
@@ -34,7 +34,7 @@ internal sealed class RsbWorker : IHostedService
         IAzureServiceBusService azureServiceBusService,
         IMessageEmitter messageEmitter,
         ITypesLoader typesLoader,
-        IRsbCache cache,
+        IAsbCache cache,
         ISagaBehaviour sagaBehaviour)
     {
         _hostApplicationLifetime = hostApplicationLifetime;

@@ -5,7 +5,7 @@ using ASureBus.Core.TypesHandling.Entities;
 
 namespace ASureBus.Core.Sagas;
 
-internal sealed class SagaBehaviour(IRsbCache cache)
+internal sealed class SagaBehaviour(IAsbCache cache)
     : ISagaBehaviour
 {
     private readonly ISagaIO? _sagaIo = RsbConfiguration.OffloadSagas

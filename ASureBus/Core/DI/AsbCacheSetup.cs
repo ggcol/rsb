@@ -5,9 +5,9 @@ using Microsoft.Extensions.Hosting;
 
 namespace ASureBus.Core.DI;
 
-public static class RsbCacheSetup
+public static class AsbCacheSetup
 {
-    public static IHostBuilder ConfigureRsbCache<TSettings>(
+    public static IHostBuilder ConfigureAsbCache<TSettings>(
         this IHostBuilder hostBuilder)
         where TSettings : class, IConfigureRsbCache, new()
     {
@@ -24,7 +24,7 @@ public static class RsbCacheSetup
         });
     }
 
-    public static IHostBuilder ConfigureRsbCache(this IHostBuilder hostBuilder,
+    public static IHostBuilder ConfigureAsbCache(this IHostBuilder hostBuilder,
         RsbCacheConfig rsbCacheConfig)
     {
         if (rsbCacheConfig is null)

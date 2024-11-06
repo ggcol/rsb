@@ -9,7 +9,7 @@ using Moq;
 namespace ASureBus.Tests.Core.DI;
 
 [TestFixture]
-public class RsbCacheSetupTests
+public class AsbCacheSetupTests
 {
     private Mock<IHostBuilder> _mockHostBuilder;
     private Mock<IServiceCollection> _mockServiceCollection;
@@ -49,7 +49,7 @@ public class RsbCacheSetupTests
             });
 
         // Act
-        _mockHostBuilder.Object.ConfigureRsbCache<RsbCacheSettings>();
+        _mockHostBuilder.Object.ConfigureAsbCache<RsbCacheSettings>();
 
         // Assert
         // Add assertions to verify the expected services are registered
@@ -74,7 +74,7 @@ public class RsbCacheSetupTests
             });
 
         // Act
-        _mockHostBuilder.Object.ConfigureRsbCache(rsbCacheConfig);
+        _mockHostBuilder.Object.ConfigureAsbCache(rsbCacheConfig);
 
         // Assert
         // Add assertions to verify the expected services are registered

@@ -2,7 +2,7 @@
 
 namespace ASureBus.Core.Caching;
 
-internal sealed class RsbCache : IRsbCache
+internal sealed class AsbCache : IAsbCache
 {
     private readonly IDictionary<object, ObservableCacheItem?> _shelf
         = new Dictionary<object, ObservableCacheItem?>();
