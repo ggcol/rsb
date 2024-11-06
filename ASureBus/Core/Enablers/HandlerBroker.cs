@@ -11,9 +11,9 @@ internal sealed class HandlerBroker<TMessage>(
     public async Task Handle(BinaryData binaryData,
         CancellationToken cancellationToken = default)
     {
-        var rsbMessage = await GetFrom(binaryData, cancellationToken);
+        var asbMessage = await GetFrom(binaryData, cancellationToken);
 
-        await handler.Handle(rsbMessage.Message, _context, cancellationToken)
+        await handler.Handle(asbMessage.Message, _context, cancellationToken)
             .ConfigureAwait(false);
     }
 

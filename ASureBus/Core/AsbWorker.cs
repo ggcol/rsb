@@ -13,7 +13,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace ASureBus.Core;
 
-internal sealed class RsbWorker : IHostedService
+internal sealed class AsbWorker : IHostedService
 {
     private readonly IHostApplicationLifetime _hostApplicationLifetime;
     private readonly IServiceProvider _serviceProvider;
@@ -21,14 +21,14 @@ internal sealed class RsbWorker : IHostedService
     private readonly IAsbCache _cache;
     private readonly ISagaBehaviour _sagaBehaviour;
 
-    private readonly ISagaIO? _sagaIo = RsbConfiguration.OffloadSagas
+    private readonly ISagaIO? _sagaIo = AsbConfiguration.OffloadSagas
         ? new SagaIO()
         : null;
 
     private readonly IDictionary<ListenerType, ServiceBusProcessor>
         _processors = new Dictionary<ListenerType, ServiceBusProcessor>();
 
-    public RsbWorker(
+    public AsbWorker(
         IHostApplicationLifetime hostApplicationLifetime,
         IServiceProvider serviceProvider,
         IAzureServiceBusService azureServiceBusService,

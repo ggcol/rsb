@@ -4,33 +4,33 @@ using ASureBus.Core;
 namespace ASureBus.Tests.Core;
 
 [TestFixture]
-public class RsbConfigurationTests
+public class AsbConfigurationTests
 {
     [SetUp]
     public void SetUp()
     {
-        RsbConfiguration.ServiceBus = new ServiceBusConfig();
-        RsbConfiguration.Cache = new RsbCacheConfig();
-        RsbConfiguration.HeavyProps = null;
-        RsbConfiguration.DataStorageSagaPersistence = null;
-        RsbConfiguration.SqlServerSagaPersistence = null;
+        AsbConfiguration.ServiceBus = new ServiceBusConfig();
+        AsbConfiguration.Cache = new AsbCacheConfig();
+        AsbConfiguration.HeavyProps = null;
+        AsbConfiguration.DataStorageSagaPersistence = null;
+        AsbConfiguration.SqlServerSagaPersistence = null;
     }
 
     [TearDown]
     public void TearDown()
     {
-        RsbConfiguration.ServiceBus = null;
-        RsbConfiguration.Cache = null;
-        RsbConfiguration.HeavyProps = null;
-        RsbConfiguration.DataStorageSagaPersistence = null;
-        RsbConfiguration.SqlServerSagaPersistence = null;
+        AsbConfiguration.ServiceBus = null;
+        AsbConfiguration.Cache = null;
+        AsbConfiguration.HeavyProps = null;
+        AsbConfiguration.DataStorageSagaPersistence = null;
+        AsbConfiguration.SqlServerSagaPersistence = null;
     }
 
     [Test]
     public void UseHeavyProperties_WhenHeavyPropsIsNull_ReturnsFalse()
     {
         // Act
-        var result = RsbConfiguration.UseHeavyProperties;
+        var result = AsbConfiguration.UseHeavyProperties;
 
         // Assert
         Assert.That(result, Is.False);
@@ -40,10 +40,10 @@ public class RsbConfigurationTests
     public void UseHeavyProperties_WhenHeavyPropsIsNotNull_ReturnsTrue()
     {
         // Arrange
-        RsbConfiguration.HeavyProps = new HeavyPropertiesConfig();
+        AsbConfiguration.HeavyProps = new HeavyPropertiesConfig();
 
         // Act
-        var result = RsbConfiguration.UseHeavyProperties;
+        var result = AsbConfiguration.UseHeavyProperties;
 
         // Assert
         Assert.That(result, Is.True);
@@ -53,7 +53,7 @@ public class RsbConfigurationTests
     public void OffloadSagas_WhenNoSagaPersistenceConfigured_ReturnsFalse()
     {
         // Act
-        var result = RsbConfiguration.OffloadSagas;
+        var result = AsbConfiguration.OffloadSagas;
 
         // Assert
         Assert.That(result, Is.False);
@@ -63,10 +63,10 @@ public class RsbConfigurationTests
     public void OffloadSagas_WhenDataStorageSagaPersistenceConfigured_ReturnsTrue()
     {
         // Arrange
-        RsbConfiguration.DataStorageSagaPersistence = new DataStorageSagaPersistenceConfig();
+        AsbConfiguration.DataStorageSagaPersistence = new DataStorageSagaPersistenceConfig();
 
         // Act
-        var result = RsbConfiguration.OffloadSagas;
+        var result = AsbConfiguration.OffloadSagas;
 
         // Assert
         Assert.That(result, Is.True);
@@ -76,10 +76,10 @@ public class RsbConfigurationTests
     public void OffloadSagas_WhenSqlServerSagaPersistenceConfigured_ReturnsTrue()
     {
         // Arrange
-        RsbConfiguration.SqlServerSagaPersistence = new SqlServerSagaPersistenceConfig();
+        AsbConfiguration.SqlServerSagaPersistence = new SqlServerSagaPersistenceConfig();
 
         // Act
-        var result = RsbConfiguration.OffloadSagas;
+        var result = AsbConfiguration.OffloadSagas;
 
         // Assert
         Assert.That(result, Is.True);

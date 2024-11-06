@@ -1,4 +1,4 @@
-# RSB
+# ASB
 
 This is a lightweight messaging framework build on top of Azure Service Bus services
 
@@ -15,17 +15,17 @@ This is a lightweight messaging framework build on top of Azure Service Bus serv
 ```csharp
 await Host
     .CreateDefaultBuilder()
-    .UseRsb<ServiceBusSettings>()
+    .UseAsb<ServiceBusSettings>()
     .RunConsoleAsync();
 ```
 
 A setting class that implements IConfigureAzureServiceBus must be provided.
 
-This overload of UseRsb allows you to manually provide a configuration object for the Service Bus:
+This overload of UseAsb allows you to manually provide a configuration object for the Service Bus:
 ```csharp
 await Host
     .CreateDefaultBuilder()
-    .UseRsb(new ServiceBusConfig()
+    .UseAsb(new ServiceBusConfig()
     {
         ServiceBusConnectionString = "",
         //this is optional, default will be used otherwise
@@ -37,8 +37,8 @@ await Host
 ### More configurations:
 Few other configurations are available.
 
-#### RsbCache:
-Rsb uses a custom cache to store service bus senders and topic configurations.
+#### AsbCache:
+Asb uses a custom cache to store service bus senders and topic configurations.
 These are the default configurations:
 
 | Config                      | Default     |
@@ -51,16 +51,16 @@ Cache is fully configurable:
 ```csharp
 await Host
     .CreateDefaultBuilder()
-    .UseRsb<ServiceBusSettings>()
-    .ConfigureRsbCache<CacheSettings>()
+    .UseAsb<ServiceBusSettings>()
+    .ConfigureAsbCache<CacheSettings>()
     .RunConsoleAsync();
 ```
-using a setting class that implements IConfigureRsbCache, or:
+using a setting class that implements IConfigureAsbCache, or:
 ```csharp
 await Host
     .CreateDefaultBuilder()
-    .UseRsb<ServiceBusSettings>()
-    .ConfigureRsbCache(new RsbCacheConfig()
+    .UseAsb<ServiceBusSettings>()
+    .ConfigureAsbCache(new AsbCacheConfig()
     {
         //all these 3 are optional, they are init as default if not mentioned
         Expiration = TimeSpan.FromHours(2),
@@ -77,7 +77,7 @@ An Azure Storage Account must be provided for this purpose.
 ```csharp
 await Host
     .CreateDefaultBuilder()
-    .UseRsb<ServiceBusSettings>()
+    .UseAsb<ServiceBusSettings>()
     .UseHeavyProps<HeavySettings>()
     .RunConsoleAsync();
 ```
@@ -85,7 +85,7 @@ using a setting class that implements IConfigureHeavyProperties, or:
 ```csharp
 await Host
     .CreateDefaultBuilder()
-    .UseRsb<ServiceBusSettings>()
+    .UseAsb<ServiceBusSettings>()
     .UseHeavyProps(new HeavyPropertiesConfig()
     {
         DataStorageConnectionString = "",
@@ -115,9 +115,9 @@ public sealed class ServiceBusConfig : IConfigureAzureServiceBus
 }
 ```
 
-#### RsbCache:
+#### AsbCache:
 ```csharp
-public interface IConfigureRsbCache
+public interface IConfigureAsbCache
 {
     public TimeSpan? Expiration { get; set; }
     public string? TopicConfigPrefix { get; set; }
@@ -125,7 +125,7 @@ public interface IConfigureRsbCache
 }
 ```
 ```csharp
-public sealed class RsbCacheConfig : IConfigureRsbCache
+public sealed class AsbCacheConfig : IConfigureAsbCache
 {
     public TimeSpan? Expiration { get; set; }
     public string? TopicConfigPrefix { get; set; }

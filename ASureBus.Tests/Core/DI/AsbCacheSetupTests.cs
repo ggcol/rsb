@@ -35,7 +35,7 @@ public class AsbCacheSetupTests
     }
 
     [Test]
-    public void ConfigureRsbCache_WithSettings_RegistersExpectedServices()
+    public void ConfigureAsbCache_WithSettings_RegistersExpectedServices()
     {
         // Arrange
         _mockConfiguration.Setup(c => c.GetSection(It.IsAny<string>()))
@@ -49,17 +49,17 @@ public class AsbCacheSetupTests
             });
 
         // Act
-        _mockHostBuilder.Object.ConfigureAsbCache<RsbCacheSettings>();
+        _mockHostBuilder.Object.ConfigureAsbCache<AsbCacheSettings>();
 
         // Assert
         // Add assertions to verify the expected services are registered
     }
 
     [Test]
-    public void ConfigureRsbCache_WithRsbCacheConfig_RegistersExpectedServices()
+    public void ConfigureAsbCache_WithAsbCacheConfig_RegistersExpectedServices()
     {
         // Arrange
-        var rsbCacheConfig = new RsbCacheConfig
+        var asbCacheConfig = new AsbCacheConfig
         {
             Expiration = TimeSpan.FromMinutes(5),
             TopicConfigPrefix = "TestPrefix",
@@ -74,14 +74,14 @@ public class AsbCacheSetupTests
             });
 
         // Act
-        _mockHostBuilder.Object.ConfigureAsbCache(rsbCacheConfig);
+        _mockHostBuilder.Object.ConfigureAsbCache(asbCacheConfig);
 
         // Assert
         // Add assertions to verify the expected services are registered
     }
 }
 
-internal class RsbCacheSettings : IConfigureRsbCache
+internal class AsbCacheSettings : IConfigureAsbCache
 {
     public TimeSpan? Expiration { get; set; }
     public string? TopicConfigPrefix { get; set; }

@@ -9,8 +9,8 @@ using Playground.Samples._07_DelayedAndScheduled;
 
 await Host
     .CreateDefaultBuilder()
-    .UseRsb<ServiceBusSettings>()
-    // .UseRsb(new ServiceBusConfig()
+    .UseAsb<ServiceBusSettings>()
+    // .UseAsb(new ServiceBusConfig()
     // {
     //     ServiceBusConnectionString = "",
     //     ClientOptions = new()
@@ -41,7 +41,7 @@ await Host
         })
     // .ConfigureAsbCache<WholeCacheSettings>()
     // .ConfigureAsbCache<PartialCacheSettings>()
-    // .ConfigureAsbCache(new RsbCacheConfig()
+    // .ConfigureAsbCache(new AsbCacheConfig()
     // {
     //     //all these 3 are optional, they are init as default if not mentioned
     //     Expiration = TimeSpan.FromHours(2),

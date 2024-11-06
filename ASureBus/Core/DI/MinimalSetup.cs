@@ -14,34 +14,34 @@ namespace ASureBus.Core.DI;
 
 public static class MinimalSetup
 {
-    public static IHostBuilder UseRsb<TSettings>(this IHostBuilder hostBuilder)
+    public static IHostBuilder UseAsb<TSettings>(this IHostBuilder hostBuilder)
         where TSettings : class, IConfigureAzureServiceBus, new()
     {
         hostBuilder.ConfigureServices((hostBuilderContext, _) =>
         {
             var settings = ConfigProvider.LoadSettings<TSettings>(hostBuilderContext.Configuration);
 
-            RsbConfiguration.ServiceBus = new ServiceBusConfig
+            AsbConfiguration.ServiceBus = new ServiceBusConfig
             {
                 ServiceBusConnectionString = settings.ServiceBusConnectionString
             };
         });
 
-        return UseRsb(hostBuilder);
+        return UseAsb(hostBuilder);
     }
 
-    public static IHostBuilder UseRsb(this IHostBuilder hostBuilder,
+    public static IHostBuilder UseAsb(this IHostBuilder hostBuilder,
         ServiceBusConfig? serviceBusConfig)
     {
         if (serviceBusConfig is null)
             throw new ConfigurationNullException(nameof(ServiceBusConfig));
 
-        RsbConfiguration.ServiceBus = serviceBusConfig;
+        AsbConfiguration.ServiceBus = serviceBusConfig;
 
-        return UseRsb(hostBuilder);
+        return UseAsb(hostBuilder);
     }
 
-    private static IHostBuilder UseRsb(IHostBuilder hostBuilder)
+    private static IHostBuilder UseAsb(IHostBuilder hostBuilder)
     {
         return hostBuilder
             .ConfigureServices((_, services) =>
@@ -58,7 +58,7 @@ public static class MinimalSetup
                     .AddSingleton<IMessagingContext, MessagingContext>()
                     .AddSingleton<IMessageEmitter, MessageEmitter>();
 
-                services.AddHostedService<RsbWorker>();
+                services.AddHostedService<AsbWorker>();
             });
     }
 }

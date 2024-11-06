@@ -11,8 +11,8 @@ internal abstract class BrokerBehavior<TMessage>(
     IMessagingContext context)
     where TMessage : IAmAMessage
 {
-    private readonly IHeavyIO? _heavyIo = RsbConfiguration.UseHeavyProperties
-        ? new HeavyIO(new AzureDataStorageService(RsbConfiguration.HeavyProps?.DataStorageConnectionString))
+    private readonly IHeavyIO? _heavyIo = AsbConfiguration.UseHeavyProperties
+        ? new HeavyIO(new AzureDataStorageService(AsbConfiguration.HeavyProps?.DataStorageConnectionString))
         : null;
 
     protected readonly IMessagingContext _context = context;
@@ -22,18 +22,18 @@ internal abstract class BrokerBehavior<TMessage>(
     protected async Task<AsbMessage<TMessage>?> GetFrom(BinaryData binaryData,
         CancellationToken cancellationToken = default)
     {
-        var rsbMessage = await Serializer
+        var asbMessage = await Serializer
             .Deserialize<AsbMessage<TMessage>?>(binaryData.ToStream(),
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
         if (_heavyIo is not null)
         {
-            await _heavyIo.Load(rsbMessage.Message, rsbMessage.Heavies,
-                    rsbMessage.MessageId, cancellationToken)
+            await _heavyIo.Load(asbMessage.Message, asbMessage.Heavies,
+                    asbMessage.MessageId, cancellationToken)
                 .ConfigureAwait(false);
         }
 
-        return rsbMessage;
+        return asbMessage;
     }
 }

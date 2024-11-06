@@ -18,7 +18,7 @@ public class SagaBehaviourTests
     [SetUp]
     public void SetUp()
     {
-        RsbConfiguration.DataStorageSagaPersistence = new DataStorageSagaPersistenceConfig();
+        AsbConfiguration.DataStorageSagaPersistence = new DataStorageSagaPersistenceConfig();
 
         _mockCache = new Mock<IAsbCache>();
         _mockSagaIo = new Mock<ISagaIO>();
@@ -28,8 +28,8 @@ public class SagaBehaviourTests
     [TearDown]
     public void TearDown()
     {
-        RsbConfiguration.DataStorageSagaPersistence = null;
-        RsbConfiguration.SqlServerSagaPersistence = null;
+        AsbConfiguration.DataStorageSagaPersistence = null;
+        AsbConfiguration.SqlServerSagaPersistence = null;
     }
 
     [Test]

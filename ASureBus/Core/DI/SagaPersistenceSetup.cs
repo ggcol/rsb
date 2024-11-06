@@ -19,7 +19,7 @@ public static class SagaPersistenceSetup
         {
             var settings = ConfigProvider.LoadSettings<TSettings>(hostBuilderContext.Configuration);
 
-            RsbConfiguration.DataStorageSagaPersistence = new DataStorageSagaPersistenceConfig
+            AsbConfiguration.DataStorageSagaPersistence = new DataStorageSagaPersistenceConfig
             {
                 DataStorageConnectionString = settings.DataStorageConnectionString,
                 DataStorageContainer = settings.DataStorageContainer
@@ -35,7 +35,7 @@ public static class SagaPersistenceSetup
         if (config is null)
             throw new ConfigurationNullException(nameof(config));
 
-        RsbConfiguration.DataStorageSagaPersistence = config;
+        AsbConfiguration.DataStorageSagaPersistence = config;
 
         return UseDataStorageSagaPersistence(hostBuilder);
     }
@@ -48,7 +48,7 @@ public static class SagaPersistenceSetup
             services
                 .AddScoped<IAzureDataStorageService>(
                     x =>
-                        new AzureDataStorageService(RsbConfiguration
+                        new AzureDataStorageService(AsbConfiguration
                             .DataStorageSagaPersistence?
                             .DataStorageConnectionString!))
                 .AddScoped<ISagaPersistenceService,
@@ -64,7 +64,7 @@ public static class SagaPersistenceSetup
         {
             var settings = ConfigProvider.LoadSettings<TSettings>(hostBuilderContext.Configuration);
 
-            RsbConfiguration.SqlServerSagaPersistence = new SqlServerSagaPersistenceConfig
+            AsbConfiguration.SqlServerSagaPersistence = new SqlServerSagaPersistenceConfig
             {
                 ConnectionString = settings.ConnectionString
             };
@@ -79,7 +79,7 @@ public static class SagaPersistenceSetup
         if (config is null)
             throw new ConfigurationNullException(nameof(config));
 
-        RsbConfiguration.SqlServerSagaPersistence = config;
+        AsbConfiguration.SqlServerSagaPersistence = config;
 
         return UseSqlServerSagaPersistence(hostBuilder);
     }

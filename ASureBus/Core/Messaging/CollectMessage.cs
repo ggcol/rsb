@@ -7,8 +7,8 @@ namespace ASureBus.Core.Messaging;
 
 internal abstract class CollectMessage : ICollectMessage
 {
-    private readonly IHeavyIO? _heavyIo = RsbConfiguration.UseHeavyProperties
-        ? new HeavyIO(new AzureDataStorageService(RsbConfiguration.HeavyProps?.DataStorageConnectionString))
+    private readonly IHeavyIO? _heavyIo = AsbConfiguration.UseHeavyProperties
+        ? new HeavyIO(new AzureDataStorageService(AsbConfiguration.HeavyProps?.DataStorageConnectionString))
         : null;
 
     public Queue<IAsbMessage> Messages { get; } = new();

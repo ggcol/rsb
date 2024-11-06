@@ -25,14 +25,14 @@ internal sealed class SagaBroker<TSagaData, TMessage>(
                                  typeof(TMessage)
             );
 
-        var rsbMessage = await GetFrom(binaryData, cancellationToken)
+        var asbMessage = await GetFrom(binaryData, cancellationToken)
             .ConfigureAwait(false);
 
         if (method is not null)
         {
             await (Task)method.Invoke(saga,
             [
-                rsbMessage.Message, _context, cancellationToken
+                asbMessage.Message, _context, cancellationToken
             ]);
         }
     }

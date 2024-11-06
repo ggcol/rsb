@@ -42,7 +42,7 @@ public class MinimalSetupTests
     }
 
     [Test]
-    public void UseRsb_WithSettings_RegistersExpectedServices()
+    public void UseAsb_WithSettings_RegistersExpectedServices()
     {
         // Arrange
         _mockConfiguration.Setup(c => c.GetSection(It.IsAny<string>()))
@@ -56,7 +56,7 @@ public class MinimalSetupTests
             });
 
         // Act
-        _mockHostBuilder.Object.UseRsb<ServiceBusSettings>();
+        _mockHostBuilder.Object.UseAsb<ServiceBusSettings>();
 
         // Assert
         _mockServiceCollection.Verify(
@@ -80,11 +80,11 @@ public class MinimalSetupTests
         _mockServiceCollection.Verify(
             s => s.Add(It.Is<ServiceDescriptor>(d =>
                 d.ServiceType == typeof(IHostedService) &&
-                d.ImplementationType == typeof(RsbWorker))), Times.Once);
+                d.ImplementationType == typeof(AsbWorker))), Times.Once);
     }
 
     [Test]
-    public void UseRsb_WithServiceBusConfig_RegistersExpectedServices()
+    public void UseAsb_WithServiceBusConfig_RegistersExpectedServices()
     {
         // Arrange
         var serviceBusConfig = new ServiceBusConfig
@@ -100,7 +100,7 @@ public class MinimalSetupTests
             });
 
         // Act
-        _mockHostBuilder.Object.UseRsb(serviceBusConfig);
+        _mockHostBuilder.Object.UseAsb(serviceBusConfig);
 
         // Assert
         _mockServiceCollection.Verify(
@@ -124,7 +124,7 @@ public class MinimalSetupTests
         _mockServiceCollection.Verify(
             s => s.Add(It.Is<ServiceDescriptor>(d =>
                 d.ServiceType == typeof(IHostedService) &&
-                d.ImplementationType == typeof(RsbWorker))), Times.Once);
+                d.ImplementationType == typeof(AsbWorker))), Times.Once);
     }
 }
 

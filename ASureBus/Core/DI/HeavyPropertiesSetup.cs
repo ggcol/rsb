@@ -17,7 +17,7 @@ public static class HeavyPropertiesSetup
         {
             var settings = ConfigProvider.LoadSettings<TSettings>(hostBuilderContext.Configuration);
 
-            RsbConfiguration.HeavyProps = new HeavyPropertiesConfig
+            AsbConfiguration.HeavyProps = new HeavyPropertiesConfig
             {
                 DataStorageConnectionString = settings.DataStorageConnectionString,
                 DataStorageContainer = settings.DataStorageContainer
@@ -33,7 +33,7 @@ public static class HeavyPropertiesSetup
         if (heavyPropsConfig is null)
             throw new ConfigurationNullException(nameof(HeavyPropertiesConfig));
 
-        RsbConfiguration.HeavyProps = heavyPropsConfig;
+        AsbConfiguration.HeavyProps = heavyPropsConfig;
 
         return UseHeavyProps(hostBuilder);
     }

@@ -4,11 +4,11 @@ using ASureBus.Configurations.ConfigObjects;
 
 namespace ASureBus.Core;
 
-internal static class RsbConfiguration
+internal static class AsbConfiguration
 {
     //basic configuration
     public static ServiceBusConfig ServiceBus { get; set; } = new();
-    public static RsbCacheConfig Cache { get; set; } = new();
+    public static AsbCacheConfig Cache { get; set; } = new();
 
     //heavy props configuration
     internal static bool UseHeavyProperties => HeavyProps is not null;

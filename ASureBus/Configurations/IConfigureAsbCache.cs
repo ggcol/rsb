@@ -1,6 +1,6 @@
 ﻿namespace ASureBus.Configurations;
 
-public interface IConfigureRsbCache
+public interface IConfigureAsbCache
 {
     public TimeSpan? Expiration { get; set; }
     public string? TopicConfigPrefix { get; set; }

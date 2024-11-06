@@ -9,13 +9,13 @@ public static class AsbCacheSetup
 {
     public static IHostBuilder ConfigureAsbCache<TSettings>(
         this IHostBuilder hostBuilder)
-        where TSettings : class, IConfigureRsbCache, new()
+        where TSettings : class, IConfigureAsbCache, new()
     {
         return hostBuilder.ConfigureServices((hostBuilderContext, _) =>
         {
             var settings = ConfigProvider.LoadSettings<TSettings>(hostBuilderContext.Configuration);
 
-            RsbConfiguration.Cache = new RsbCacheConfig
+            AsbConfiguration.Cache = new AsbCacheConfig
             {
                 Expiration = settings.Expiration,
                 TopicConfigPrefix = settings.TopicConfigPrefix,
@@ -25,12 +25,12 @@ public static class AsbCacheSetup
     }
 
     public static IHostBuilder ConfigureAsbCache(this IHostBuilder hostBuilder,
-        RsbCacheConfig rsbCacheConfig)
+        AsbCacheConfig asbCacheConfig)
     {
-        if (rsbCacheConfig is null)
-            throw new ConfigurationNullException(nameof(rsbCacheConfig));
+        if (asbCacheConfig is null)
+            throw new ConfigurationNullException(nameof(asbCacheConfig));
 
-        RsbConfiguration.Cache = rsbCacheConfig;
+        AsbConfiguration.Cache = asbCacheConfig;
 
         return hostBuilder;
     }

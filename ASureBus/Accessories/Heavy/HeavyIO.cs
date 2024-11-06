@@ -32,7 +32,7 @@ internal sealed class HeavyIO(IAzureDataStorageService storage)
             var heavyRef = (value as Heavy).Ref;
 
             await storage.Save(value,
-                    RsbConfiguration.HeavyProps?.DataStorageContainer!,
+                    AsbConfiguration.HeavyProps?.DataStorageContainer!,
                     string.Join('-', messageId, heavyRef),
                     false,
                     cancellationToken)
@@ -70,7 +70,7 @@ internal sealed class HeavyIO(IAzureDataStorageService storage)
 
             var blobName = string.Join('-', messageId, heavyRef.Ref);
             var value = await storage.Get(
-                    RsbConfiguration.HeavyProps?.DataStorageContainer!,
+                    AsbConfiguration.HeavyProps?.DataStorageContainer!,
                     blobName,
                     heavyGenericType,
                     cancellationToken: cancellationToken)
@@ -79,7 +79,7 @@ internal sealed class HeavyIO(IAzureDataStorageService storage)
             prop.SetValue(message, value);
 
             await storage.Delete(
-                    RsbConfiguration.HeavyProps?.DataStorageContainer!,
+                    AsbConfiguration.HeavyProps?.DataStorageContainer!,
                     blobName,
                     cancellationToken)
                 .ConfigureAwait(false);

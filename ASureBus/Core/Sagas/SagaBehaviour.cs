@@ -8,7 +8,7 @@ namespace ASureBus.Core.Sagas;
 internal sealed class SagaBehaviour(IAsbCache cache)
     : ISagaBehaviour
 {
-    private readonly ISagaIO? _sagaIo = RsbConfiguration.OffloadSagas
+    private readonly ISagaIO? _sagaIo = AsbConfiguration.OffloadSagas
         ? new SagaIO()
         : null;
 

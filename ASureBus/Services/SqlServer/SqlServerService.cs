@@ -15,7 +15,7 @@ internal sealed class SqlServerService : ISqlServerService
     private const string TABLE_NAME = "@tableName";
 
     private readonly string _connectionString =
-        RsbConfiguration.SqlServerSagaPersistence?.ConnectionString!;
+        AsbConfiguration.SqlServerSagaPersistence?.ConnectionString!;
 
     public async Task Save<TItem>(TItem item, SagaType sagaType,
         Guid correlationId, CancellationToken cancellationToken = default)

@@ -1,7 +1,7 @@
 ﻿// ReSharper disable InconsistentNaming
 namespace ASureBus.Configurations.ConfigObjects;
 
-public sealed class RsbCacheConfig : IConfigureRsbCache
+public sealed class AsbCacheConfig : IConfigureAsbCache
 {
     private static readonly TimeSpan DEFAULT_EXPIRATION =
         TimeSpan.FromMinutes(5);

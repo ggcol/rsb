@@ -11,8 +11,8 @@ internal sealed class AzureServiceBusService(IAsbCache cache)
     : IAzureServiceBusService
 {
     private ServiceBusClient _sbClient { get; } = new(
-        RsbConfiguration.ServiceBus.ServiceBusConnectionString,
-        RsbConfiguration.ServiceBus.ClientOptions);
+        AsbConfiguration.ServiceBus.ServiceBusConnectionString,
+        AsbConfiguration.ServiceBus.ClientOptions);
 
     public async Task<ServiceBusProcessor> GetProcessor(
         ListenerType handler, CancellationToken cancellationToken = default)
@@ -53,7 +53,7 @@ internal sealed class AzureServiceBusService(IAsbCache cache)
         }
 
         return cache.Set(queueName, queueName,
-            RsbConfiguration.Cache.Expiration);
+            AsbConfiguration.Cache.Expiration);
     }
 
     public async Task<string> ConfigureTopicForSender(string topicName,
@@ -72,7 +72,7 @@ internal sealed class AzureServiceBusService(IAsbCache cache)
         }
 
         return cache.Set(topicName, topicName,
-            RsbConfiguration.Cache.Expiration);
+            AsbConfiguration.Cache.Expiration);
     }
 
     private async Task<TopicConfiguration> ConfigureTopicForReceiver(
@@ -81,7 +81,7 @@ internal sealed class AzureServiceBusService(IAsbCache cache)
         var config = new TopicConfiguration(messageType.Name,
             Assembly.GetEntryAssembly()?.GetName().Name);
 
-        var cacheKey = CacheKey(RsbConfiguration.Cache.TopicConfigPrefix,
+        var cacheKey = CacheKey(AsbConfiguration.Cache.TopicConfigPrefix,
             config.Name);
 
         if (cache.TryGetValue(cacheKey, out TopicConfiguration cachedConfig))
@@ -103,26 +103,26 @@ internal sealed class AzureServiceBusService(IAsbCache cache)
                     cancellationToken);
         }
 
-        return cache.Set(cacheKey, config, RsbConfiguration.Cache.Expiration);
+        return cache.Set(cacheKey, config, AsbConfiguration.Cache.Expiration);
     }
 
     //TODO store? throwaway?
     private ServiceBusAdministrationClient MakeAdmClient()
     {
-        return new ServiceBusAdministrationClient(RsbConfiguration.ServiceBus
+        return new ServiceBusAdministrationClient(AsbConfiguration.ServiceBus
             .ServiceBusConnectionString);
     }
 
     public ServiceBusSender GetSender(string destination)
     {
         var cacheKey =
-            CacheKey(RsbConfiguration.Cache.ServiceBusSenderCachePrefix,
+            CacheKey(AsbConfiguration.Cache.ServiceBusSenderCachePrefix,
                 destination);
 
         return cache.TryGetValue(cacheKey, out ServiceBusSender sender)
             ? sender
             : cache.Set(cacheKey, _sbClient.CreateSender(destination),
-                RsbConfiguration.Cache.Expiration);
+                AsbConfiguration.Cache.Expiration);
     }
 
     private string CacheKey(params string[] values)

@@ -12,13 +12,13 @@ internal class SagaIO : ISagaIO
 
     private static ISagaPersistenceService MakeStorageService()
     {
-        if (RsbConfiguration.UseDataStorageSagaPersistence)
+        if (AsbConfiguration.UseDataStorageSagaPersistence)
         {
             return new SagaDataStoragePersistenceService(
                 new AzureDataStorageService(
-                    RsbConfiguration.DataStorageSagaPersistence?.DataStorageConnectionString));
+                    AsbConfiguration.DataStorageSagaPersistence?.DataStorageConnectionString));
         }
-        else if (RsbConfiguration.UseSqlServerSagaPersistence)
+        else if (AsbConfiguration.UseSqlServerSagaPersistence)
         {
             return new SagaSqlServerPersistenceService(new SqlServerService());
         }

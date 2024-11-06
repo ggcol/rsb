@@ -35,14 +35,14 @@ public class HandlerBrokerTests
             AProperty = "TestValue"
         };
         
-        var rsbMessage = new AsbMessage<HandlerBrokerTestsMessage>
+        var asbMessage = new AsbMessage<HandlerBrokerTestsMessage>
         {
             Message = testMessage,
             Heavies = new List<HeavyRef>(),
             MessageId = Guid.NewGuid()
         };
         
-        var json = JsonSerializer.Serialize(rsbMessage);
+        var json = JsonSerializer.Serialize(asbMessage);
         var binaryData = new BinaryData(Encoding.UTF8.GetBytes(json));
 
         // Act
