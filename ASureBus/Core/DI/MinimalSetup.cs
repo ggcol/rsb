@@ -49,10 +49,10 @@ public static class MinimalSetup
         {
             var settings = ConfigProvider.LoadSettings<TSettings>(hostBuilderContext.Configuration);
 
-            AsbConfiguration.ServiceBus = new ServiceBusConfig
-            {
-                ServiceBusConnectionString = settings.ServiceBusConnectionString
-            };
+                AsbConfiguration.ServiceBus = new ServiceBusConfig
+                {
+                    ServiceBusConnectionString = settings.ServiceBusConnectionString
+                };
         });
     }
 

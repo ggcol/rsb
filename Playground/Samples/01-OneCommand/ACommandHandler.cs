@@ -1,20 +1,15 @@
 ﻿using ASureBus.Abstractions;
+using Microsoft.Extensions.Logging;
+using Playground.Samples._01_OneCommand.Messages;
 
 namespace Playground.Samples._01_OneCommand;
 
-public class ACommandHandler : IHandleMessage<ACommand>
+public class ACommandHandler(ILogger<ACommandHandler> logger) : IHandleMessage<ACommand>
 {
-    private const int FIVE_SECONDS = 5000;
-
     public async Task Handle(ACommand message, IMessagingContext context,
         CancellationToken cancellationToken = default)
     {
-        Console.WriteLine("Handler starts");
-
-        Thread.Sleep(FIVE_SECONDS);
-        
-        Console.WriteLine("Handler slept");
-
-        Console.WriteLine(message.Something);
+        logger.LogInformation("Handler starts");
+        logger.LogInformation("{MessageSays}", message.Something);
     }
 }

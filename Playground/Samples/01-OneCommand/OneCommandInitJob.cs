@@ -1,5 +1,6 @@
 ﻿using ASureBus.Abstractions;
 using Microsoft.Extensions.Hosting;
+using Playground.Samples._01_OneCommand.Messages;
 
 namespace Playground.Samples._01_OneCommand;
 
@@ -22,8 +23,9 @@ internal class OneCommandInitJob(
         }
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken cancellationToken)
     {
         hostApplicationLifetime.StopApplication();
+        return Task.CompletedTask;
     }
 }

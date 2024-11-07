@@ -1,6 +1,6 @@
 ﻿using ASureBus.Abstractions;
 
-namespace Playground.Samples._01_OneCommand;
+namespace Playground.Samples._01_OneCommand.Messages;
 
 public class ACommand : IAmACommand
 {

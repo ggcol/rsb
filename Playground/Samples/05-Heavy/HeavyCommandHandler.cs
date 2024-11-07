@@ -1,12 +1,15 @@
 ﻿using ASureBus.Abstractions;
+using Microsoft.Extensions.Logging;
+using Playground.Samples._05_Heavy.Messages;
 
 namespace Playground.Samples._05_Heavy;
 
-public class HeavyCommandHandler : IHandleMessage<HeavyCommand>
+public class HeavyCommandHandler(ILogger<HeavyCommandHandler> logger) : IHandleMessage<HeavyCommand>
 {
-    public async Task Handle(HeavyCommand message, IMessagingContext context,
-        CancellationToken cancellationToken = default)
+    public Task Handle(HeavyCommand message, IMessagingContext context,
+        CancellationToken cancellationToken)
     {
-        Console.WriteLine(message.AHeavyProp.Value);
+        logger.LogInformation("{MessageSays}", message.AHeavyProp?.Value);
+        return Task.CompletedTask;
     }
 }

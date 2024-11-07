@@ -1,5 +1,6 @@
 ﻿using ASureBus.Abstractions;
 using Microsoft.Extensions.Logging;
+using Playground.Samples._07_DelayedAndScheduled.Messages;
 
 namespace Playground.Samples._07_DelayedAndScheduled;
 
@@ -10,6 +11,7 @@ public class DelayedMessageHandler(ILogger<DelayedMessageHandler> logger)
         CancellationToken cancellationToken = default)
     {
         var now = DateTimeOffset.UtcNow;
+        
         logger.LogInformation("""
                               Delayed message created at {0} 
                               with delay: {1} 

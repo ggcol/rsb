@@ -1,24 +1,23 @@
 ﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Playground;
 
-public class AGenericJob : IHostedService
+public class AGenericJob(
+    IHostApplicationLifetime hostApplicationLifetime,
+    ILogger<AGenericJob> logger)
+    : IHostedService
 {
-    private readonly IHostApplicationLifetime _hostApplicationLifetime;
-
-    public AGenericJob(IHostApplicationLifetime hostApplicationLifetime)
-    {
-        _hostApplicationLifetime = hostApplicationLifetime;
-    }
-
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
         //do sth
+        return Task.CompletedTask; 
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken cancellationToken)
     {
-        Console.WriteLine("Bye!");
-        _hostApplicationLifetime.StopApplication();
+        logger.LogInformation("Bye!");
+        hostApplicationLifetime.StopApplication();
+        return Task.CompletedTask;
     }
 }

@@ -1,20 +1,18 @@
 ﻿using ASureBus.Abstractions;
+using Microsoft.Extensions.Logging;
+using Playground.Samples._02_OneEvent.Messages;
 
 namespace Playground.Samples._02_OneEvent;
 
-public class AnEventHandler : IHandleMessage<AnEvent>
+public class AnEventHandler(ILogger<AnEventHandler> logger) : IHandleMessage<AnEvent>
 {
-    private const int FIVE_SECONDS = 5000;
-
-    public async Task Handle(AnEvent message, IMessagingContext context,
+    public Task Handle(AnEvent message, IMessagingContext context,
         CancellationToken cancellationToken = default)
     {
-        Console.WriteLine("Handler starts");
+        logger.LogInformation("Handler starts");
 
-        Thread.Sleep(FIVE_SECONDS);
-
-        Console.WriteLine("Handler slept");
-
-        Console.WriteLine(message.Something);
+        logger.LogInformation("{MessageSays}", message.Something);
+        
+        return Task.CompletedTask;
     }
 }

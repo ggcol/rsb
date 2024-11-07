@@ -1,5 +1,6 @@
 ﻿using ASureBus.Abstractions;
 using Microsoft.Extensions.Hosting;
+using Playground.Samples._06_SagaPersistence.Messages;
 
 namespace Playground.Samples._06_SagaPersistence;
 

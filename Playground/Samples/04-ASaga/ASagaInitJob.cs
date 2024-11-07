@@ -1,5 +1,6 @@
 ﻿using ASureBus.Abstractions;
 using Microsoft.Extensions.Hosting;
+using Playground.Samples._04_ASaga.Messages;
 
 namespace Playground.Samples._04_ASaga;
 
@@ -14,8 +15,9 @@ internal class ASagaInitJob(
             .ConfigureAwait(false);
     }
     
-    public async Task StopAsync(CancellationToken cancellationToken)
+    public Task StopAsync(CancellationToken cancellationToken)
     {
         hostApplicationLifetime.StopApplication();
+        return Task.CompletedTask;
     }
 }
