@@ -14,6 +14,9 @@ using Playground.Samples._07_DelayedAndScheduled;
 
 await Host
     .CreateDefaultBuilder()
+    
+    
+    
     /*
      * ========================================
      * MINIMAL SETUP
@@ -32,6 +35,9 @@ await Host
     //         TransportType = ServiceBusTransportType.AmqpWebSockets
     //     }
     // })
+    
+    
+    
     /*
      * ========================================
      * HEAVY PROPS SETUP
@@ -47,6 +53,9 @@ await Host
     //     DataStorageConnectionString = "",
     //     DataStorageContainer = ""
     // })
+    
+    
+    
     /*
      * ========================================
      * SAGA PERSISTENCE SETUP
@@ -58,6 +67,9 @@ await Host
 
     // Configure the application to use SQL Server for saga persistence with the specified settings
     // .UseSqlServerSagaPersistence<SqlServerSagaPersistenceSettings>()
+    
+    
+    
     /*
      * ========================================
      * CONFIGURE APPLICATION SERVICES
@@ -78,6 +90,9 @@ await Host
             // services.AddHostedService<DelayedAndScheduledInitJob>();
             services.AddLogging();
         })
+    
+    
+    
     /*
      * ========================================
      * CACHE SETUP
@@ -96,6 +111,9 @@ await Host
     //     TopicConfigPrefix = "",
     //     ServiceBusSenderCachePrefix = ""
     // })
+    
+    
+    
     /*
      * ========================================
      * RUN THE APPLICATION
