@@ -1,8 +1,8 @@
-﻿using Microsoft.Data.SqlClient;
-using ASureBus.Core;
+﻿using ASureBus.Core;
 using ASureBus.Core.Sagas;
 using ASureBus.Core.TypesHandling.Entities;
 using ASureBus.Utils;
+using Microsoft.Data.SqlClient;
 
 namespace ASureBus.Services.SqlServer;
 
@@ -80,11 +80,11 @@ internal sealed class SqlServerService : ISqlServerService
             throw new Exception();
         }
 
-        var query = $"""
-                     SELECT {SAGA_HEADER}
-                     FROM {TABLE_NAME}
-                     WHERE {CORR_ID_HEADER} = {CORR_ID_PARAM}
-                     """;
+        const string query = $"""
+                              SELECT {SAGA_HEADER}
+                              FROM {TABLE_NAME}
+                              WHERE {CORR_ID_HEADER} = {CORR_ID_PARAM}
+                              """;
 
         await using var conn = new SqlConnection(_connectionString);
 

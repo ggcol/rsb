@@ -18,14 +18,13 @@ internal class SagaIO : ISagaIO
                 new AzureDataStorageService(
                     AsbConfiguration.DataStorageSagaPersistence?.DataStorageConnectionString));
         }
-        else if (AsbConfiguration.UseSqlServerSagaPersistence)
+
+        if (AsbConfiguration.UseSqlServerSagaPersistence)
         {
             return new SagaSqlServerPersistenceService(new SqlServerService());
         }
-        else
-        {
-            throw new NotImplementedException(); //customize
-        }
+
+        throw new NotImplementedException(); //TODO customize
     }
 
     public async Task<object?> Load(Guid correlationId, SagaType sagaType,

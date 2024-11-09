@@ -18,7 +18,7 @@ public class SagaDataStoragePersistenceServiceTests
     {
         _mockStorage = new Mock<IAzureDataStorageService>();
         _service = new SagaDataStoragePersistenceService(_mockStorage.Object);
-        _sagaType = new SagaType()
+        _sagaType = new SagaType
         {
             Type = typeof(object),
             SagaDataType = typeof(object)

@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Buffers;
+using System.Text;
+using System.Text.Json;
 using ASureBus.Core.Sagas;
 
 namespace ASureBus.Tests.Core.Sagas;
@@ -54,7 +56,7 @@ public class SagaConverterTests
     {
         // Arrange
         var json = "{\"SagaData\":{\"Data\":\"TestData\"}}";
-        var reader = new Utf8JsonReader(System.Text.Encoding.UTF8.GetBytes(json));
+        var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
 
         // Act
         var result = _sagaConverter.Read(ref reader, typeof(Saga), _options);
@@ -73,13 +75,13 @@ public class SagaConverterTests
     {
         // Arrange
         var saga = new Saga { SagaData = new SagaData { Data = "TestData" } };
-        var buffer = new System.Buffers.ArrayBufferWriter<byte>();
+        var buffer = new ArrayBufferWriter<byte>();
         var writer = new Utf8JsonWriter(buffer);
 
         // Act
         _sagaConverter.Write(writer, saga, _options);
         writer.Flush();
-        var json = System.Text.Encoding.UTF8.GetString(buffer.WrittenMemory.ToArray());
+        var json = Encoding.UTF8.GetString(buffer.WrittenMemory.ToArray());
 
         // Assert
         Assert.That(json, Is.EqualTo("{\"SagaData\":{\"Data\":\"TestData\"}}"));

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using ASureBus.Utils;
 
 namespace ASureBus.Tests.Utils;
@@ -48,7 +49,7 @@ public class SerializerTests
     {
         //Arrange
         var json = "{\"Id\":1,\"Name\":\"Test\"}";
-        using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
 
         //Act
         var obj = await Serializer.Deserialize<TestObject>(stream);
@@ -92,7 +93,7 @@ public class SerializerTests
         //Act
         Serializer.Serialize(writer, obj, typeof(TestObject));
         writer.Flush();
-        var json = System.Text.Encoding.UTF8.GetString(stream.ToArray());
+        var json = Encoding.UTF8.GetString(stream.ToArray());
 
         //Assert
         Assert.That(json, Is.EqualTo("{\"Id\":1,\"Name\":\"Test\"}"));

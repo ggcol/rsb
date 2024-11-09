@@ -3,7 +3,7 @@
 namespace ASureBus.Core.Messaging;
 
 internal sealed class MessagingContext(IMessageEmitter emitter)
-    : CollectMessage(), IMessagingContext
+    : CollectMessage, IMessagingContext
 {
     public Task Send<TCommand>(TCommand message, CancellationToken cancellationToken = default)
         where TCommand : IAmACommand
