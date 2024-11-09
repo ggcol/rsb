@@ -1,5 +1,4 @@
 ﻿using ASureBus.Abstractions;
-using ASureBus.Accessories.Heavy;
 using ASureBus.Core.Enablers;
 using ASureBus.Core.TypesHandling.Entities;
 using Moq;
@@ -10,13 +9,11 @@ namespace ASureBus.Tests.Core.Enablers;
 public class BrokerFactoryTests
 {
     private Mock<IServiceProvider> _serviceProviderMock;
-    private Mock<IHeavyIO> _heavyIoMock;
 
     [SetUp]
     public void SetUp()
     {
         _serviceProviderMock = new Mock<IServiceProvider>();
-        _heavyIoMock = new Mock<IHeavyIO>();
     }
 
     [Test]
@@ -38,11 +35,24 @@ public class BrokerFactoryTests
 
         // Act
         var broker = BrokerFactory.Get(_serviceProviderMock.Object, handlerType,
-            _heavyIoMock.Object, correlationId);
+            correlationId);
 
         // Assert
         Assert.That(broker, Is.Not.Null);
         Assert.That(broker, Is.InstanceOf<HandlerBroker<FakeMessage>>());
+    }
+
+    private class FakeHandler : IHandleMessage<FakeMessage>
+    {
+        public Task Handle(FakeMessage message, IMessagingContext context,
+            CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    private class FakeMessage : IAmACommand
+    {
     }
 
     [Test]
@@ -59,7 +69,7 @@ public class BrokerFactoryTests
             IsInitMessage = true
         };
 
-        var sagaType = new SagaType()
+        var sagaType = new SagaType
         {
             Type = typeof(FakeSaga),
             SagaDataType = typeof(FakeSagaData),
@@ -74,24 +84,11 @@ public class BrokerFactoryTests
 
         // Act
         var broker = BrokerFactory.Get(_serviceProviderMock.Object, sagaType, implSaga,
-            listenerType, _heavyIoMock.Object, correlationId);
+            listenerType, correlationId);
 
         // Assert
         Assert.That(broker, Is.Not.Null);
         Assert.That(broker, Is.InstanceOf<SagaBroker<FakeSagaData, FakeMessage>>());
-    }
-
-    private class FakeHandler : IHandleMessage<FakeMessage>
-    {
-        public Task Handle(FakeMessage message, IMessagingContext context,
-            CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-    }
-
-    private class FakeMessage : IAmACommand
-    {
     }
 
     private class FakeSaga : Saga<FakeSagaData>, IAmStartedBy<FakeMessage>

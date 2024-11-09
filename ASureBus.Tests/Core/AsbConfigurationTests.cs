@@ -40,7 +40,11 @@ public class AsbConfigurationTests
     public void UseHeavyProperties_WhenHeavyPropsIsNotNull_ReturnsTrue()
     {
         // Arrange
-        AsbConfiguration.HeavyProps = new HeavyPropertiesConfig();
+        AsbConfiguration.HeavyProps = new HeavyPropertiesConfig
+        {
+            DataStorageConnectionString = "connection-string",
+            DataStorageContainer = "container"
+        };
 
         // Act
         var result = AsbConfiguration.UseHeavyProperties;

@@ -2,7 +2,6 @@
 using ASureBus.Accessories.Heavy;
 using ASureBus.Core.Entities;
 using ASureBus.Core.Messaging;
-using ASureBus.Services.StorageAccount;
 using ASureBus.Utils;
 
 namespace ASureBus.Core.Enablers;
@@ -11,10 +10,6 @@ internal abstract class BrokerBehavior<TMessage>(
     IMessagingContext context)
     where TMessage : IAmAMessage
 {
-    private readonly IHeavyIO? _heavyIo = AsbConfiguration.UseHeavyProperties
-        ? new HeavyIO(new AzureDataStorageService(AsbConfiguration.HeavyProps?.DataStorageConnectionString))
-        : null;
-
     protected readonly IMessagingContext _context = context;
     
     public ICollectMessage Collector => (ICollectMessage)_context;
@@ -27,9 +22,9 @@ internal abstract class BrokerBehavior<TMessage>(
                 cancellationToken: cancellationToken)
             .ConfigureAwait(false);
 
-        if (_heavyIo is not null)
+        if (HeavyIo.IsHeavyConfigured())
         {
-            await _heavyIo.Load(asbMessage.Message, asbMessage.Heavies,
+            await HeavyIo.Load(asbMessage.Message, asbMessage.Heavies,
                     asbMessage.MessageId, cancellationToken)
                 .ConfigureAwait(false);
         }

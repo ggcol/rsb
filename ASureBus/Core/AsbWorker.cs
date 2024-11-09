@@ -1,4 +1,5 @@
-﻿using ASureBus.Core.Caching;
+﻿using ASureBus.Accessories.Heavy;
+using ASureBus.Core.Caching;
 using ASureBus.Core.Enablers;
 using ASureBus.Core.Entities;
 using ASureBus.Core.Messaging;
@@ -49,10 +50,10 @@ internal sealed class AsbWorker : IHostedService
                     handler, hostApplicationLifetime.ApplicationStopping)
                 .ConfigureAwait(false).GetAwaiter().GetResult();
 
-            processor.ProcessMessageAsync += async (args)
+            processor.ProcessMessageAsync += async args
                 => await ProcessMessage(handler, args);
 
-            processor.ProcessErrorAsync += async (args)
+            processor.ProcessErrorAsync += async args
                 => await ProcessError(handler, args);
 
             _processors.Add(handler, processor);
@@ -67,10 +68,10 @@ internal sealed class AsbWorker : IHostedService
                         listener, hostApplicationLifetime.ApplicationStopping)
                     .ConfigureAwait(false).GetAwaiter().GetResult();
 
-                processor.ProcessMessageAsync += async (args) =>
+                processor.ProcessMessageAsync += async args =>
                     await ProcessMessage(saga, listener, args);
 
-                processor.ProcessErrorAsync += async (args)
+                processor.ProcessErrorAsync += async args
                     => await ProcessError(saga, listener, args);
 
                 _processors.Add(listener, processor);
@@ -102,7 +103,7 @@ internal sealed class AsbWorker : IHostedService
     private async Task ProcessError(HandlerType handlerType,
         ProcessErrorEventArgs args)
     {
-        var broker = GetBroker(_serviceProvider, handlerType);
+        var broker = BrokerFactory.Get(_serviceProvider, handlerType);
 
         await broker.HandleError(args.Exception, args.CancellationToken)
             .ConfigureAwait(false);
@@ -113,11 +114,16 @@ internal sealed class AsbWorker : IHostedService
     {
         var correlationId = await GetCorrelationId(args);
 
-        var broker = GetBroker(_serviceProvider, handlerType, correlationId);
+        var broker = BrokerFactory.Get(_serviceProvider, handlerType, correlationId);
 
-        await broker
+        var asbMessage = await broker
             .Handle(args.Message.Body, args.CancellationToken)
             .ConfigureAwait(false);
+
+        if (UsesHeavies(asbMessage))
+        {
+            await DeleteHeavies(asbMessage, args.CancellationToken).ConfigureAwait(false);
+        }
 
         await args
             .CompleteMessageAsync(args.Message, args.CancellationToken)
@@ -141,16 +147,19 @@ internal sealed class AsbWorker : IHostedService
         var correlationId = await GetCorrelationId(args);
 
         var implSaga =
-            await GetSagaImplementation(_serviceProvider, sagaType,
-                    listenerType, correlationId)
+            await GetSagaImplementation(_serviceProvider, sagaType, listenerType, correlationId)
                 .ConfigureAwait(false);
 
-        var broker = GetBroker(_serviceProvider, sagaType, implSaga,
-            listenerType,
+        var broker = BrokerFactory.Get(_serviceProvider, sagaType, implSaga, listenerType,
             correlationId);
 
-        await broker.Handle(args.Message.Body, args.CancellationToken)
+        var asbMessage = await broker.Handle(args.Message.Body, args.CancellationToken)
             .ConfigureAwait(false);
+
+        if (UsesHeavies(asbMessage))
+        {
+            await DeleteHeavies(asbMessage, args.CancellationToken).ConfigureAwait(false);
+        }
 
         await args.CompleteMessageAsync(args.Message, args.CancellationToken)
             .ConfigureAwait(false);
@@ -161,7 +170,7 @@ internal sealed class AsbWorker : IHostedService
         }
 
         _cache.Upsert(correlationId, implSaga);
-        
+
         await _messageEmitter.FlushAll(broker.Collector, args.CancellationToken)
             .ConfigureAwait(false);
     }
@@ -174,42 +183,6 @@ internal sealed class AsbWorker : IHostedService
             .ConfigureAwait(false);
 
         return corrId.CorrelationId;
-    }
-
-    private IHandlerBroker GetBroker(IServiceProvider serviceProvider,
-        HandlerType handlerType, Guid? correlationId = null)
-    {
-        var implListener = ActivatorUtilities.CreateInstance(
-            serviceProvider, handlerType.Type);
-
-        var brokerImplType = typeof(HandlerBroker<>)
-            .MakeGenericType(handlerType.MessageType.Type);
-
-        var context = new MessagingContextInternal();
-
-        if (correlationId is not null)
-        {
-            context.CorrelationId = correlationId.Value;
-        }
-
-        return (IHandlerBroker)ActivatorUtilities.CreateInstance(
-            serviceProvider, brokerImplType, implListener, context);
-    }
-
-    private ISagaBroker GetBroker(IServiceProvider serviceProvider,
-        SagaType sagaType, object? implSaga, ListenerType listenerType,
-        Guid correlationId)
-    {
-        var brokerImplType = typeof(SagaBroker<,>).MakeGenericType(
-            sagaType.SagaDataType, listenerType.MessageType.Type);
-
-        var context = new MessagingContextInternal
-        {
-            CorrelationId = correlationId
-        };
-
-        return (ISagaBroker)ActivatorUtilities.CreateInstance(serviceProvider,
-            brokerImplType, implSaga, context);
     }
 
     private async Task<object?> GetSagaImplementation(
@@ -239,5 +212,22 @@ internal sealed class AsbWorker : IHostedService
         _sagaBehaviour.HandleCompletion(sagaType, correlationId, implSaga);
 
         return _cache.Set(correlationId, implSaga);
+    }
+
+
+    private static bool UsesHeavies(IAsbMessage asbMessage)
+    {
+        return HeavyIo.IsHeavyConfigured()
+               && asbMessage.Heavies is not null
+               && asbMessage.Heavies.Any();
+    }
+
+    private static async Task DeleteHeavies(IAsbMessage asbMessage, CancellationToken cancellationToken)
+    {
+        foreach (var heavyRef in asbMessage.Heavies!)
+        {
+            await HeavyIo.Delete(asbMessage.MessageId, heavyRef, cancellationToken)
+                .ConfigureAwait(false);
+        }
     }
 }

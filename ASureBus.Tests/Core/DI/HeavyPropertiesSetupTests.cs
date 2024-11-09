@@ -1,6 +1,6 @@
 ﻿using ASureBus.Abstractions.Configurations;
 using ASureBus.Abstractions.Configurations.ConfigObjects;
-using ASureBus.Accessories.Heavy;
+using ASureBus.Core;
 using ASureBus.Core.DI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,10 +28,11 @@ public class HeavyPropertiesSetupTests
             Configuration = _mockConfiguration.Object
         };
     }
-    
+
     [TearDown]
     public void TearDown()
     {
+        AsbConfiguration.HeavyProps = null;
         _hostBuilderContext = null!;
     }
 
@@ -53,9 +54,14 @@ public class HeavyPropertiesSetupTests
         _mockHostBuilder.Object.UseHeavyProps<HeavyPropertiesSettings>();
 
         // Assert
-        _mockServiceCollection.Verify(
-            s => s.Add(It.Is<ServiceDescriptor>(d => d.ServiceType == typeof(IHeavyIO))),
-            Times.Once);
+        Assert.That(AsbConfiguration.HeavyProps, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(AsbConfiguration.HeavyProps.DataStorageConnectionString,
+                Is.EqualTo("TestConnectionString"));
+            Assert.That(AsbConfiguration.HeavyProps.DataStorageContainer,
+                Is.EqualTo("TestContainer"));
+        });
     }
 
     [Test]
@@ -79,14 +85,19 @@ public class HeavyPropertiesSetupTests
         _mockHostBuilder.Object.UseHeavyProps(heavyPropsConfig);
 
         // Assert
-        _mockServiceCollection.Verify(
-            s => s.Add(It.Is<ServiceDescriptor>(d => d.ServiceType == typeof(IHeavyIO))),
-            Times.Once);
+        Assert.That(AsbConfiguration.HeavyProps, Is.Not.Null);
+        Assert.Multiple(() =>
+        {
+            Assert.That(AsbConfiguration.HeavyProps.DataStorageConnectionString,
+                Is.EqualTo("TestConnectionString"));
+            Assert.That(AsbConfiguration.HeavyProps.DataStorageContainer,
+                Is.EqualTo("TestContainer"));
+        });
     }
 }
 
 internal class HeavyPropertiesSettings : IConfigureHeavyProperties
 {
-    public string? DataStorageConnectionString { get; set; }
-    public string? DataStorageContainer { get; set; }
+    public string? DataStorageConnectionString { get; set; } = "TestConnectionString";
+    public string? DataStorageContainer { get; set; } = "TestContainer";
 }

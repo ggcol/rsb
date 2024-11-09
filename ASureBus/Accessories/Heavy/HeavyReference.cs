@@ -1,7 +1,7 @@
 ﻿namespace ASureBus.Accessories.Heavy;
 
-internal class HeavyRef
+internal class HeavyReference
 {
-    public string PropName { get; set; }
+    public string PropertyName { get; set; }
     public Guid Ref { get; set; }
 }

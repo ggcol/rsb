@@ -2,6 +2,6 @@
 
 public sealed class HeavyPropertiesConfig : IConfigureHeavyProperties
 {
-    public string? DataStorageConnectionString { get; set; }
-    public string? DataStorageContainer { get; set; }
+    public required string DataStorageConnectionString { get; set; }
+    public required string DataStorageContainer { get; set; }
 }

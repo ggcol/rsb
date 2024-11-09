@@ -1,20 +1,14 @@
 ﻿using ASureBus.Abstractions;
 using ASureBus.Accessories.Heavy;
 using ASureBus.Core.Entities;
-using ASureBus.Services.StorageAccount;
 
 namespace ASureBus.Core.Messaging;
 
 internal abstract class CollectMessage : ICollectMessage
 {
-    private readonly IHeavyIO? _heavyIo = AsbConfiguration.UseHeavyProperties
-        ? new HeavyIO(new AzureDataStorageService(AsbConfiguration.HeavyProps?.DataStorageConnectionString))
-        : null;
-
     public Queue<IAsbMessage> Messages { get; } = new();
     public Guid CorrelationId { get; set; } = Guid.NewGuid();
 
-    //TODO rename
     protected async Task Enqueue<TMessage>(TMessage message,
         CancellationToken cancellationToken)
         where TMessage : IAmAMessage
@@ -40,7 +34,7 @@ internal abstract class CollectMessage : ICollectMessage
     }
 
     private AsbMessage<TMessage> ToInternalMessage<TMessage>(TMessage message, Guid messageId,
-        IReadOnlyList<HeavyRef>? heavies = null, DateTimeOffset? scheduledTime = null)
+        IReadOnlyList<HeavyReference>? heavies = null, DateTimeOffset? scheduledTime = null)
         where TMessage : IAmAMessage
     {
         return new AsbMessage<TMessage>
@@ -54,15 +48,15 @@ internal abstract class CollectMessage : ICollectMessage
         };
     }
 
-    private async Task<IReadOnlyList<HeavyRef>> UnloadHeavies<TMessage>(TMessage message,
+    private async Task<IReadOnlyList<HeavyReference>> UnloadHeavies<TMessage>(TMessage message,
         Guid messageId, CancellationToken cancellationToken)
         where TMessage : IAmAMessage
     {
-        var heaviesRef = new List<HeavyRef>();
+        var heaviesRef = new List<HeavyReference>();
 
-        if (_heavyIo is not null)
+        if (HeavyIo.IsHeavyConfigured())
         {
-            heaviesRef.AddRange(await _heavyIo.Unload(message, messageId, cancellationToken)
+            heaviesRef.AddRange(await HeavyIo.Unload(message, messageId, cancellationToken)
                 .ConfigureAwait(false));
         }
 

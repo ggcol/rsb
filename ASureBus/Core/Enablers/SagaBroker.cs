@@ -1,4 +1,5 @@
 ﻿using ASureBus.Abstractions;
+using ASureBus.Core.Entities;
 
 namespace ASureBus.Core.Enablers;
 
@@ -9,7 +10,7 @@ internal sealed class SagaBroker<TSagaData, TMessage>(
     where TSagaData : SagaData, new()
     where TMessage : IAmAMessage
 {
-    public async Task Handle(BinaryData binaryData,
+    public async Task<IAsbMessage> Handle(BinaryData binaryData,
         CancellationToken cancellationToken = default)
     {
         var method = saga
@@ -35,6 +36,8 @@ internal sealed class SagaBroker<TSagaData, TMessage>(
                 asbMessage.Message, _context, cancellationToken
             ]);
         }
+        
+        return asbMessage;
     }
 
     public async Task HandleError(Exception ex,

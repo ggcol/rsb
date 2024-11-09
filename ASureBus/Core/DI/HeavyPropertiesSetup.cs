@@ -1,8 +1,8 @@
 ﻿using ASureBus.Abstractions.Configurations;
 using ASureBus.Abstractions.Configurations.ConfigObjects;
 using ASureBus.Accessories.Heavy;
+using ASureBus.Services.StorageAccount;
 using ASureBus.Utils;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace ASureBus.Core.DI;
@@ -22,9 +22,11 @@ public static class HeavyPropertiesSetup
                 DataStorageConnectionString = settings.DataStorageConnectionString,
                 DataStorageContainer = settings.DataStorageContainer
             };
+            ConfigureStorage();
         });
 
-        return UseHeavyProps(hostBuilder);
+
+        return hostBuilder;
     }
 
     public static IHostBuilder UseHeavyProps(
@@ -35,14 +37,14 @@ public static class HeavyPropertiesSetup
 
         AsbConfiguration.HeavyProps = heavyPropsConfig;
 
-        return UseHeavyProps(hostBuilder);
+        ConfigureStorage();
+
+        return hostBuilder;
     }
 
-    private static IHostBuilder UseHeavyProps(IHostBuilder hostBuilder)
+    private static void ConfigureStorage()
     {
-        return hostBuilder.ConfigureServices((_, services) =>
-        {
-            services.AddScoped<IHeavyIO, HeavyIO>();
-        });
+        HeavyIo.ConfigureStorage(
+            new AzureDataStorageService(AsbConfiguration.HeavyProps!.DataStorageConnectionString));
     }
 }

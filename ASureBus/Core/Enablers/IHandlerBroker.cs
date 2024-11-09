@@ -1,4 +1,5 @@
-﻿using ASureBus.Core.Messaging;
+﻿using ASureBus.Core.Entities;
+using ASureBus.Core.Messaging;
 
 namespace ASureBus.Core.Enablers;
 
@@ -6,7 +7,7 @@ internal interface IHandlerBroker
 {
     internal ICollectMessage Collector { get; }
 
-    internal Task Handle(BinaryData binaryData,
+    internal Task<IAsbMessage> Handle(BinaryData binaryData,
         CancellationToken cancellationToken);
 
     internal Task HandleError(Exception ex,

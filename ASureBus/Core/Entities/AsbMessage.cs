@@ -11,7 +11,7 @@ internal class AsbMessage<TMessage> : IAsbMessage
     public TMessage Message { get; init; }
     public string MessageName { get; init; }
     public bool IsCommand => Message is IAmACommand;
-    public IReadOnlyList<HeavyRef>? Heavies { get; init; }
+    public IReadOnlyList<HeavyReference>? Heavies { get; init; }
     public bool IsScheduled => ScheduledTime.HasValue;
     public DateTimeOffset? ScheduledTime { get; init; }
 }

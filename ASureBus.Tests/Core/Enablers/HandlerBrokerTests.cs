@@ -14,14 +14,15 @@ public class HandlerBrokerTests
     private FakeHandler _fakeHandler;
     private Mock<IMessagingContext> _mockContext;
     private HandlerBroker<HandlerBrokerTestsMessage> _handlerBroker;
-
+    
     [SetUp]
     public void SetUp()
     {
         _fakeHandler = new FakeHandler();
         _mockContext = new Mock<IMessagingContext>();
 
-        _handlerBroker = new HandlerBroker<HandlerBrokerTestsMessage>(_fakeHandler, _mockContext.Object);
+        _handlerBroker = new HandlerBroker<HandlerBrokerTestsMessage>(_fakeHandler,
+            _mockContext.Object);
     }
 
     [Test]
@@ -34,14 +35,14 @@ public class HandlerBrokerTests
         {
             AProperty = "TestValue"
         };
-        
+
         var asbMessage = new AsbMessage<HandlerBrokerTestsMessage>
         {
             Message = testMessage,
-            Heavies = new List<HeavyRef>(),
+            Heavies = new List<HeavyReference>(),
             MessageId = Guid.NewGuid()
         };
-        
+
         var json = JsonSerializer.Serialize(asbMessage);
         var binaryData = new BinaryData(Encoding.UTF8.GetBytes(json));
 
@@ -75,14 +76,14 @@ internal class FakeHandler : IHandleMessage<HandlerBrokerTestsMessage>
 {
     public int HandleCallCount { get; private set; }
     public int HandleErrorCallCount { get; private set; }
-    
+
     public Task Handle(HandlerBrokerTestsMessage message, IMessagingContext context,
         CancellationToken cancellationToken = default)
     {
         HandleCallCount++;
         return Task.CompletedTask;
     }
-    
+
     public Task HandleError(Exception ex, IMessagingContext context,
         CancellationToken cancellationToken = default)
     {
