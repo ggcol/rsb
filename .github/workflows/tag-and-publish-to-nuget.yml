@@ -50,9 +50,7 @@ jobs:
             exit 1
           fi
           echo "Found coverage file at: ${COBERTURA_FILE}"
-          curl -Ls https://coverage.codacy.com/get.sh report -r $COBERTURA_FILE | bash
-          ls -l $COBERTURA_FILE
-          ./codacy-coverage-reporter report -r $COBERTURA_FILE
+          bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r $COBERTURA_FILE
 
       - name: Get the latest tag
         id: get_tag
