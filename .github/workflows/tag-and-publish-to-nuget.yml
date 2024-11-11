@@ -37,11 +37,8 @@ jobs:
       - name: Build solution
         run: dotnet build --configuration Release --no-restore
 
-      - name: Install coverlet
-        run: dotnet tool install --global coverlet.console
-
       - name: Run tests with coverage
-        run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage/
+        run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage/ --settings coverage.runsettings
 
       - name: Upload coverage to Codacy
         env:
@@ -53,8 +50,10 @@ jobs:
             exit 1
           fi
           echo "Found coverage file at: ${COBERTURA_FILE}"
-          curl -Ls https://coverage.codacy.com/get.sh | ./codacy-coverage-reporter report -r $COBERTURA_FILE | bash
-          
+          curl -Ls https://coverage.codacy.com/get.sh report -r $COBERTURA_FILE | bash
+          ls -l $COBERTURA_FILE
+          ./codacy-coverage-reporter report -r $COBERTURA_FILE
+
       - name: Get the latest tag
         id: get_tag
         run: echo "::set-output name=TAG::$(git describe --tags --abbrev=0)"
