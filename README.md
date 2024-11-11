@@ -4,12 +4,19 @@ This is a lightweight messaging framework build on top of Azure Service Bus serv
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/e75f90253491454cbf0dfb25c9c7085b)](https://app.codacy.com/gh/ggcol/rsb/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
+ASureBus:
+[![NuGet version (ASureBus)](https://img.shields.io/nuget/v/ASureBus.svg?style=flat-square)](https://www.nuget.org/packages/ASureBus/)
+ASureBus.Abstractions:
+[![NuGet version (ASureBus.Abstractions)](https://img.shields.io/nuget/v/ASureBus.Abstractions.svg?style=flat-square)](https://www.nuget.org/packages/ASureBus.Abstractions/)
+
+
 ## Actual dependencies:
 
-- Azure.Messaging.Servicebus
-- Microsoft.Extensions.Hosting
-- Azure.Storage.Blobs
-- Microsoft.Data.SqlClient
+| ASureBus                      | ASureBus.Abstractions         |
+|-------------------------------|-------------------------------|
+| Microsoft.Extensions.Hosting  | Azure.Messaging.Servicebus    |
+| Azure.Storage.Blobs           |                               |
+| Microsoft.Data.SqlClient      |                               |
 
 ## Minimal setup:
 ```csharp
