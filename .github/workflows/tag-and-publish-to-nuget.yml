@@ -41,14 +41,14 @@ jobs:
         run: dotnet tool install --global coverlet.console
 
       - name: Run tests with coverage
-        run: dotnet test --configuration Release --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/
+        run: dotnet test --configuration Release --no-build --verbosity normal /p:CollectCoverage=true /p:CoverletOutputFormat=opencover /p:CoverletOutput=./coverage/coverage.opencover.xml
 
       - name: Upload coverage to Codacy
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
         run: |
           curl -Ls https://coverage.codacy.com/get.sh | bash
-          ./codacy-coverage-reporter report -r coverage.opencover.xml
+          ./codacy-coverage-reporter report -r ./coverage/coverage.opencover.xml
 
       - name: Get the latest tag
         id: get_tag
