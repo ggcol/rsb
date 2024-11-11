@@ -48,6 +48,7 @@ jobs:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
         run: |
           COBERTURA_FILE=$(find . -name coverage.cobertura.xml)
+          echo "${COBERTURA_FILE}"
           curl -Ls https://coverage.codacy.com/get.sh | bash
           ./codacy-coverage-reporter report -r $COBERTURA_FILE
 
