@@ -48,10 +48,13 @@ jobs:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
         run: |
           COBERTURA_FILE=$(find . -name coverage.cobertura.xml)
-          echo "${COBERTURA_FILE}"
-          curl -Ls https://coverage.codacy.com/get.sh | bash
-          ./codacy-coverage-reporter report -r $COBERTURA_FILE
-
+          if [ -z "$COBERTURA_FILE" ]; then
+            echo "Coverage report not found!"
+            exit 1
+          fi
+          echo "Found coverage file at: ${COBERTURA_FILE}"
+          curl -Ls https://coverage.codacy.com/get.sh | report -r $COBERTURA_FILE | bash
+          
       - name: Get the latest tag
         id: get_tag
         run: echo "::set-output name=TAG::$(git describe --tags --abbrev=0)"
