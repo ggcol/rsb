@@ -47,8 +47,9 @@ jobs:
         env:
           CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
         run: |
+          COBERTURA_FILE=$(find . -name coverage.cobertura.xml)
           curl -Ls https://coverage.codacy.com/get.sh | bash
-          ./codacy-coverage-reporter report -r coverage.cobertura.xml
+          ./codacy-coverage-reporter report -r $COBERTURA_FILE
 
       - name: Get the latest tag
         id: get_tag
