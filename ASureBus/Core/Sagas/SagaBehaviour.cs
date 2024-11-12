@@ -12,36 +12,35 @@ internal sealed class SagaBehaviour(IAsbCache cache)
         ? new SagaIO()
         : null;
 
-    public void SetCorrelationId(SagaType sagaType,
-        Guid correlationId, object implSaga)
+    public void SetCorrelationId(SagaType sagaType, Guid correlationId, object sagaInstance)
     {
         sagaType.Type
             .GetProperty(nameof(ISaga.CorrelationId))?
-            .SetValue(implSaga, correlationId);
+            .SetValue(sagaInstance, correlationId);
     }
 
-    public void HandleCompletion(SagaType sagaType, Guid correlationId,
-        object implSaga)
+    public void HandleCompletion(SagaType sagaType, Guid correlationId, object sagaInstance)
     {
         var completedEvent = sagaType.Type.GetEvent(nameof(ISaga.Completed));
 
-        if (completedEvent == null) return;
+        if (completedEvent is null) return;
 
         var handlerType = completedEvent.EventHandlerType;
-        var methodInfo = GetType()
-            .GetMethod(
-                nameof(OnSagaCompleted),
-                BindingFlags.NonPublic | BindingFlags.Instance);
+        
+        var methodInfo = GetType().GetMethod(nameof(OnSagaCompleted), BindingFlags.NonPublic | BindingFlags.Instance);
+        
         var handler = Delegate.CreateDelegate(handlerType, this, methodInfo);
 
         var addMethod = completedEvent.GetAddMethod(true);
 
         if (addMethod != null)
         {
-            addMethod.Invoke(implSaga, new object[] { handler });
+            addMethod.Invoke(sagaInstance, new object[] { handler });
         }
     }
 
+    // ReSharper disable once UnusedParameter.Local
+    // this is used through reflection
     private void OnSagaCompleted(object sender, SagaCompletedEventArgs e)
     {
         cache.Remove(e.CorrelationId);

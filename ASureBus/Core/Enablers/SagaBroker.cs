@@ -20,10 +20,10 @@ internal sealed class SagaBroker<TSagaData, TMessage>(
              * TODO this nameof() is misleading, it doesn't refers directly to
              * Saga<>.Handle
              */
-            .FirstOrDefault(m => m.Name.Equals(nameof(Handle)) &&
-                                 m.GetParameters().Length == 3 &&
-                                 m.GetParameters()[0].ParameterType ==
-                                 typeof(TMessage)
+            .FirstOrDefault(method =>
+                method.Name.Equals(nameof(Handle)) &&
+                method.GetParameters().Length == 3 &&
+                method.GetParameters()[0].ParameterType == typeof(TMessage)
             );
 
         var asbMessage = await GetFrom(binaryData, cancellationToken)
@@ -33,10 +33,10 @@ internal sealed class SagaBroker<TSagaData, TMessage>(
         {
             await (Task)method.Invoke(saga,
             [
-                asbMessage.Message, _context, cancellationToken
+                asbMessage.Message, Context, cancellationToken
             ]);
         }
-        
+
         return asbMessage;
     }
 
@@ -50,17 +50,17 @@ internal sealed class SagaBroker<TSagaData, TMessage>(
              * TODO this nameof() is misleading, it doesn't refers directly to
              * Saga<>.Handle
              */
-            .FirstOrDefault(m => m.Name.Equals(nameof(HandleError)) &&
-                                 m.GetParameters().Length == 3 &&
-                                 m.GetParameters()[0].ParameterType ==
-                                 typeof(TMessage)
+            .FirstOrDefault(method =>
+                method.Name.Equals(nameof(HandleError)) &&
+                method.GetParameters().Length == 3 &&
+                method.GetParameters()[0].ParameterType == typeof(Exception)
             );
 
         if (method is not null)
         {
             await (Task)method.Invoke(saga,
             [
-                ex, _context, cancellationToken
+                ex, Context, cancellationToken
             ]);
         }
     }

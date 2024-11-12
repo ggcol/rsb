@@ -10,9 +10,9 @@ internal abstract class BrokerBehavior<TMessage>(
     IMessagingContext context)
     where TMessage : IAmAMessage
 {
-    protected readonly IMessagingContext _context = context;
+    protected readonly IMessagingContext Context = context;
     
-    public ICollectMessage Collector => (ICollectMessage)_context;
+    public ICollectMessage Collector => (ICollectMessage)Context;
 
     protected async Task<AsbMessage<TMessage>?> GetFrom(BinaryData binaryData,
         CancellationToken cancellationToken = default)

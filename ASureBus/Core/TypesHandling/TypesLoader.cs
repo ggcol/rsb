@@ -102,7 +102,7 @@ internal sealed class TypesLoader : ITypesLoader
                         IsCommand = messageType.GetInterfaces()
                             .Any(x => x == typeof(IAmACommand))
                     },
-                    IsInitMessage = i.GetGenericTypeDefinition() == typeof(IAmStartedBy<>)
+                    IsInitMessageHandler = i.GetGenericTypeDefinition() == typeof(IAmStartedBy<>)
                 });
             }
 

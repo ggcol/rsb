@@ -11,6 +11,7 @@ using Playground.Samples._03_TwoMessagesSameHandlerClass;
 using Playground.Samples._04_ASaga;
 using Playground.Samples._05_Heavy;
 using Playground.Samples._07_DelayedAndScheduled;
+using Playground.Samples._08_ABrokenSaga;
 
 await Host
     .CreateDefaultBuilder()
@@ -88,6 +89,7 @@ await Host
             // services.AddHostedService<HeavyInitJob>();
             // services.AddHostedService<APersistedSagaInitJob>();
             // services.AddHostedService<DelayedAndScheduledInitJob>();
+            // services.AddHostedService<ABrokenSagaInitJob>();
             services.AddLogging();
         })
     

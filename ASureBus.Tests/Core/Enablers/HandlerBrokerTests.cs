@@ -1,9 +1,9 @@
 ﻿using System.Text;
-using System.Text.Json;
 using ASureBus.Abstractions;
 using ASureBus.Accessories.Heavy;
 using ASureBus.Core.Enablers;
 using ASureBus.Core.Entities;
+using ASureBus.Utils;
 using Moq;
 
 namespace ASureBus.Tests.Core.Enablers;
@@ -43,7 +43,7 @@ public class HandlerBrokerTests
             MessageId = Guid.NewGuid()
         };
 
-        var json = JsonSerializer.Serialize(asbMessage);
+        var json = Serializer.Serialize(asbMessage);
         var binaryData = new BinaryData(Encoding.UTF8.GetBytes(json));
 
         // Act
