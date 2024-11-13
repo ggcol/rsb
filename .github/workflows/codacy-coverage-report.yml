@@ -1,0 +1,42 @@
+name: Upload coverage to Codacy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Set up .NET
+              uses: actions/setup-dotnet@v4
+              with:
+                  dotnet-version: '8.0.x'
+
+            - name: Restore dependencies
+              run: dotnet restore
+
+            - name: Build solution
+              run: dotnet build --configuration Release --no-restore
+
+            - name: Run tests with coverage
+              run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage/ --settings coverage.runsettings
+
+            - name: Upload coverage to Codacy
+              env:
+                  CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
+              run: |
+                  COBERTURA_FILE=$(find . -name coverage.cobertura.xml)
+                  if [ -z "$COBERTURA_FILE" ]; then
+                      echo "Coverage report not found!"
+                      exit 1
+                  fi
+                  echo "Found coverage file at: ${COBERTURA_FILE}"
+                  bash <(curl -Ls https://coverage.codacy.com/get.sh) report -r $COBERTURA_FILE
