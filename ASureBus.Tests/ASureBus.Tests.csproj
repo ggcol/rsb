@@ -26,4 +26,8 @@
       <ProjectReference Include="..\ASureBus\ASureBus.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="ASureBus\" />
+    </ItemGroup>
+
 </Project>

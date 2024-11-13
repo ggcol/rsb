@@ -1,5 +1,6 @@
 ﻿using ASureBus.Abstractions.Configurations;
-using ASureBus.Abstractions.Configurations.ConfigObjects;
+using ASureBus.ConfigurationObjects;
+using ASureBus.ConfigurationObjects.Exceptions;
 using ASureBus.Utils;
 using Microsoft.Extensions.Hosting;
 

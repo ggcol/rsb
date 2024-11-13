@@ -1,6 +1,7 @@
 ﻿using ASureBus.Abstractions;
 using ASureBus.Abstractions.Configurations;
-using ASureBus.Abstractions.Configurations.ConfigObjects;
+using ASureBus.ConfigurationObjects;
+using ASureBus.ConfigurationObjects.Exceptions;
 using ASureBus.Core.Caching;
 using ASureBus.Core.Messaging;
 using ASureBus.Core.Sagas;

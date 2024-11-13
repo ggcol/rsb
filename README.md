@@ -16,11 +16,13 @@ ASureBus.Abstractions:
 
 ## Actual dependencies:
 
-| ASureBus                      | ASureBus.Abstractions         |
-|-------------------------------|-------------------------------|
-| Microsoft.Extensions.Hosting  | Azure.Messaging.Servicebus    |
-| Azure.Storage.Blobs           |                               |
-| Microsoft.Data.SqlClient      |                               |
+ASureBus:                     
+- Azure.Messaging.Servicebus    
+- Microsoft.Extensions.Hosting  
+- Azure.Storage.Blobs           
+- Microsoft.Data.SqlClient      
+
+
 
 ## Minimal setup:
 ```csharp

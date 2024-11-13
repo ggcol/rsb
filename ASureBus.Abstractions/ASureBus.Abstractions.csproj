@@ -22,8 +22,4 @@
             <_Parameter1>DynamicProxyGenAssembly2</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.18.1" />
-    </ItemGroup>
 </Project>
