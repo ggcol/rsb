@@ -17,4 +17,5 @@ public interface IConfigureAzureServiceBus
     /// Maps to Azure.Messaging.ServiceBus.ServiceBusRetryMode.
     /// </summary>
     public string? ServiceBusRetryMode { get; set; }
+    public int? MaxConcurrentCalls { get; set; } 
 }

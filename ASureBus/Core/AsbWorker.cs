@@ -71,7 +71,7 @@ internal sealed class AsbWorker : IHostedService
                     .ConfigureAwait(false)
                     .GetAwaiter()
                     .GetResult();
-
+                
                 processor.ProcessMessageAsync += async args =>
                     await ProcessMessage(saga, listener, args);
 

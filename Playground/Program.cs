@@ -26,7 +26,7 @@ await Host
 
     // Configure the application to use Azure Service Bus with the specified settings
     // .UseAsb<WholeServiceBusSettings>()
-    // .UseAsb<PartialServiceBusSettings>()
+    .UseAsb<PartialServiceBusSettings>()
     
     // Configure the application to use Azure Service Bus with a custom configuration
     // .UseAsb(new ServiceBusConfig

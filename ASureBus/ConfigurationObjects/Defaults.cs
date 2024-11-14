@@ -26,5 +26,7 @@ internal static class Defaults
                 TryTimeout = TimeSpan.FromSeconds(300)
             }
         };
+        
+        internal const int MAX_CONCURRENT_CALLS = 20;
     }
 }

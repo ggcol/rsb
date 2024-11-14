@@ -89,7 +89,8 @@ public class MinimalSetupTests
         // Arrange
         var serviceBusConfig = new ServiceBusConfig
         {
-            ConnectionString = "TestConnectionString"
+            ConnectionString = "TestConnectionString",
+            MaxConcurrentCalls = 10
         };
 
         _mockHostBuilder.Setup(h =>
@@ -137,4 +138,5 @@ internal class ServiceBusSettings : IConfigureAzureServiceBus
     public int? MaxDelayInSeconds { get; set; }
     public int? TryTimeoutInSeconds { get; set; }
     public string? ServiceBusRetryMode { get; set; }
+    public int? MaxConcurrentCalls { get; set; }
 }

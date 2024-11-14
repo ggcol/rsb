@@ -11,6 +11,7 @@ public abstract class ServiceBusSettings : IConfigureAzureServiceBus
     public int? MaxDelayInSeconds { get; set; }
     public int? TryTimeoutInSeconds { get; set; }
     public string? ServiceBusRetryMode { get; set; }
+    public int? MaxConcurrentCalls { get; set; }
 }
 
 public class WholeServiceBusSettings : ServiceBusSettings { }

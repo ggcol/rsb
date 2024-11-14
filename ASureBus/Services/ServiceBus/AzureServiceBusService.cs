@@ -13,6 +13,11 @@ internal sealed class AzureServiceBusService(IAsbCache cache)
     private ServiceBusClient _sbClient { get; } = new(
         AsbConfiguration.ServiceBus.ServiceBusConnectionString,
         AsbConfiguration.ServiceBus.ClientOptions);
+    
+    private ServiceBusProcessorOptions _processorOptions { get; } = new()
+    {
+        MaxConcurrentCalls = AsbConfiguration.ServiceBus.MaxConcurrentCalls
+    };
 
     public async Task<ServiceBusProcessor> GetProcessor(
         ListenerType handler, CancellationToken cancellationToken = default)
@@ -23,19 +28,15 @@ internal sealed class AzureServiceBusService(IAsbCache cache)
                     handler.MessageType.Type.Name, cancellationToken)
                 .ConfigureAwait(false);
 
-            //TODO check this
-            //It does not make sense to cache processors
-            return _sbClient.CreateProcessor(queue);
+            return _sbClient.CreateProcessor(queue, _processorOptions);
         }
 
         var topicConfig = await ConfigureTopicForReceiver(
                 handler.MessageType.Type, cancellationToken)
             .ConfigureAwait(false);
 
-        //TODO check this
-        //It does not make sense to cache processors
         return _sbClient.CreateProcessor(topicConfig.Name,
-            topicConfig.SubscriptionName);
+            topicConfig.SubscriptionName, _processorOptions);
     }
 
     public async Task<string> ConfigureQueue(string queueName,
@@ -52,8 +53,7 @@ internal sealed class AzureServiceBusService(IAsbCache cache)
             queueName = rx.Value.Name;
         }
 
-        return cache.Set(queueName, queueName,
-            AsbConfiguration.Cache.Expiration);
+        return cache.Set(queueName, queueName, AsbConfiguration.Cache.Expiration);
     }
 
     public async Task<string> ConfigureTopicForSender(string topicName,
@@ -65,14 +65,12 @@ internal sealed class AzureServiceBusService(IAsbCache cache)
 
         if (!await admClient.TopicExistsAsync(topicName, cancellationToken))
         {
-            //A message sent to a topic without subscription is lost :/
             var rx = await admClient.CreateTopicAsync(
                 topicName, cancellationToken);
             topicName = rx.Value.Name;
         }
 
-        return cache.Set(topicName, topicName,
-            AsbConfiguration.Cache.Expiration);
+        return cache.Set(topicName, topicName, AsbConfiguration.Cache.Expiration);
     }
 
     private async Task<TopicConfiguration> ConfigureTopicForReceiver(
@@ -115,9 +113,7 @@ internal sealed class AzureServiceBusService(IAsbCache cache)
 
     public ServiceBusSender GetSender(string destination)
     {
-        var cacheKey =
-            CacheKey(AsbConfiguration.Cache.ServiceBusSenderCachePrefix,
-                destination);
+        var cacheKey = CacheKey(AsbConfiguration.Cache.ServiceBusSenderCachePrefix!, destination);
 
         return cache.TryGetValue(cacheKey, out ServiceBusSender sender)
             ? sender

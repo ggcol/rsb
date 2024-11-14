@@ -12,12 +12,14 @@ public sealed class ServiceBusConfig : IConfigureAzureServiceBus
     public int? MaxDelayInSeconds { get; set; }
     public int? TryTimeoutInSeconds { get; set; }
     public string? ServiceBusRetryMode { get; set; }
+    public int? MaxConcurrentCalls { get; set; }
 }
 
 internal sealed class InternalServiceBusConfig
 {
-    public string? ServiceBusConnectionString { get; }
+    public string ServiceBusConnectionString { get; }
     public ServiceBusClientOptions ClientOptions { get; }
+    public int MaxConcurrentCalls { get; }
 
     public InternalServiceBusConfig(IConfigureAzureServiceBus config)
     {
@@ -52,5 +54,6 @@ internal sealed class InternalServiceBusConfig
                     : Defaults.ServiceBus.CLIENT_OPTIONS.RetryOptions.TryTimeout
             }
         };
+        MaxConcurrentCalls = config.MaxConcurrentCalls ?? Defaults.ServiceBus.MAX_CONCURRENT_CALLS;
     }
 }

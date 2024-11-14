@@ -18,7 +18,8 @@ public class InternalServiceBusConfigTests
             DelayInSeconds = 2,
             MaxDelayInSeconds = 30,
             TryTimeoutInSeconds = 45,
-            ServiceBusRetryMode = "Exponential"
+            ServiceBusRetryMode = "Exponential",
+            MaxConcurrentCalls = 40
         };
 
         // Act
@@ -40,6 +41,7 @@ public class InternalServiceBusConfigTests
                 Is.EqualTo(TimeSpan.FromSeconds(30)));
             Assert.That(internalConfig.ClientOptions.RetryOptions.TryTimeout,
                 Is.EqualTo(TimeSpan.FromSeconds(45)));
+            Assert.That(internalConfig.MaxConcurrentCalls, Is.EqualTo(40));
         });
     }
 
@@ -73,6 +75,8 @@ public class InternalServiceBusConfigTests
                 Is.EqualTo(Defaults.ServiceBus.CLIENT_OPTIONS.RetryOptions.MaxDelay));
             Assert.That(internalConfig.ClientOptions.RetryOptions.TryTimeout,
                 Is.EqualTo(Defaults.ServiceBus.CLIENT_OPTIONS.RetryOptions.TryTimeout));
+            Assert.That(internalConfig.MaxConcurrentCalls,
+                Is.EqualTo(Defaults.ServiceBus.MAX_CONCURRENT_CALLS));
         });
     }
 }

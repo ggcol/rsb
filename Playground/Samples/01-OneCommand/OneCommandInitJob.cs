@@ -11,7 +11,7 @@ internal class OneCommandInitJob(
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var max = new Random().Next(5);
+        var max = new Random().Next(1, 10);
 
         for (var i = 0; i <= max; i++)
         {
