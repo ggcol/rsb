@@ -50,10 +50,7 @@ public static class MinimalSetup
         {
             var settings = ConfigProvider.LoadSettings<TSettings>(hostBuilderContext.Configuration);
 
-                AsbConfiguration.ServiceBus = new ServiceBusConfig
-                {
-                    ServiceBusConnectionString = settings.ServiceBusConnectionString
-                };
+            AsbConfiguration.ServiceBus = new InternalServiceBusConfig(settings);
         });
     }
 
@@ -62,7 +59,7 @@ public static class MinimalSetup
         if (serviceBusConfig is null)
             throw new ConfigurationNullException(nameof(ServiceBusConfig));
 
-        AsbConfiguration.ServiceBus = serviceBusConfig;
+        AsbConfiguration.ServiceBus = new InternalServiceBusConfig(serviceBusConfig);
     }
 
     private static IHostBuilder UseAsb(IHostBuilder hostBuilder, bool isSendOnly = false)

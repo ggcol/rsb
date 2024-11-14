@@ -9,7 +9,10 @@ public class AsbConfigurationTests
     [SetUp]
     public void SetUp()
     {
-        AsbConfiguration.ServiceBus = new ServiceBusConfig();
+        AsbConfiguration.ServiceBus = new InternalServiceBusConfig(new ServiceBusConfig()
+        {
+            ConnectionString = "connection-string",
+        });
         AsbConfiguration.Cache = new AsbCacheConfig();
         AsbConfiguration.HeavyProps = null;
         AsbConfiguration.DataStorageSagaPersistence = null;

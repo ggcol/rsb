@@ -2,5 +2,19 @@
 
 public interface IConfigureAzureServiceBus
 {
-    public string? ServiceBusConnectionString { get; set; }
+    public string ConnectionString { get; set; }
+    /// <summary>
+    /// May be "AmqpTcp" or "AmqpWebSockets", default is "AmqpWebSocket".
+    /// Maps to Azure.Messaging.ServiceBus.ServiceBusTransportType.
+    /// </summary>
+    public string? TransportType { get; set; }
+    public int? MaxRetries { get; set; }
+    public int? DelayInSeconds { get; set; }
+    public int? MaxDelayInSeconds { get; set; }
+    public int? TryTimeoutInSeconds { get; set; }
+    /// <summary>
+    /// May be "fixed" or "exponential", default is "fixed".
+    /// Maps to Azure.Messaging.ServiceBus.ServiceBusRetryMode.
+    /// </summary>
+    public string? ServiceBusRetryMode { get; set; }
 }

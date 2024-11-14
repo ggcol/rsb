@@ -5,12 +5,52 @@ namespace ASureBus.ConfigurationObjects;
 
 public sealed class ServiceBusConfig : IConfigureAzureServiceBus
 {
-    private ServiceBusClientOptions? _clientOptions;
+    public required string ConnectionString { get; set; }
+    public string? TransportType { get; set; }
+    public int? MaxRetries { get; set; }
+    public int? DelayInSeconds { get; set; }
+    public int? MaxDelayInSeconds { get; set; }
+    public int? TryTimeoutInSeconds { get; set; }
+    public string? ServiceBusRetryMode { get; set; }
+}
 
-    public string? ServiceBusConnectionString { get; set; }
-    public ServiceBusClientOptions? ClientOptions
+internal sealed class InternalServiceBusConfig
+{
+    public string? ServiceBusConnectionString { get; }
+    public ServiceBusClientOptions ClientOptions { get; }
+
+    public InternalServiceBusConfig(IConfigureAzureServiceBus config)
     {
-        get => _clientOptions ?? Defaults.ServiceBus.CLIENT_OPTIONS; 
-        set => _clientOptions = value;
+        ServiceBusConnectionString = config.ConnectionString;
+        ClientOptions = new ServiceBusClientOptions()
+        {
+            TransportType =
+                Enum.TryParse<ServiceBusTransportType>(config.TransportType, out var transportType)
+                    ? transportType
+                    : Defaults.ServiceBus.CLIENT_OPTIONS.TransportType,
+
+            RetryOptions = new ServiceBusRetryOptions()
+            {
+                Mode = Enum.TryParse<ServiceBusRetryMode>(config.ServiceBusRetryMode,
+                    out var retryMode)
+                    ? retryMode
+                    : Defaults.ServiceBus.CLIENT_OPTIONS.RetryOptions.Mode,
+
+                MaxRetries = config.MaxRetries
+                             ?? Defaults.ServiceBus.CLIENT_OPTIONS.RetryOptions.MaxRetries,
+
+                Delay = config.DelayInSeconds is not null
+                    ? TimeSpan.FromSeconds(config.DelayInSeconds.Value)
+                    : Defaults.ServiceBus.CLIENT_OPTIONS.RetryOptions.Delay,
+
+                MaxDelay = config.MaxDelayInSeconds is not null
+                    ? TimeSpan.FromSeconds(config.MaxDelayInSeconds.Value)
+                    : Defaults.ServiceBus.CLIENT_OPTIONS.RetryOptions.MaxDelay,
+
+                TryTimeout = config.TryTimeoutInSeconds is not null
+                    ? TimeSpan.FromSeconds(config.TryTimeoutInSeconds.Value)
+                    : Defaults.ServiceBus.CLIENT_OPTIONS.RetryOptions.TryTimeout
+            }
+        };
     }
 }

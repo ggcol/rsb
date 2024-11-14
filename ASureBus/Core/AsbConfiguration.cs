@@ -7,7 +7,7 @@ namespace ASureBus.Core;
 internal static class AsbConfiguration
 {
     //basic configuration
-    public static ServiceBusConfig ServiceBus { get; set; } = new();
+    public static InternalServiceBusConfig ServiceBus { get; set; } = null!;
     public static AsbCacheConfig Cache { get; set; } = new();
 
     //heavy props configuration

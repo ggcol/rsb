@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using ASureBus.ConfigurationObjects;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Playground.Samples._06_SagaPersistence;
 using Playground.Settings;
@@ -24,16 +25,20 @@ await Host
      */
 
     // Configure the application to use Azure Service Bus with the specified settings
-    .UseAsb<ServiceBusSettings>()
-
+    // .UseAsb<WholeServiceBusSettings>()
+    // .UseAsb<PartialServiceBusSettings>()
+    
     // Configure the application to use Azure Service Bus with a custom configuration
-    // .UseAsb(new ServiceBusConfig()
+    // .UseAsb(new ServiceBusConfig
     // {
-    //     ServiceBusConnectionString = "",
-    //     ClientOptions = new()
-    //     {
-    //         TransportType = ServiceBusTransportType.AmqpWebSockets
-    //     }
+    //     ConnectionString = "connection-string",
+    //     // All the following are optional, they are initialized as default if not mentioned
+    //     TransportType = "", // Default is "AmqpWebSocket"
+    //     MaxRetries = 0, // Default is 3
+    //     DelayInSeconds = 0, // Default is 0.8
+    //     MaxDelayInSeconds = 0, // Default is 60
+    //     TryTimeoutInSeconds = 0, // Default is 300
+    //     ServiceBusRetryMode = "" // Default is "Fixed"
     // })
     
     
@@ -47,7 +52,7 @@ await Host
     // Configure the application to use heavy properties with the specified settings
     // .UseHeavyProps<HeavySettings>()
 
-    // Configure the application to use heavy properties with a custom configurationx
+    // Configure the application to use heavy properties with a custom configuration
     // .UseHeavyProps(new HeavyPropertiesConfig()
     // {
     //     DataStorageConnectionString = "",
@@ -108,9 +113,9 @@ await Host
     // .ConfigureAsbCache(new AsbCacheConfig()
     // {
     //     // All these 3 are optional, they are initialized as default if not mentioned
-    //     Expiration = TimeSpan.FromHours(2),
-    //     TopicConfigPrefix = "",
-    //     ServiceBusSenderCachePrefix = ""
+    //     Expiration = TimeSpan.FromHours(2), // default is 5 minutes
+    //     TopicConfigPrefix = "", // default is "topicConfig"
+    //     ServiceBusSenderCachePrefix = "" // default is "sender"
     // })
     
     
@@ -120,5 +125,5 @@ await Host
      * RUN THE APPLICATION
      * ========================================
      */
-    // Run the application as a console application
+    
     .RunConsoleAsync();

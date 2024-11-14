@@ -34,7 +34,7 @@ public class MinimalSetupTests
             Configuration = _mockConfiguration.Object
         };
     }
-    
+
     [TearDown]
     public void TearDown()
     {
@@ -89,7 +89,7 @@ public class MinimalSetupTests
         // Arrange
         var serviceBusConfig = new ServiceBusConfig
         {
-            ServiceBusConnectionString = "TestConnectionString"
+            ConnectionString = "TestConnectionString"
         };
 
         _mockHostBuilder.Setup(h =>
@@ -130,5 +130,11 @@ public class MinimalSetupTests
 
 internal class ServiceBusSettings : IConfigureAzureServiceBus
 {
-    public string? ServiceBusConnectionString { get; set; }
+    public string? ConnectionString { get; set; }
+    public string? TransportType { get; set; }
+    public int? MaxRetries { get; set; }
+    public int? DelayInSeconds { get; set; }
+    public int? MaxDelayInSeconds { get; set; }
+    public int? TryTimeoutInSeconds { get; set; }
+    public string? ServiceBusRetryMode { get; set; }
 }

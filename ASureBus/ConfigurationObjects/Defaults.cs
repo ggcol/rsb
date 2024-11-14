@@ -14,7 +14,7 @@ internal static class Defaults
 
     internal static class ServiceBus
     {
-        internal static readonly ServiceBusClientOptions? CLIENT_OPTIONS = new()
+        internal static readonly ServiceBusClientOptions CLIENT_OPTIONS = new()
         {
             TransportType = ServiceBusTransportType.AmqpWebSockets,
             RetryOptions = new ServiceBusRetryOptions
@@ -22,8 +22,8 @@ internal static class Defaults
                 Mode = ServiceBusRetryMode.Fixed,
                 MaxRetries = 3,
                 Delay = TimeSpan.FromSeconds(0.8),
-                MaxDelay = TimeSpan.FromMinutes(1.0),
-                TryTimeout = TimeSpan.FromMinutes(5.0)
+                MaxDelay = TimeSpan.FromSeconds(60),
+                TryTimeout = TimeSpan.FromSeconds(300)
             }
         };
     }
