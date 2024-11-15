@@ -17,7 +17,7 @@ public class HeavyIoTests
     {
         _storageMock = new Mock<IAzureDataStorageService>();
 
-        AsbConfiguration.HeavyProps = new HeavyPropertiesConfig()
+        AsbConfiguration.HeavyProps = new HeavyPropertiesConfig
         {
             DataStorageConnectionString = "UseDevelopmentStorage=true",
             DataStorageContainer = "test-container"

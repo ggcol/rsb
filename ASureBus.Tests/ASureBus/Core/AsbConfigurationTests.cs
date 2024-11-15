@@ -9,7 +9,7 @@ public class AsbConfigurationTests
     [SetUp]
     public void SetUp()
     {
-        AsbConfiguration.ServiceBus = new InternalServiceBusConfig(new ServiceBusConfig()
+        AsbConfiguration.ServiceBus = new InternalServiceBusConfig(new ServiceBusConfig
         {
             ConnectionString = "connection-string",
         });

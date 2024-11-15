@@ -11,7 +11,7 @@ public class ABrokenSagaInitJob(
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await context.Send(new ABrokenSagaInitCommand()
+        await context.Send(new ABrokenSagaInitCommand
             {
                 BreakSaga = true
             }, cancellationToken)

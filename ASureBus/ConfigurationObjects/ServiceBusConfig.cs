@@ -24,14 +24,14 @@ internal sealed class InternalServiceBusConfig
     public InternalServiceBusConfig(IConfigureAzureServiceBus config)
     {
         ServiceBusConnectionString = config.ConnectionString;
-        ClientOptions = new ServiceBusClientOptions()
+        ClientOptions = new ServiceBusClientOptions
         {
             TransportType =
                 Enum.TryParse<ServiceBusTransportType>(config.TransportType, out var transportType)
                     ? transportType
                     : Defaults.ServiceBus.CLIENT_OPTIONS.TransportType,
 
-            RetryOptions = new ServiceBusRetryOptions()
+            RetryOptions = new ServiceBusRetryOptions
             {
                 Mode = Enum.TryParse<ServiceBusRetryMode>(config.ServiceBusRetryMode,
                     out var retryMode)
