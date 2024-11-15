@@ -1,4 +1,5 @@
 ﻿using ASureBus.Abstractions;
+using ASureBus.Abstractions.Options.Messaging;
 
 namespace ASureBus.Core.Messaging;
 
@@ -8,8 +9,16 @@ internal sealed class MessagingContextInternal : CollectMessage, IMessagingConte
         CancellationToken cancellationToken = default)
         where TCommand : IAmACommand
     {
-        await Enqueue(message, cancellationToken)
-            .ConfigureAwait(false);
+        await Enqueue(message, null, cancellationToken).ConfigureAwait(false);
+    }
+
+    public Task Send<TCommand>(TCommand message, SendOptions options,
+        CancellationToken cancellationToken = default)
+        where TCommand : IAmACommand
+    {
+        return options.IsScheduled
+            ? Enqueue(message, options.ScheduledTime!.Value, options, cancellationToken)
+            : Enqueue(message, options, cancellationToken);
     }
 
     public async Task SendAfter<TCommand>(TCommand message, TimeSpan delay,
@@ -22,16 +31,24 @@ internal sealed class MessagingContextInternal : CollectMessage, IMessagingConte
     public async Task SendScheduled<TCommand>(TCommand message, DateTimeOffset scheduledTime,
         CancellationToken cancellationToken = default) where TCommand : IAmACommand
     {
-        await Enqueue(message, scheduledTime, cancellationToken)
+        await Enqueue(message, scheduledTime, null, cancellationToken)
             .ConfigureAwait(false);
     }
 
-    public async Task Publish<TEvent>(TEvent message,
+    public async Task Publish<TEvent>(TEvent message, CancellationToken cancellationToken = default)
+        where TEvent : IAmAnEvent
+    {
+        await Enqueue(message, null, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public Task Publish<TEvent>(TEvent message, PublishOptions options,
         CancellationToken cancellationToken = default)
         where TEvent : IAmAnEvent
     {
-        await Enqueue(message, cancellationToken)
-            .ConfigureAwait(false);
+        return options.IsScheduled
+            ? Enqueue(message, options.ScheduledTime!.Value, options, cancellationToken)
+            : Enqueue(message, options, cancellationToken);
     }
 
     public async Task PublishAfter<TEvent>(TEvent message, TimeSpan delay,
@@ -44,7 +61,7 @@ internal sealed class MessagingContextInternal : CollectMessage, IMessagingConte
     public async Task PublishScheduled<TEvent>(TEvent message, DateTimeOffset scheduledTime,
         CancellationToken cancellationToken = default) where TEvent : IAmAnEvent
     {
-        await Enqueue(message, scheduledTime, cancellationToken)
+        await Enqueue(message, scheduledTime, null, cancellationToken)
             .ConfigureAwait(false);
     }
 }

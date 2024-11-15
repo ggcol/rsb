@@ -7,8 +7,9 @@ internal interface IAsbMessage
     internal Guid MessageId { get; set; }
     internal Guid CorrelationId { get; init; }
     internal string MessageName { get; init; }
-    public bool IsCommand { get; }
-    public IReadOnlyList<HeavyReference>? Heavies { get; init; }
-    public bool IsScheduled { get; }
-    public DateTimeOffset? ScheduledTime { get; init; }
+    internal string Destination { get; init; }
+    internal bool IsCommand { get; }
+    internal IReadOnlyList<HeavyReference>? Heavies { get; set; }
+    internal bool IsScheduled { get; }
+    internal DateTimeOffset? ScheduledTime { get; set; }
 }

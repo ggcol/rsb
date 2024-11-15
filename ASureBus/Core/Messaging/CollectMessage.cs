@@ -1,4 +1,5 @@
 ﻿using ASureBus.Abstractions;
+using ASureBus.Abstractions.Options.Messaging;
 using ASureBus.Accessories.Heavy;
 using ASureBus.Core.Entities;
 
@@ -9,7 +10,7 @@ internal abstract class CollectMessage : ICollectMessage
     public Queue<IAsbMessage> Messages { get; } = new();
     public Guid CorrelationId { get; set; } = Guid.NewGuid();
 
-    protected async Task Enqueue<TMessage>(TMessage message,
+    protected async Task Enqueue<TMessage>(TMessage message, EmitOptions? options, 
         CancellationToken cancellationToken)
         where TMessage : IAmAMessage
     {
@@ -18,11 +19,11 @@ internal abstract class CollectMessage : ICollectMessage
         var heaviesRef = await UnloadHeavies(message, messageId, cancellationToken)
             .ConfigureAwait(false);
 
-        Messages.Enqueue(ToInternalMessage(message, messageId, heaviesRef));
+        Messages.Enqueue(ToInternalMessage(message, messageId, options, heaviesRef));
     }
-
+    
     protected async Task Enqueue<TMessage>(TMessage message, DateTimeOffset scheduledTime,
-        CancellationToken cancellationToken)
+        EmitOptions? options, CancellationToken cancellationToken)
         where TMessage : IAmAMessage
     {
         var messageId = Guid.NewGuid();
@@ -30,22 +31,37 @@ internal abstract class CollectMessage : ICollectMessage
         var heaviesRef = await UnloadHeavies(message, messageId, cancellationToken)
             .ConfigureAwait(false);
 
-        Messages.Enqueue(ToInternalMessage(message, messageId, heaviesRef, scheduledTime));
+        Messages.Enqueue(ToInternalMessage(message, messageId, options, heaviesRef, scheduledTime));
     }
 
     private AsbMessage<TMessage> ToInternalMessage<TMessage>(TMessage message, Guid messageId,
-        IReadOnlyList<HeavyReference>? heavies = null, DateTimeOffset? scheduledTime = null)
+        EmitOptions? options = null, IReadOnlyList<HeavyReference>? heavies = null, 
+        DateTimeOffset? scheduledTime = null)
         where TMessage : IAmAMessage
     {
-        return new AsbMessage<TMessage>
+        var messageName = typeof(TMessage).Name;
+        var asbMessage = new AsbMessage<TMessage>
         {
             MessageId = messageId,
-            MessageName = typeof(TMessage).Name,
+            MessageName = messageName,
+            Destination = options is null || string.IsNullOrWhiteSpace(options.Destination)
+                ? messageName
+                : options.Destination,
             Message = message,
             CorrelationId = CorrelationId,
-            Heavies = heavies,
-            ScheduledTime = scheduledTime
         };
+
+        if (heavies is not null && heavies.Count > 0)
+        {
+            asbMessage.Heavies = heavies;
+        }
+
+        if (scheduledTime is not null)
+        {
+            asbMessage.ScheduledTime = scheduledTime;
+        }
+
+        return asbMessage;
     }
 
     private async Task<IReadOnlyList<HeavyReference>> UnloadHeavies<TMessage>(TMessage message,

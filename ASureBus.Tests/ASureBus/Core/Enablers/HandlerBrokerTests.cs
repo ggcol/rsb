@@ -40,7 +40,10 @@ public class HandlerBrokerTests
         {
             Message = testMessage,
             Heavies = new List<HeavyReference>(),
-            MessageId = Guid.NewGuid()
+            MessageId = Guid.NewGuid(),
+            CorrelationId = Guid.NewGuid(),
+            MessageName = nameof(HandlerBrokerTestsMessage),
+            Destination = nameof(HandlerBrokerTestsMessage)
         };
 
         var json = Serializer.Serialize(asbMessage);

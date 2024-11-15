@@ -34,7 +34,10 @@ public class SagaBrokerTests
         {
             Message = testMessage,
             Heavies = new List<HeavyReference>(),
-            MessageId = Guid.NewGuid()
+            MessageId = Guid.NewGuid(),
+            CorrelationId = Guid.NewGuid(),
+            MessageName = nameof(SagaBrokerTestMessage),
+            Destination = nameof(SagaBrokerTestMessage)
         };
         
         var json = Serializer.Serialize(asbMessage);

@@ -1,4 +1,5 @@
 ﻿using ASureBus.Abstractions;
+using ASureBus.Abstractions.Options.Messaging;
 
 namespace ASureBus.Core.Messaging;
 
@@ -8,7 +9,16 @@ internal sealed class MessagingContext(IMessageEmitter emitter)
     public Task Send<TCommand>(TCommand message, CancellationToken cancellationToken = default)
         where TCommand : IAmACommand
     {
-        return EnqueueAndFlush(message, cancellationToken);
+        return EnqueueAndFlush(message, null, cancellationToken);
+    }
+
+    public Task Send<TCommand>(TCommand message, SendOptions options,
+        CancellationToken cancellationToken = default)
+        where TCommand : IAmACommand
+    {
+        return options.IsScheduled
+            ? EnqueueAndFlush(message, options.ScheduledTime!.Value, options, cancellationToken)
+            : EnqueueAndFlush(message, options, cancellationToken);
     }
 
     public Task SendAfter<TCommand>(TCommand message, TimeSpan delay,
@@ -22,13 +32,22 @@ internal sealed class MessagingContext(IMessageEmitter emitter)
         CancellationToken cancellationToken = default)
         where TCommand : IAmACommand
     {
-        return EnqueueAndFlush(message, scheduledTime, cancellationToken);
+        return EnqueueAndFlush(message, scheduledTime, null, cancellationToken);
     }
 
     public Task Publish<TEvent>(TEvent message, CancellationToken cancellationToken = default)
         where TEvent : IAmAnEvent
     {
-        return EnqueueAndFlush(message, cancellationToken);
+        return EnqueueAndFlush(message, null, cancellationToken);
+    }
+
+    public Task Publish<TEvent>(TEvent message, PublishOptions options,
+        CancellationToken cancellationToken = default)
+        where TEvent : IAmAnEvent
+    {
+        return options.IsScheduled
+            ? EnqueueAndFlush(message, options.ScheduledTime!.Value, options, cancellationToken)
+            : EnqueueAndFlush(message, options, cancellationToken);
     }
 
     public Task PublishAfter<TEvent>(TEvent message, TimeSpan delay,
@@ -42,22 +61,22 @@ internal sealed class MessagingContext(IMessageEmitter emitter)
         CancellationToken cancellationToken = default)
         where TEvent : IAmAnEvent
     {
-        return EnqueueAndFlush(message, scheduledTime, cancellationToken);
+        return EnqueueAndFlush(message, scheduledTime, null, cancellationToken);
     }
 
-    private async Task EnqueueAndFlush<TMessage>(TMessage message,
+    private async Task EnqueueAndFlush<TMessage>(TMessage message, EmitOptions? options,
         CancellationToken cancellationToken)
         where TMessage : IAmAMessage
     {
-        await Enqueue(message, cancellationToken).ConfigureAwait(false);
+        await Enqueue(message, options, cancellationToken).ConfigureAwait(false);
         await emitter.FlushAll(this, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task EnqueueAndFlush<TMessage>(TMessage message, DateTimeOffset scheduledTime,
-        CancellationToken cancellationToken)
+        EmitOptions? options, CancellationToken cancellationToken)
         where TMessage : IAmAMessage
     {
-        await Enqueue(message, scheduledTime, cancellationToken).ConfigureAwait(false);
+        await Enqueue(message, scheduledTime, options, cancellationToken).ConfigureAwait(false);
         await emitter.FlushAll(this, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -19,10 +19,10 @@ internal sealed class MessageEmitter(IAzureServiceBusService serviceBusService)
 
                 var destination = asbMessage.IsCommand
                     ? await serviceBusService
-                        .ConfigureQueue(asbMessage.MessageName, cancellationToken)
+                        .ConfigureQueue(asbMessage.Destination, cancellationToken)
                         .ConfigureAwait(false)
                     : await serviceBusService
-                        .ConfigureTopicForSender(asbMessage.MessageName, cancellationToken)
+                        .ConfigureTopicForSender(asbMessage.Destination, cancellationToken)
                         .ConfigureAwait(false);
 
                 if (asbMessage.IsScheduled)

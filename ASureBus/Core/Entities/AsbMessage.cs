@@ -6,12 +6,13 @@ namespace ASureBus.Core.Entities;
 internal class AsbMessage<TMessage> : IAsbMessage
     where TMessage : IAmAMessage
 {
-    public Guid MessageId { get; set; }
-    public Guid CorrelationId { get; init; }
-    public TMessage Message { get; init; }
-    public string MessageName { get; init; }
+    public required Guid MessageId { get; set; }
+    public required Guid CorrelationId { get; init; }
+    public required TMessage Message { get; init; }
+    public required string MessageName { get; init; }
+    public required string Destination { get; init; }
     public bool IsCommand => Message is IAmACommand;
-    public IReadOnlyList<HeavyReference>? Heavies { get; init; }
+    public IReadOnlyList<HeavyReference>? Heavies { get; set; }
     public bool IsScheduled => ScheduledTime.HasValue;
-    public DateTimeOffset? ScheduledTime { get; init; }
+    public DateTimeOffset? ScheduledTime { get; set; }
 }

@@ -1,4 +1,5 @@
 ﻿using ASureBus.Abstractions;
+using ASureBus.Abstractions.Options.Messaging;
 using Microsoft.Extensions.Logging;
 using Playground.Samples._07_DelayedAndScheduled.Messages;
 
@@ -11,7 +12,7 @@ public class DelayedMessageHandler(ILogger<DelayedMessageHandler> logger)
         CancellationToken cancellationToken = default)
     {
         var now = DateTimeOffset.UtcNow;
-        
+
         logger.LogInformation("""
                               Delayed message created at {0} 
                               with delay: {1} 
@@ -23,7 +24,7 @@ public class DelayedMessageHandler(ILogger<DelayedMessageHandler> logger)
         var delay = TimeSpan.FromSeconds(10);
         var scheduledTime = now.Add(delay);
 
-        var scheduledMessage = new ScheduledMessage()
+        var scheduledMessage = new ScheduledMessage
         {
             CreatedAt = now,
             ScheduledAt = scheduledTime
@@ -31,5 +32,12 @@ public class DelayedMessageHandler(ILogger<DelayedMessageHandler> logger)
 
         await context.SendScheduled(scheduledMessage, scheduledTime, cancellationToken)
             .ConfigureAwait(false);
+
+        // alternative way to send a scheduled message
+        // await context.Send(scheduledMessage, new SendOptions
+        //     {
+        //         ScheduledTime = scheduledTime
+        //     }, cancellationToken)
+        //     .ConfigureAwait(false);
     }
 }

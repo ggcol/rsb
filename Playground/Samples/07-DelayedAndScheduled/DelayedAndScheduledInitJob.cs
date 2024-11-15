@@ -1,4 +1,5 @@
 ﻿using ASureBus.Abstractions;
+using ASureBus.Abstractions.Options.Messaging;
 using Microsoft.Extensions.Hosting;
 using Playground.Samples._07_DelayedAndScheduled.Messages;
 
@@ -11,8 +12,8 @@ public class DelayedAndScheduledInitJob(
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         var delay = TimeSpan.FromSeconds(20);
-        
-        var message = new DelayedMessage()
+
+        var message = new DelayedMessage
         {
             CreatedAt = DateTimeOffset.UtcNow,
             Delay = delay
@@ -20,6 +21,13 @@ public class DelayedAndScheduledInitJob(
 
         await context.SendAfter(message, delay, cancellationToken)
             .ConfigureAwait(false);
+        
+        // alternative way to send a delayed message
+        // await context.Send(message, new SendOptions
+        //     {
+        //         Delay = delay
+        //     }, cancellationToken)
+        //     .ConfigureAwait(false);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
