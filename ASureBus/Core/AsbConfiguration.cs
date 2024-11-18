@@ -15,8 +15,7 @@ internal static class AsbConfiguration
     public static HeavyPropertiesConfig? HeavyProps { get; set; }
 
     //saga offloading configuration
-    internal static bool OffloadSagas =>
-        UseDataStorageSagaPersistence || UseSqlServerSagaPersistence;
+    internal static bool OffloadSagas => UseDataStorageSagaPersistence || UseSqlServerSagaPersistence;
     internal static bool UseDataStorageSagaPersistence => DataStorageSagaPersistence is not null;
     internal static bool UseSqlServerSagaPersistence => SqlServerSagaPersistence is not null;
     public static DataStorageSagaPersistenceConfig? DataStorageSagaPersistence { get; set; }
