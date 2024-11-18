@@ -4,24 +4,24 @@ using ASureBus.Core.TypesHandling;
 using ASureBus.Core.TypesHandling.Entities;
 using Moq;
 
-namespace ASureBus.Tests.ASureBus.Core.TypesHandling
-{
-    [TestFixture]
-    public class TypesLoaderTests
-    {
-        private Mock<Assembly> _mockAssembly;
-        private TypesLoader _loader;
+namespace ASureBus.Tests.ASureBus.Core.TypesHandling;
 
-        [SetUp]
-        public void SetUp()
-        {
+[TestFixture]
+public class TypesLoaderTests
+{
+    private Mock<Assembly> _mockAssembly;
+    private TypesLoader _loader;
+
+    [SetUp]
+    public void SetUp()
+    {
             _mockAssembly = new Mock<Assembly>();
             _loader = new TypesLoader();
         }
 
-        [Test]
-        public void Constructor_WhenCalled_InitializesHandlersAndSagas()
-        {
+    [Test]
+    public void Constructor_WhenCalled_InitializesHandlersAndSagas()
+    {
             // Act
             var loader = new TypesLoader();
 
@@ -33,9 +33,9 @@ namespace ASureBus.Tests.ASureBus.Core.TypesHandling
             });
         }
 
-        [Test]
-        public void GetHandlers_WhenCalled_ReturnsExpectedHandlers()
-        {
+    [Test]
+    public void GetHandlers_WhenCalled_ReturnsExpectedHandlers()
+    {
             // Arrange
             var handlerType = typeof(TestHandler);
             _mockAssembly.Setup(a => a.GetTypes())
@@ -51,9 +51,9 @@ namespace ASureBus.Tests.ASureBus.Core.TypesHandling
             Assert.That(handlers.Any(h => h.Type == handlerType), Is.True);
         }
 
-        [Test]
-        public void GetSagas_WhenCalled_ReturnsExpectedSagas()
-        {
+    [Test]
+    public void GetSagas_WhenCalled_ReturnsExpectedSagas()
+    {
             // Arrange
             var sagaType = typeof(TestSaga);
             _mockAssembly.Setup(a => a.GetTypes())
@@ -69,33 +69,32 @@ namespace ASureBus.Tests.ASureBus.Core.TypesHandling
             Assert.That(sagas.Any(s => s.Type == sagaType), Is.True);
         }
 
-        private class TestHandler : IHandleMessage<TestMessage>
+    private class TestHandler : IHandleMessage<TestMessage>
+    {
+        public Task Handle(TestMessage message, IMessagingContext context,
+            CancellationToken cancellationToken = default)
         {
-            public Task Handle(TestMessage message, IMessagingContext context,
-                CancellationToken cancellationToken = default)
-            {
                 throw new NotImplementedException();
             }
-        }
+    }
 
-        private class TestSaga : Saga<TestSagaData>, IAmStartedBy<TestMessage>
+    private class TestSaga : Saga<TestSagaData>, IAmStartedBy<TestMessage>
+    {
+        public Task Handle(TestMessage message, IMessagingContext context,
+            CancellationToken cancellationToken = default)
         {
-            public Task Handle(TestMessage message, IMessagingContext context,
-                CancellationToken cancellationToken = default)
-            {
                 throw new NotImplementedException();
             }
-        }
+    }
 
-        // ReSharper disable once ClassNeverInstantiated.Local
-        private class TestMessage : IAmACommand
-        {
-        }
+    // ReSharper disable once ClassNeverInstantiated.Local
+    private class TestMessage : IAmACommand
+    {
+    }
 
-        private class TestSagaData : SagaData
-        {
-            public Guid Id { get; set; }
-            public int Version { get; set; }
-        }
+    private class TestSagaData : SagaData
+    {
+        public Guid Id { get; set; }
+        public int Version { get; set; }
     }
 }
