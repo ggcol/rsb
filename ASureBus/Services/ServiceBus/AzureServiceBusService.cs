@@ -11,7 +11,7 @@ internal sealed class AzureServiceBusService(IAsbCache cache)
     : IAzureServiceBusService
 {
     private ServiceBusClient _sbClient { get; } = new(
-        AsbConfiguration.ServiceBus.ServiceBusConnectionString,
+        AsbConfiguration.ServiceBus.ConnectionString,
         AsbConfiguration.ServiceBus.ClientOptions);
     
     private ServiceBusProcessorOptions _processorOptions { get; } = new()
@@ -108,7 +108,7 @@ internal sealed class AzureServiceBusService(IAsbCache cache)
     private ServiceBusAdministrationClient MakeAdmClient()
     {
         return new ServiceBusAdministrationClient(AsbConfiguration.ServiceBus
-            .ServiceBusConnectionString);
+            .ConnectionString);
     }
 
     public ServiceBusSender GetSender(string destination)

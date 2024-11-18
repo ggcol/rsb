@@ -28,7 +28,7 @@ public class InternalServiceBusConfigTests
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(internalConfig.ServiceBusConnectionString,
+            Assert.That(internalConfig.ConnectionString,
                 Is.EqualTo(config.ConnectionString));
             Assert.That(internalConfig.ClientOptions.TransportType,
                 Is.EqualTo(ServiceBusTransportType.AmqpWebSockets));
@@ -61,7 +61,7 @@ public class InternalServiceBusConfigTests
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(internalConfig.ServiceBusConnectionString,
+            Assert.That(internalConfig.ConnectionString,
                 Is.EqualTo(config.ConnectionString));
             Assert.That(internalConfig.ClientOptions.TransportType,
                 Is.EqualTo(Defaults.ServiceBus.CLIENT_OPTIONS.TransportType));
