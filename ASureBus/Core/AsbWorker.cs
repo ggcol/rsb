@@ -85,9 +85,9 @@ internal sealed class AsbWorker : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        foreach (var processorKvp in _processors)
+        foreach (var processor in _processors.Values)
         {
-            await processorKvp.Value
+            await processor
                 .StartProcessingAsync(cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -95,13 +95,13 @@ internal sealed class AsbWorker : IHostedService
 
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        foreach (var processorKvp in _processors)
+        foreach (var processor in _processors.Values)
         {
-            await processorKvp.Value
+            await processor
                 .StopProcessingAsync(cancellationToken)
                 .ConfigureAwait(false);
 
-            await processorKvp.Value
+            await processor
                 .DisposeAsync()
                 .ConfigureAwait(false);
         }
@@ -154,7 +154,7 @@ internal sealed class AsbWorker : IHostedService
         var broker = BrokerFactory.Get(_serviceProvider, sagaType, implSaga, listenerType,
             correlationId);
 
-        await broker.HandleError(ex?.OriginalException, args.CancellationToken)
+        await broker.HandleError(ex?.OriginalException!, args.CancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -197,7 +197,7 @@ internal sealed class AsbWorker : IHostedService
             /*
              * exception caught here is always TargetInvocationException
              * since every saga's handle method is called by reflection
-             * and the actual exception should be stored in InnerException
+             * the actual exception should be stored in InnerException
              */ 
             
             if (ex.InnerException is AsbException) throw;
