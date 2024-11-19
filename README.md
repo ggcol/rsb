@@ -14,20 +14,23 @@ ASureBus.Abstractions:
 [![NuGet version (ASureBus.Abstractions)](https://img.shields.io/nuget/v/ASureBus.Abstractions.svg?style=flat-square)](https://www.nuget.org/packages/ASureBus.Abstractions/)
 
 
-## Actual dependencies:
+## Actual dependencies
 
-ASureBus:                     
+- ASureBus:                     
 
-- Azure.Messaging.Servicebus    
-- Microsoft.Extensions.Hosting  
-- Azure.Storage.Blobs           
-- Microsoft.Data.SqlClient      
+    - Azure.Messaging.Servicebus    
+    - Microsoft.Extensions.Hosting  
+    - Azure.Storage.Blobs           
+    - Microsoft.Data.SqlClient      
 
-ASureBus.Abstractions:
+- ASureBus.Abstractions:
 
-free from dependencies :heavy_check_mark:
+    - :heavy_check_mark: free from dependencies!
 
-## Minimal setup:
+## Setup
+
+### Minimal setup
+
 ```csharp
 await Host
     .CreateDefaultBuilder()
@@ -35,35 +38,39 @@ await Host
     .RunConsoleAsync();
 ```
 
-A setting class that implements IConfigureAzureServiceBus must be provided.
+A setting class that implements [IConfigureAzureServiceBus](#basic) must be provided.
 
-This overload of UseAsb allows you to manually provide a configuration object for the Service Bus:
+or:
+
 ```csharp
 await Host
     .CreateDefaultBuilder()
-    .UseAsb(new ServiceBusConfig()
+    .UseAsb(new ServiceBusConfig
     {
-        ServiceBusConnectionString = "",
-        //this is optional, default will be used otherwise
-        ClientOptions = new ServiceBusClientOptions()
+        ConnectionString = "connection-string",
+        // All the following are optional, they are initialized as default if not mentioned
+        TransportType = "", // Default is "AmqpWebSocket"
+        MaxRetries = 0, // Default is 3
+        DelayInSeconds = 0, // Default is 0.8
+        MaxDelayInSeconds = 0, // Default is 60
+        TryTimeoutInSeconds = 0, // Default is 300
+        ServiceBusRetryMode = "" // Default is "Fixed"
     })
     .RunConsoleAsync();
 ```
 
-### More configurations:
+This overload of UseAsb allows you to manually provide a configuration object for the Service Bus:
+
+### More configurations
+
 Few other configurations are available.
 
-#### AsbCache:
+#### AsbCache
+
 Asb uses a custom cache to store service bus senders and topic configurations.
-These are the default configurations:
 
-| Config                      | Default     |
-|-----------------------------|-------------|
-| Expiration                  | 5 minutes   |
-| Topic Config Prefixes       | topicConfig |
-| Service Bus Sender Prefixes | sender      |
+Cache may be configured using a setting class that implements [IConfigureAsbCache](#asbcache-1):
 
-Cache is fully configurable:
 ```csharp
 await Host
     .CreateDefaultBuilder()
@@ -71,25 +78,32 @@ await Host
     .ConfigureAsbCache<CacheSettings>()
     .RunConsoleAsync();
 ```
-using a setting class that implements IConfigureAsbCache, or:
+
+or:
+
 ```csharp
 await Host
     .CreateDefaultBuilder()
     .UseAsb<ServiceBusSettings>()
     .ConfigureAsbCache(new AsbCacheConfig()
     {
-        //all these 3 are optional, they are init as default if not mentioned
-        Expiration = TimeSpan.FromHours(2),
-        TopicConfigPrefix = "",
-        ServiceBusSenderCachePrefix = ""
+        // All these 3 are optional, they are initialized as default if not mentioned
+        Expiration = TimeSpan.FromHours(2), // default is 5 minutes
+        TopicConfigPrefix = "", // default is "topicConfig"
+        ServiceBusSenderCachePrefix = "" // default is "sender"
     })
     .RunConsoleAsync();
 ```
-you can specify options like cache expiration, topic configuration prefix, and sender cache prefix. All these options are optional and default to predefined values if not provided.
 
-#### Heavy:
-Heavy are a way to off-load C# properties that result in a too heavy payload for Azure Service Bus (limits depends on tier).
+This overload of ConfigureAsbCache allows you to manually provide a configuration object for AsbCache; you can specify options like cache expiration, topic configuration prefix, and sender cache prefix. All these options are optional and default to predefined values if not provided.
+
+#### Heavy
+
+Heavies are a way to off-load C# properties that may result in a too heavy payload for Azure Service Bus (limits depends on tier).
 An Azure Storage Account must be provided for this purpose.
+
+Heavies may be configured used a setting class that implements [IConfigureHeavyProperties](#heavy-properties)
+
 ```csharp
 await Host
     .CreateDefaultBuilder()
@@ -97,41 +111,137 @@ await Host
     .UseHeavyProps<HeavySettings>()
     .RunConsoleAsync();
 ```
-using a setting class that implements IConfigureHeavyProperties, or:
+
+or:
+
 ```csharp
 await Host
     .CreateDefaultBuilder()
     .UseAsb<ServiceBusSettings>()
     .UseHeavyProps(new HeavyPropertiesConfig()
     {
-        DataStorageConnectionString = "",
-        DataStorageContainer = ""
+        ConnectionString = "",
+        Container = ""
     })
     .RunConsoleAsync();
 ```
- manually provide a configuration object for heavy properties, specifying things like the data storage connection string and container.
 
-## Apis:
+This overload of UseHeavyProps allows you to manually provide a configuration object for heavy properties, specifying things like the data storage connection string and container.
 
-### Configurations:
-#### Basic:
+#### Saga Persistence
 
+Sagas are persisted, without additional configuration, in a memory cache. **This is NOT a good practice for production scenario**, it is only intended for testing and debug purposes. 
+
+Both SQLServer or an Azure Storage Account can be used to persist sagas (still memory cache is used for quicker load times but the persistence is hereby granted on the chosen storage provider).
+
+##### SQL Server saga persistence
+
+Use a settings class that implements [IConfigureSqlServerSagaPersistence](#sql-server-saga-persistence-1)
+
+```csharp
+await Host
+    .CreateDefaultBuilder()
+    .UseAsb<ServiceBusSettings>()
+    .UseSqlServerSagaPersistence<SqlServerSagaPersistenceSettings>()
+    .RunConsoleAsync();
+```
+
+or:
+
+```csharp
+await Host
+    .CreateDefaultBuilder()
+    .UseAsb<ServiceBusSettings>()
+    .UseSqlServerSagaPersistence(new SqlServerSagaPersistenceConfig()
+    {
+        ConnectionString = ""
+    })
+    .RunConsoleAsync();
+```
+
+This overload of UseSqlServerSagaPersistence allows you to manually provide a configuration object for sql server saga persistence, the connection string is required.
+
+##### Azure Storage Account saga persistence
+
+Use a settings class that implements [IConfigureDataStorageSagaPersistence](#azure-storage-account-saga-persistence-1)
+
+```csharp
+await Host
+    .CreateDefaultBuilder()
+    .UseAsb<ServiceBusSettings>()
+    .UseDataStorageSagaPersistence<DataStorageSagaPersistenceSettings>()
+    .RunConsoleAsync();
+```
+
+or
+
+```csharp
+await Host
+    .CreateDefaultBuilder()
+    .UseAsb<ServiceBusSettings>()
+    .UseDataStorageSagaPersistence(new DataStorageSagaPersistenceConfig()
+    {
+        ConnectionString = "",
+        Container = ""
+    })
+    .RunConsoleAsync();
+```
+
+This overload of UseDataStorageSagaPersistence allows you to manually provide a configuration object for azure storage account saga persistence, both configurations are required.
+
+## Apis
+
+### Configurations
+
+#### Basic
+
+create a settings class that implements:
 ```csharp
 public interface IConfigureAzureServiceBus
 {
-    public string? ServiceBusConnectionString { get; set; }
+    public string ConnectionString { get; set; }
+    /// <summary>
+    /// May be "AmqpTcp" or "AmqpWebSockets", default is "AmqpWebSocket".
+    /// Maps to Azure.Messaging.ServiceBus.ServiceBusTransportType.
+    /// </summary>
+    public string? TransportType { get; set; }
+    public int? MaxRetries { get; set; }
+    public int? DelayInSeconds { get; set; }
+    public int? MaxDelayInSeconds { get; set; }
+    public int? TryTimeoutInSeconds { get; set; }
+    /// <summary>
+    /// May be "fixed" or "exponential", default is "fixed".
+    /// Maps to Azure.Messaging.ServiceBus.ServiceBusRetryMode.
+    /// </summary>
+    public string? ServiceBusRetryMode { get; set; }
+    public int? MaxConcurrentCalls { get; set; } 
 }
 ```
+
+and bind your configs from appsettings/azure app configuration/other configurations provider.
+
+or use a configuration object:
 
 ```csharp
 public sealed class ServiceBusConfig : IConfigureAzureServiceBus
 {
-    public string? ServiceBusConnectionString { get; set; }
-    public ServiceBusClientOptions ClientOptions { get; set; } = DEFAULT_CLIENT_OPTIONS;
+    public required string ConnectionString { get; set; }
+    public string? TransportType { get; set; }
+    public int? MaxRetries { get; set; }
+    public int? DelayInSeconds { get; set; }
+    public int? MaxDelayInSeconds { get; set; }
+    public int? TryTimeoutInSeconds { get; set; }
+    public string? ServiceBusRetryMode { get; set; }
+    public int? MaxConcurrentCalls { get; set; }
 }
 ```
 
-#### AsbCache:
+both ways the only required settings is the Service bus Conncetion String, all other settings have a default fallback.
+
+#### AsbCache
+
+create a settings class that implements:
+
 ```csharp
 public interface IConfigureAsbCache
 {
@@ -140,6 +250,11 @@ public interface IConfigureAsbCache
     public string? ServiceBusSenderCachePrefix { get; set; }
 }
 ```
+
+and bind your configs from appsettings/azure app configuration/other configurations provider.
+
+or use a configuration object:
+
 ```csharp
 public sealed class AsbCacheConfig : IConfigureAsbCache
 {
@@ -149,23 +264,90 @@ public sealed class AsbCacheConfig : IConfigureAsbCache
 }
 ```
 
-#### Heavy Properties:
+none of this settings are required, they all have default fallbacks if not provided.
+
+#### Heavy Properties
+
+create a settings class that implements:
+
 ```csharp
 public interface IConfigureHeavyProperties
 {
-    public string? DataStorageConnectionString { get; set; }
-    public string? DataStorageContainer { get; set; }
+    public string ConnectionString { get; set; }
+    public string Container { get; set; }
 }
 ```
+
+and bind your configs from appsettings/azure app configuration/other configurations provider.
+
+or use a configuration object:
+
 ```csharp
 public sealed class HeavyPropertiesConfig : IConfigureHeavyProperties
 {
-    public string? DataStorageConnectionString { get; set; }
-    public string? DataStorageContainer { get; set; }
+    public required string ConnectionString { get; set; }
+    public required string Container { get; set; }
 }
 ```
-### Messages:
-#### Commands:
+
+both settings are required for heavies to works.
+
+#### Saga Persistence
+
+##### SQL Server saga persistence
+
+create a settings class that implements:
+
+```csharp
+public interface IConfigureSqlServerSagaPersistence
+{
+    public string? ConnectionString { get; set; }
+}
+```
+
+and bind your configs from appsettings/azure app configuration/other configurations provider.
+
+or use a configuration object:
+
+```csharp
+public class SqlServerSagaPersistenceConfig : IConfigureSqlServerSagaPersistence
+{
+    public required string ConnectionString { get; set; }
+}
+```
+
+A SQL Server connection string must be provided.
+
+##### Azure Storage Account saga persistence
+
+create a settings class that implements:
+
+```csharp
+public interface IConfigureDataStorageSagaPersistence : IConfigureDataStorage
+{
+    public string ConnectionString { get; set; }
+    public string Container { get; set; }
+}
+```
+
+and bind your configs from appsettings/azure app configuration/other configurations provider.
+
+or use a configuration object:
+
+```csharp
+public sealed class DataStorageSagaPersistenceConfig : ConfigureDataStorageSagaPersistence
+{
+    public required string ConnectionString { get; set; }
+    public required string Container { get; set; }
+}
+```
+
+both settings are required.
+
+### Messages
+
+#### Commands
+
 ```csharp
 public interface IAmACommand { }
 ```
@@ -176,7 +358,9 @@ public class ACommand : IAmACommand
     public string? Something { get; init; }
 }
 ```
-#### Events:
+
+#### Events
+
 ```csharp
 public interface IAmAnEvent { }
 ```
@@ -187,8 +371,11 @@ public class AnEvent : IAmAnEvent
     public string? Something { get; set; }
 }
 ```
-### Message handling:
-#### Handlers:
+
+### Message handling
+
+#### Handlers
+
 ```csharp
 public interface IHandleMessage<in TMessage>
     where TMessage : IAmAMessage
@@ -214,7 +401,9 @@ public class ACommandHandler : IHandleMessage<ACommand>
     }
 }
 ```
-#### Sagas:
+
+#### Sagas
+
 ```csharp
 public abstract class Saga<T>
     where T : SagaData, new()
@@ -250,7 +439,8 @@ public class ASaga : Saga<ASagaData>,
 }
 ```
 
-### Send Messages:
+### Send Messages
+
 ```csharp
 public interface IMessagingContext
 {
@@ -265,7 +455,11 @@ public interface IMessagingContext
         where TEvent : IAmAnEvent;
 }
 ```
-usage example:
+
+#### Send messages from any class
+
+IMessagingContext is provided by default DI container, simply inject it in your class and use it:
+
 ```csharp
 internal class OneCommandInitJob : IHostedService
 {
@@ -300,8 +494,10 @@ internal class OneCommandInitJob : IHostedService
 }
 ```
 
-#### within an handler:
-simply use the already provided messaging context:
+#### Send messages within an handler
+
+Simply use the already provided messaging context:
+
 ```csharp
 public class ACommandHandler : IHandleMessage<ACommand>
 {
@@ -317,7 +513,52 @@ public class ACommandHandler : IHandleMessage<ACommand>
 }
 ```
 
-### Heavy Properties:
+#### Send options
+
+A part from simple send/publish methods a few overload and options can be used:
+_Send method is used for the sake of examples but the same applies to Publish() method(s)_
+
+##### Delayed messages
+
+```csharp
+var delay = TimeSpan.FromSeconds(20);
+
+var message = new DelayedMessage();
+
+await context.SendAfter(message, delay, cancellationToken)
+    .ConfigureAwait(false);
+        
+// alternative way to send a delayed message
+await context.Send(message, new SendOptions
+    {
+        Delay = delay
+    }, cancellationToken)
+    .ConfigureAwait(false);
+```
+
+##### Scheduled messages
+
+```csharp
+var scheduledTime = new DateTimeOffset(2025, 1, 1, 0, 0, 1, TimeSpan.Zero); 
+
+var message = new ScheduledMessage
+{
+    Message = "Happy new year!"
+};
+
+await context.SendScheduled(message, scheduledTime, cancellationToken)
+    .ConfigureAwait(false);
+
+// alternative way to send a scheduled message
+await context.Send(message, new SendOptions
+    {
+        ScheduledTime = scheduledTime
+    }, cancellationToken)
+    .ConfigureAwait(false);
+```
+
+### Heavy Properties
+
 ```csharp
 public class Heavy<T>() : Heavy
 {
@@ -336,3 +577,7 @@ public class HeavyCommand : IAmACommand
     public Heavy<string> AHeavyProp { get; set; }
 }
 ```
+
+## Notes on serialization
+
+So far serialization is handled by System.Text.Json and no option for a different serializer is exposed.
