@@ -58,16 +58,26 @@ jobs:
 
       - name: Create new tag
         id: create_tag
+        env:
+          MAJOR: "${{ github.event.inputs.major }}"
+          MINOR: "${{ github.event.inputs.minor }}"
+          PATCH: "${{ github.event.inputs.patch }}"
+          GITHUB_TOKEN: ${{ secrets.ASUREBUS_PAT }}
         run: |
-          MAJOR=${{ github.event.inputs.major }}
-          MINOR=${{ github.event.inputs.minor }}
-          PATCH=${{ github.event.inputs.patch }}
           NEW_TAG="${MAJOR}.${MINOR}.${PATCH}"
           echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
-          git tag $NEW_TAG
-          git push origin $NEW_TAG
+          git tag "$NEW_TAG"
+          git push origin "$NEW_TAG"
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.ASUREBUS_PAT }}
+        with:
+          tag_name: ${{ env.NEW_TAG }}
+          release_name: "Release ${{ env.NEW_TAG }}"
+          draft: false
+          prerelease: false
 
       - name: Pack ASureBus.Abstractions
         run: dotnet pack ASureBus.Abstractions/ASureBus.Abstractions.csproj --configuration Release --output ./artifacts /p:PackageVersion=${{ env.NEW_TAG }}
