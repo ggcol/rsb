@@ -12,16 +12,18 @@ namespace ASureBus.Tests.ASureBus.Core.Sagas;
 public class SagaBehaviourTests
 {
     private Mock<IAsbCache> _mockCache;
-    private Mock<ISagaIO> _mockSagaIo;
     private SagaBehaviour _sagaBehaviour;
 
     [SetUp]
     public void SetUp()
     {
-        AsbConfiguration.DataStorageSagaPersistence = new DataStorageSagaPersistenceConfig();
+        AsbConfiguration.DataStorageSagaPersistence = new DataStorageSagaPersistenceConfig()
+        {
+            ConnectionString = "connectionString",
+            Container = "container"
+        };
 
         _mockCache = new Mock<IAsbCache>();
-        _mockSagaIo = new Mock<ISagaIO>();
         _sagaBehaviour = new SagaBehaviour(_mockCache.Object);
     }
 

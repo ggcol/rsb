@@ -4,5 +4,5 @@ namespace ASureBus.ConfigurationObjects;
 
 public class SqlServerSagaPersistenceConfig : IConfigureSqlServerSagaPersistence
 {
-    public string? ConnectionString { get; set; }
+    public required string ConnectionString { get; set; }
 }

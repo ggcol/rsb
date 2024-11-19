@@ -2,6 +2,6 @@
 
 public interface IConfigureDataStorage
 {
-    public string DataStorageConnectionString { get; set; }
-    public string DataStorageContainer { get; set; }
+    public string ConnectionString { get; set; }
+    public string Container { get; set; }
 }

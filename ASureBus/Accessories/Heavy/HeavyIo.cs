@@ -42,7 +42,7 @@ internal static class HeavyIo
             var heavyId = (heavy as Abstractions.Heavy)!.Ref;
 
             await _storage.Save(heavy,
-                    AsbConfiguration.HeavyProps?.DataStorageContainer!,
+                    AsbConfiguration.HeavyProps?.Container!,
                     GetBlobName(messageId, heavyId),
                     false,
                     cancellationToken)
@@ -94,7 +94,7 @@ internal static class HeavyIo
             var heavyGenericType = typeof(Heavy<>).MakeGenericType(propType!);
 
             var value = await _storage.Get(
-                    AsbConfiguration.HeavyProps?.DataStorageContainer!,
+                    AsbConfiguration.HeavyProps?.Container!,
                     GetBlobName(messageId, heavyRef.Ref),
                     heavyGenericType,
                     cancellationToken: cancellationToken)
@@ -110,7 +110,7 @@ internal static class HeavyIo
         GuardAgainstNotConfigured();
 
         await _storage.Delete(
-                AsbConfiguration.HeavyProps?.DataStorageContainer!,
+                AsbConfiguration.HeavyProps?.Container!,
                 GetBlobName(messageId, heavyReference.Ref),
                 cancellationToken)
             .ConfigureAwait(false);

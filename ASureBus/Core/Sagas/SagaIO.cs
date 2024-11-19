@@ -16,7 +16,7 @@ internal class SagaIO : ISagaIO
         {
             return new SagaDataStoragePersistenceService(
                 new AzureDataStorageService(
-                    AsbConfiguration.DataStorageSagaPersistence?.DataStorageConnectionString));
+                    AsbConfiguration.DataStorageSagaPersistence?.ConnectionString));
         }
 
         if (AsbConfiguration.UseSqlServerSagaPersistence)

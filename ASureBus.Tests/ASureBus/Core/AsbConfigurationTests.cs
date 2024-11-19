@@ -45,8 +45,8 @@ public class AsbConfigurationTests
         // Arrange
         AsbConfiguration.HeavyProps = new HeavyPropertiesConfig
         {
-            DataStorageConnectionString = "connection-string",
-            DataStorageContainer = "container"
+            ConnectionString = "connection-string",
+            Container = "container"
         };
 
         // Act
@@ -70,7 +70,11 @@ public class AsbConfigurationTests
     public void OffloadSagas_WhenDataStorageSagaPersistenceConfigured_ReturnsTrue()
     {
         // Arrange
-        AsbConfiguration.DataStorageSagaPersistence = new DataStorageSagaPersistenceConfig();
+        AsbConfiguration.DataStorageSagaPersistence = new DataStorageSagaPersistenceConfig
+        {
+            ConnectionString = "connection-string",
+            Container = "container"
+        };
 
         // Act
         var result = AsbConfiguration.OffloadSagas;
@@ -83,7 +87,10 @@ public class AsbConfigurationTests
     public void OffloadSagas_WhenSqlServerSagaPersistenceConfigured_ReturnsTrue()
     {
         // Arrange
-        AsbConfiguration.SqlServerSagaPersistence = new SqlServerSagaPersistenceConfig();
+        AsbConfiguration.SqlServerSagaPersistence = new SqlServerSagaPersistenceConfig
+        {
+            ConnectionString = "connection-string",
+        };
 
         // Act
         var result = AsbConfiguration.OffloadSagas;

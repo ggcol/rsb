@@ -22,8 +22,8 @@ public static class SagaPersistenceSetup
 
             AsbConfiguration.DataStorageSagaPersistence = new DataStorageSagaPersistenceConfig
             {
-                DataStorageConnectionString = settings.DataStorageConnectionString,
-                DataStorageContainer = settings.DataStorageContainer
+                ConnectionString = settings.ConnectionString,
+                Container = settings.Container
             };
         });
 
@@ -51,7 +51,7 @@ public static class SagaPersistenceSetup
                     x =>
                         new AzureDataStorageService(AsbConfiguration
                             .DataStorageSagaPersistence?
-                            .DataStorageConnectionString!))
+                            .ConnectionString!))
                 .AddScoped<ISagaPersistenceService,
                     SagaDataStoragePersistenceService>();
         });

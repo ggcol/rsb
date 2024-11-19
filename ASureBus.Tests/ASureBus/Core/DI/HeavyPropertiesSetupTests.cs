@@ -57,9 +57,9 @@ public class HeavyPropertiesSetupTests
         Assert.That(AsbConfiguration.HeavyProps, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(AsbConfiguration.HeavyProps.DataStorageConnectionString,
+            Assert.That(AsbConfiguration.HeavyProps.ConnectionString,
                 Is.EqualTo("TestConnectionString"));
-            Assert.That(AsbConfiguration.HeavyProps.DataStorageContainer,
+            Assert.That(AsbConfiguration.HeavyProps.Container,
                 Is.EqualTo("TestContainer"));
         });
     }
@@ -70,8 +70,8 @@ public class HeavyPropertiesSetupTests
         // Arrange
         var heavyPropsConfig = new HeavyPropertiesConfig
         {
-            DataStorageConnectionString = "TestConnectionString",
-            DataStorageContainer = "TestContainer"
+            ConnectionString = "TestConnectionString",
+            Container = "TestContainer"
         };
 
         _mockHostBuilder.Setup(h =>
@@ -88,9 +88,9 @@ public class HeavyPropertiesSetupTests
         Assert.That(AsbConfiguration.HeavyProps, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(AsbConfiguration.HeavyProps.DataStorageConnectionString,
+            Assert.That(AsbConfiguration.HeavyProps.ConnectionString,
                 Is.EqualTo("TestConnectionString"));
-            Assert.That(AsbConfiguration.HeavyProps.DataStorageContainer,
+            Assert.That(AsbConfiguration.HeavyProps.Container,
                 Is.EqualTo("TestContainer"));
         });
     }
@@ -98,6 +98,6 @@ public class HeavyPropertiesSetupTests
 
 internal class HeavyPropertiesSettings : IConfigureHeavyProperties
 {
-    public string? DataStorageConnectionString { get; set; } = "TestConnectionString";
-    public string? DataStorageContainer { get; set; } = "TestContainer";
+    public string? ConnectionString { get; set; } = "TestConnectionString";
+    public string? Container { get; set; } = "TestContainer";
 }

@@ -71,8 +71,8 @@ public class SagaPersistenceSetupTests
         // Arrange
         var config = new DataStorageSagaPersistenceConfig
         {
-            DataStorageConnectionString = "TestConnectionString",
-            DataStorageContainer = "TestContainer"
+            ConnectionString = "TestConnectionString",
+            Container = "TestContainer"
         };
 
         _mockHostBuilder.Setup(h =>
@@ -155,8 +155,8 @@ public class SagaPersistenceSetupTests
 
 internal class DataStorageSagaPersistenceSettings : IConfigureDataStorageSagaPersistence
 {
-    public string? DataStorageConnectionString { get; set; }
-    public string? DataStorageContainer { get; set; }
+    public string? ConnectionString { get; set; }
+    public string? Container { get; set; }
 }
 
 internal class SqlServerSagaPersistenceSettings : IConfigureSqlServerSagaPersistence

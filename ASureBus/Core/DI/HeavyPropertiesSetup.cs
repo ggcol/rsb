@@ -20,8 +20,8 @@ public static class HeavyPropertiesSetup
 
             AsbConfiguration.HeavyProps = new HeavyPropertiesConfig
             {
-                DataStorageConnectionString = settings.DataStorageConnectionString,
-                DataStorageContainer = settings.DataStorageContainer
+                ConnectionString = settings.ConnectionString,
+                Container = settings.Container
             };
             ConfigureStorage();
         });
@@ -46,6 +46,6 @@ public static class HeavyPropertiesSetup
     private static void ConfigureStorage()
     {
         HeavyIo.ConfigureStorage(
-            new AzureDataStorageService(AsbConfiguration.HeavyProps!.DataStorageConnectionString));
+            new AzureDataStorageService(AsbConfiguration.HeavyProps!.ConnectionString));
     }
 }

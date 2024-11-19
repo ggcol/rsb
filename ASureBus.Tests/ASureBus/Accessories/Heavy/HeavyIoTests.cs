@@ -19,8 +19,8 @@ public class HeavyIoTests
 
         AsbConfiguration.HeavyProps = new HeavyPropertiesConfig
         {
-            DataStorageConnectionString = "UseDevelopmentStorage=true",
-            DataStorageContainer = "test-container"
+            ConnectionString = "UseDevelopmentStorage=true",
+            Container = "test-container"
         };
 
         HeavyIo.ConfigureStorage(_storageMock.Object);

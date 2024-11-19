@@ -4,6 +4,6 @@ namespace Playground.Settings;
 
 public class HeavySettings : IConfigureHeavyProperties
 {
-    public string? DataStorageConnectionString { get; set; }
-    public string? DataStorageContainer { get; set; }
+    public string ConnectionString { get; set; } = null!;
+    public string Container { get; set; } = null!;
 }

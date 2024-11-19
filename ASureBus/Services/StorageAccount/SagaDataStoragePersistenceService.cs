@@ -11,7 +11,7 @@ internal sealed class SagaDataStoragePersistenceService(
         CancellationToken cancellationToken = default)
     {
         return await storage.Get(
-                AsbConfiguration.DataStorageSagaPersistence?.DataStorageContainer!,
+                AsbConfiguration.DataStorageSagaPersistence?.Container!,
                 GetName(sagaType, correlationId),
                 sagaType.Type,
                 new SagaConverter(sagaType.Type, sagaType.SagaDataType),
@@ -25,7 +25,7 @@ internal sealed class SagaDataStoragePersistenceService(
     {
         await storage.Save(
                 item,
-                AsbConfiguration.DataStorageSagaPersistence?.DataStorageContainer!,
+                AsbConfiguration.DataStorageSagaPersistence?.Container!,
                 GetName(sagaType, correlationId),
                 true,
                 cancellationToken)
@@ -36,7 +36,7 @@ internal sealed class SagaDataStoragePersistenceService(
         CancellationToken cancellationToken = default)
     {
         await storage.Delete(
-                AsbConfiguration.DataStorageSagaPersistence?.DataStorageContainer!,
+                AsbConfiguration.DataStorageSagaPersistence?.Container!,
                 GetName(sagaType, correlationId),
                 cancellationToken)
             .ConfigureAwait(false);

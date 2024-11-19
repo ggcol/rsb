@@ -55,8 +55,8 @@ await Host
     // Configure the application to use heavy properties with a custom configuration
     // .UseHeavyProps(new HeavyPropertiesConfig()
     // {
-    //     DataStorageConnectionString = "",
-    //     DataStorageContainer = ""
+    //     ConnectionString = "",
+    //     Container = ""
     // })
     
     
