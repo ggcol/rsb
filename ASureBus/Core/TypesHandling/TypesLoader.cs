@@ -25,65 +25,71 @@ internal sealed class TypesLoader : ITypesLoader
         Handlers = GetHandlers(assembly).ToHashSet();
     }
 
-    private IEnumerable<HandlerType> GetHandlers(
-        Assembly? assembly)
+    private IEnumerable<HandlerType> GetHandlers(Assembly? assembly)
     {
-        var handlersTypes = assembly?
+        if (assembly is null) return Array.Empty<HandlerType>();
+
+        var handlersTypes = assembly
             .GetTypes()
             .Where(t => t is { IsClass: true, IsAbstract: false })
             .Where(t =>
                 t.GetInterfaces()
                     .Any(i =>
-                        i.IsGenericType && i.GetGenericTypeDefinition() ==
-                        typeof(IHandleMessage<>))
+                        i.IsGenericType 
+                        && 
+                        i.GetGenericTypeDefinition() == typeof(IHandleMessage<>))
             )
             //exclude what's already under a saga scope
             .Where(t =>
                 !t.GetInterfaces()
                     .Where(i =>
-                        i.IsGenericType && i.GetGenericTypeDefinition() ==
-                        typeof(IHandleMessage<>))
+                        i.IsGenericType 
+                        && 
+                        i.GetGenericTypeDefinition() == typeof(IHandleMessage<>))
                     .Select(i => i.GetGenericArguments().First())
-                    .Any(messageType =>
-                        _sagaMessages.Contains(messageType)))
+                    .Any(messageType => _sagaMessages.Contains(messageType)))
             .ToArray();
 
-        if (handlersTypes is null || handlersTypes.Length == 0)
-            return Array.Empty<HandlerType>();
-
-        return GetListeners(handlersTypes);
+        return handlersTypes.Length == 0 
+            ? Array.Empty<HandlerType>() 
+            : GetListeners(handlersTypes);
     }
 
     private IEnumerable<SagaType> GetSagas(Assembly? assembly)
     {
-        var sagas = assembly?
+        if (assembly is null) yield break;
+
+        var sagas = assembly
             .GetTypes()
             .Where(t => t is { IsClass: true, IsAbstract: false })
             .Where(t =>
-                t.BaseType != null &&
-                t.BaseType != typeof(object) &&
-                t.BaseType.IsGenericType &&
-                t.BaseType.GetGenericTypeDefinition() ==
-                typeof(Saga<>))
+                t.BaseType != null 
+                && 
+                t.BaseType != typeof(object) 
+                &&
+                t.BaseType.IsGenericType 
+                &&
+                t.BaseType.GetGenericTypeDefinition() == typeof(Saga<>))
             .ToArray();
 
-        if (sagas is null || sagas.Length == 0) yield break;
+        if (sagas.Length == 0) yield break;
 
         foreach (var saga in sagas)
         {
             var sagaType = new SagaType
             {
                 Type = saga,
-                SagaDataType = saga.BaseType.GetGenericArguments().First(),
-                Listeners = new HashSet<SagaHandlerType>()
+                SagaDataType = saga.BaseType!.GetGenericArguments().First(),
+                Listeners = []
             };
 
             var interfaces = saga
                 .GetInterfaces()
                 .Where(i =>
-                    i.IsGenericType &&
+                    i.IsGenericType 
+                    &&
                     (
-                        i.GetGenericTypeDefinition() == typeof(IHandleMessage<>) 
+                        i.GetGenericTypeDefinition() == typeof(IHandleMessage<>)
                         ||
                         i.GetGenericTypeDefinition() == typeof(IAmStartedBy<>)
                     )
@@ -110,8 +116,7 @@ internal sealed class TypesLoader : ITypesLoader
         }
     }
 
-    private IEnumerable<HandlerType> GetListeners(
-        IReadOnlyList<Type> handlerTypes)
+    private IEnumerable<HandlerType> GetListeners(IReadOnlyList<Type> handlerTypes)
     {
         foreach (var handler in handlerTypes)
         {
@@ -119,12 +124,10 @@ internal sealed class TypesLoader : ITypesLoader
 
             foreach (var @interface in implInterfaces)
             {
-                if (@interface.GetGenericTypeDefinition() !=
-                    typeof(IHandleMessage<>)) continue;
+                if (@interface.GetGenericTypeDefinition() != typeof(IHandleMessage<>)) continue;
 
                 var messageType = @interface.GetGenericArguments().First();
-                var isCommand = messageType.GetInterfaces()
-                    .Any(x => x == typeof(IAmACommand));
+                var isCommand = messageType.GetInterfaces().Any(x => x == typeof(IAmACommand));
 
                 yield return new HandlerType
                 {
