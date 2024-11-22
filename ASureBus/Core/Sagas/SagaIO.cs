@@ -1,7 +1,9 @@
 ﻿using ASureBus.Core.TypesHandling.Entities;
 using ASureBus.Services;
 using ASureBus.Services.SqlServer;
+using ASureBus.Services.SqlServer.DbConnection;
 using ASureBus.Services.StorageAccount;
+using Microsoft.Data.SqlClient;
 
 namespace ASureBus.Core.Sagas;
 
@@ -21,7 +23,12 @@ internal class SagaIO : ISagaIO
 
         if (AsbConfiguration.UseSqlServerSagaPersistence)
         {
-            return new SagaSqlServerPersistenceService(new SqlServerService());
+            return new SagaSqlServerPersistenceService(
+                new SqlServerService(
+                    new SqlServerConnectionFactory(AsbConfiguration.SqlServerSagaPersistence!
+                        .ConnectionString)
+                )
+            );
         }
 
         throw new NotImplementedException(); //TODO customize

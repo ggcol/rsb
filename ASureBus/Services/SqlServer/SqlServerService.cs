@@ -1,179 +1,179 @@
 ﻿using ASureBus.Core;
-using ASureBus.Core.Sagas;
-using ASureBus.Core.TypesHandling.Entities;
-using ASureBus.Utils;
+using ASureBus.Services.SqlServer.DbConnection;
 using Microsoft.Data.SqlClient;
 
 namespace ASureBus.Services.SqlServer;
 
-internal sealed class SqlServerService : ISqlServerService
+internal sealed class SqlServerService(IDbConnectionFactory connectionFactory) : ISqlServerService
 {
+    private readonly string _schema = AsbConfiguration.SqlServerSagaPersistence!.Schema!;
+    
     private const string CORR_ID_HEADER = "CorrelationId";
     private const string SAGA_HEADER = "Saga";
     private const string CORR_ID_PARAM = "@" + CORR_ID_HEADER;
     private const string SAGA_PARAM = "@" + SAGA_HEADER;
-    private const string TABLE_NAME = "@tableName";
 
-    private readonly string _connectionString =
-        AsbConfiguration.SqlServerSagaPersistence?.ConnectionString!;
-
-    public async Task Save<TItem>(TItem item, SagaType sagaType,
-        Guid correlationId, CancellationToken cancellationToken = default)
-    {
-        var tableName = sagaType.Type.Name;
-
-        if (!await TableExists(tableName, cancellationToken)
-                .ConfigureAwait(false))
-        {
-            await CreateTable(tableName, cancellationToken)
-                .ConfigureAwait(false);
-        }
-
-        var serialized = Serializer.Serialize(item);
-
-        const string updateQuery = $"""
-                                    UPDATE {TABLE_NAME}
-                                    SET {SAGA_HEADER} = {SAGA_PARAM} 
-                                    WHERE {CORR_ID_HEADER} = {CORR_ID_PARAM}
-                                    """;
-
-        await using var conn = new SqlConnection(_connectionString);
-
-        var cmd = new SqlCommand(updateQuery, conn);
-        cmd.Parameters.AddWithValue(TABLE_NAME, tableName);
-        cmd.Parameters.AddWithValue(CORR_ID_PARAM, correlationId);
-        cmd.Parameters.AddWithValue(SAGA_PARAM, serialized);
-
-        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
-
-        var result = await cmd.ExecuteNonQueryAsync(cancellationToken);
-
-        if (result == 1) return;
-
-        const string query = $"""
-                              INSERT INTO {TABLE_NAME} ({CORR_ID_HEADER}, {SAGA_HEADER}) 
-                                VALUES ({CORR_ID_PARAM}, {SAGA_PARAM})
-                              """;
-
-        cmd = new SqlCommand(query, conn);
-        cmd.Parameters.AddWithValue(TABLE_NAME, tableName);
-        cmd.Parameters.AddWithValue(CORR_ID_PARAM, correlationId);
-        cmd.Parameters.AddWithValue(SAGA_PARAM, serialized);
-
-        result = await cmd.ExecuteNonQueryAsync(cancellationToken);
-
-        if (result != 1)
-        {
-            //TODO customize
-            throw new Exception();
-        }
-    }
-
-    public async Task<object?> Get(SagaType sagaType, Guid correlationId,
+    public async Task Save(string serializedItem, string tableName, Guid correlationId,
         CancellationToken cancellationToken = default)
     {
-        var tableName = sagaType.Type.Name;
+        if (!await SchemaExists(cancellationToken).ConfigureAwait(false))
+        {
+            await CreateSchema(cancellationToken).ConfigureAwait(false);
+        }
 
         if (!await TableExists(tableName, cancellationToken).ConfigureAwait(false))
         {
-            //TODO customize
-            throw new Exception();
+            await CreateTable(tableName, cancellationToken).ConfigureAwait(false);
         }
 
-        const string query = $"""
-                              SELECT {SAGA_HEADER}
-                              FROM {TABLE_NAME}
-                              WHERE {CORR_ID_HEADER} = {CORR_ID_PARAM}
-                              """;
+        var updateQuery =
+            $"UPDATE {_schema}.{tableName} SET {SAGA_HEADER} = {SAGA_PARAM} WHERE {CORR_ID_HEADER} = {CORR_ID_PARAM}";
+        var insertQuery =
+            $"INSERT INTO {_schema}.{tableName} ({CORR_ID_HEADER}, {SAGA_HEADER}) VALUES ({CORR_ID_PARAM}, {SAGA_PARAM})";
 
-        await using var conn = new SqlConnection(_connectionString);
+        var queryParams = new Dictionary<string, object>
+        {
+            { SAGA_PARAM, serializedItem },
+            { CORR_ID_PARAM, correlationId }
+        };
 
-        var cmd = new SqlCommand(query, conn);
-        cmd.Parameters.AddWithValue(CORR_ID_PARAM, correlationId);
-        cmd.Parameters.AddWithValue(TABLE_NAME, tableName);
+        var result = await ExecuteNonQuery(updateQuery, cancellationToken, queryParams)
+            .ConfigureAwait(false);
 
-        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+        if (result is not 1)
+        {
+            result = await ExecuteNonQuery(insertQuery, cancellationToken, queryParams)
+                .ConfigureAwait(false);
 
-        var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
+            if (result is not 1)
+            {
+                throw new Exception("Failed to insert saga data.");
+            }
+        }
+    }
+
+    public async Task<string> Get(string tableName, Guid correlationId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!await SchemaExists(cancellationToken).ConfigureAwait(false))
+        {
+            throw new Exception("Schema does not exist.");
+        }
+
+        if (!await TableExists(tableName, cancellationToken).ConfigureAwait(false))
+        {
+            throw new Exception("Table does not exist.");
+        }
+
+        var query =
+            $"SELECT {SAGA_HEADER} FROM {_schema}.{tableName} WHERE {CORR_ID_HEADER} = {CORR_ID_PARAM}";
+
+        await using var connection = connectionFactory.CreateConnection();
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = query;
+        cmd.Parameters.Add(new SqlParameter(CORR_ID_PARAM, correlationId));
+
+        await using var reader =
+            await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
 
         if (!reader.HasRows)
         {
-            //TODO customize
-            throw new Exception();
+            throw new Exception("No saga data found.");
         }
 
         await reader.ReadAsync(cancellationToken).ConfigureAwait(false);
-        var result = reader.GetString(0);
-
-        return Serializer.Deserialize(result, sagaType.Type,
-            new SagaConverter(sagaType.Type, sagaType.SagaDataType));
+        return reader.GetString(0);
     }
 
-    public async Task Delete(SagaType sagaType, Guid correlationId,
+    public async Task Delete(string tableName, Guid correlationId,
         CancellationToken cancellationToken = default)
     {
-        var tableName = sagaType.Type.Name;
+        if (!await SchemaExists(cancellationToken).ConfigureAwait(false))
+        {
+            throw new Exception("Schema does not exist.");
+        }
 
         if (!await TableExists(tableName, cancellationToken).ConfigureAwait(false))
         {
-            //TODO customize
-            throw new Exception();
+            throw new Exception("Table does not exist.");
         }
 
-        const string query = $"""
-                              DELETE
-                              FROM {TABLE_NAME}
-                              WHERE {CORR_ID_HEADER} = {CORR_ID_PARAM}
-                              """;
+        var query = $"DELETE FROM {_schema}.{tableName} WHERE {CORR_ID_HEADER} = {CORR_ID_PARAM}";
 
-        await using var conn = new SqlConnection(_connectionString);
-        var cmd = new SqlCommand(query, conn);
-        cmd.Parameters.AddWithValue(CORR_ID_PARAM, correlationId);
-        cmd.Parameters.AddWithValue(TABLE_NAME, tableName);
+        var result = await ExecuteNonQuery(query, cancellationToken,
+            new Dictionary<string, object>
+            {
+                { CORR_ID_PARAM, correlationId }
+            }).ConfigureAwait(false);
 
-        await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
-
-        var result = await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-
-        if (result != 1)
+        if (result is not 1)
         {
-            //TODO customize
-            throw new Exception();
+            throw new Exception("Failed to delete saga data.");
         }
     }
 
     private async Task<bool> TableExists(string tableName, CancellationToken cancellationToken)
     {
-        const string checkTableQuery =
-            $"IF OBJECT_ID({TABLE_NAME}, 'U') IS NOT NULL SELECT 1 ELSE SELECT 0";
+        var query = $"IF OBJECT_ID('{_schema}.{tableName}', 'U') IS NOT NULL SELECT 1 ELSE SELECT 0";
 
-        await using var connection = new SqlConnection(_connectionString);
+        var result = await ExecuteScalar(query, cancellationToken).ConfigureAwait(false);
 
-        var checkCommand = new SqlCommand(checkTableQuery, connection);
+        return result is 1;
+    }
 
-        checkCommand.Parameters.AddWithValue(TABLE_NAME, tableName);
-        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+    private async Task<bool> SchemaExists(CancellationToken cancellationToken)
+    {
+        var query = $"IF SCHEMA_ID('{_schema}') IS NOT NULL SELECT 1 ELSE SELECT 0";
 
-        return (int)await checkCommand
-            .ExecuteScalarAsync(cancellationToken)
-            .ConfigureAwait(false) == 1;
+        var result = await ExecuteScalar(query, cancellationToken).ConfigureAwait(false);
+
+        return result is 1;
     }
 
     private async Task CreateTable(string tableName, CancellationToken cancellationToken)
     {
-        const string createTableQuery = $"""
-                                         CREATE TABLE {TABLE_NAME} (
-                                             {CORR_ID_HEADER} UNIQUEIDENTIFIER PRIMARY KEY,
-                                             {SAGA_HEADER} NVARCHAR(MAX)
-                                         )
-                                         """;
+        var query =
+            $"CREATE TABLE {_schema}.{tableName} ({CORR_ID_HEADER} UNIQUEIDENTIFIER PRIMARY KEY, {SAGA_HEADER} NVARCHAR(MAX))";
 
-        await using var connection = new SqlConnection(_connectionString);
+        await ExecuteNonQuery(query, cancellationToken).ConfigureAwait(false);
+    }
 
-        var createCommand = new SqlCommand(createTableQuery, connection);
-        createCommand.Parameters.AddWithValue(TABLE_NAME, tableName);
+    private async Task CreateSchema(CancellationToken cancellationToken)
+    {
+        var query = $"CREATE SCHEMA {_schema}";
 
+        await ExecuteNonQuery(query, cancellationToken);
+    }
+
+    private async Task<int> ExecuteNonQuery(string query, CancellationToken cancellationToken,
+        IDictionary<string, object>? queryParams = null)
+    {
+        await using var connection = connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-        await createCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = query;
+
+        if (queryParams is null)
+            return await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+
+        foreach (var (key, value) in queryParams)
+        {
+            cmd.Parameters.Add(new SqlParameter(key, value));
+        }
+
+        return await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<object?> ExecuteScalar(string query, CancellationToken cancellationToken)
+    {
+        await using var connection = connectionFactory.CreateConnection();
+        await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = query;
+        return await cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
     }
 }

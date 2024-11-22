@@ -4,10 +4,10 @@ public interface IHandleMessage<in TMessage>
     where TMessage : IAmAMessage
 {
     public Task Handle(TMessage message, IMessagingContext context,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken);
 
     public Task HandleError(Exception ex, IMessagingContext context,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken)
     {
         throw ex;
     }

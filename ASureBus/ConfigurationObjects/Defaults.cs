@@ -29,4 +29,9 @@ internal static class Defaults
         
         internal const int MAX_CONCURRENT_CALLS = 20;
     }
+    
+    internal static class SqlServerSagaPersistence
+    {
+        internal const string SCHEMA = "sagas";
+    }
 }

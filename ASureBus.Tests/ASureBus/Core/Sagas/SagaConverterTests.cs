@@ -1,30 +1,30 @@
 ﻿using System.Buffers;
 using System.Text;
 using System.Text.Json;
+using ASureBus.Abstractions;
 using ASureBus.Core.Sagas;
 
 namespace ASureBus.Tests.ASureBus.Core.Sagas;
 
-public class SagaData
-{
-    public string? Data { get; set; }
-}
-
-public class Saga
-{
-    public SagaData? SagaData { get; set; }
-}
-
 [TestFixture]
 public class SagaConverterTests
 {
+    private class ASagaData : SagaData
+    {
+        public string? Data { get; set; }
+    }
+
+    private class ASaga : Saga<ASagaData>
+    {
+    }
+
     private SagaConverter _sagaConverter;
     private JsonSerializerOptions _options;
 
     [SetUp]
     public void SetUp()
     {
-        _sagaConverter = new SagaConverter(typeof(Saga), typeof(SagaData));
+        _sagaConverter = new SagaConverter(typeof(ASaga), typeof(ASagaData));
         _options = new JsonSerializerOptions
         {
             Converters = { _sagaConverter }
@@ -35,10 +35,10 @@ public class SagaConverterTests
     public void CanConvert_ReturnsTrueForAssignableType()
     {
         // Act
-        var result = _sagaConverter.CanConvert(typeof(Saga));
+        var result = _sagaConverter.CanConvert(typeof(ASaga));
 
         // Assert
-        Assert.IsTrue(result);
+        Assert.That(result, Is.True);
     }
 
     [Test]
@@ -48,25 +48,26 @@ public class SagaConverterTests
         var result = _sagaConverter.CanConvert(typeof(string));
 
         // Assert
-        Assert.IsFalse(result);
+        Assert.That(result, Is.False);
     }
 
     [Test]
     public void Read_DeserializesJsonToObject()
     {
         // Arrange
-        var json = "{\"SagaData\":{\"Data\":\"TestData\"}}";
+        var correlationId = Guid.NewGuid();
+        var json = "{\"SagaData\":{\"Data\":\"TestData\"}, \"CorrelationId\":\"" + correlationId + "\"}";
         var reader = new Utf8JsonReader(Encoding.UTF8.GetBytes(json));
 
         // Act
-        var result = _sagaConverter.Read(ref reader, typeof(Saga), _options);
+        var result = _sagaConverter.Read(ref reader, typeof(ASaga), _options);
 
         // Assert
         Assert.That(result, Is.Not.Null);
         Assert.Multiple(() =>
         {
-            Assert.That(result, Is.InstanceOf<Saga>());
-            Assert.That(((Saga)result).SagaData?.Data, Is.EqualTo("TestData"));
+            Assert.That(result, Is.InstanceOf<ASaga>());
+            Assert.That(((ASaga)result).SagaData?.Data, Is.EqualTo("TestData"));
         });
     }
 
@@ -74,7 +75,12 @@ public class SagaConverterTests
     public void Write_SerializesObjectToJson()
     {
         // Arrange
-        var saga = new Saga { SagaData = new SagaData { Data = "TestData" } };
+        var correlationId = Guid.NewGuid();
+        var saga = new ASaga
+        {
+            CorrelationId = correlationId,
+            SagaData = new ASagaData { Data = "TestData" }
+        };
         var buffer = new ArrayBufferWriter<byte>();
         var writer = new Utf8JsonWriter(buffer);
 
@@ -84,6 +90,7 @@ public class SagaConverterTests
         var json = Encoding.UTF8.GetString(buffer.WrittenMemory.ToArray());
 
         // Assert
-        Assert.That(json, Is.EqualTo("{\"SagaData\":{\"Data\":\"TestData\"}}"));
+        var expected = "{\"SagaData\":{\"Data\":\"TestData\"},\"CorrelationId\":\"" + correlationId + "\"}";
+        Assert.That(json, Is.EqualTo(expected));
     }
 }

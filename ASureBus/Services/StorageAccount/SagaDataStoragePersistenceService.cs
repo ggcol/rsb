@@ -44,6 +44,6 @@ internal sealed class SagaDataStoragePersistenceService(
 
     private static string GetName(SagaType sagaType, Guid correlationId)
     {
-        return $"{sagaType.Type.Name}-{correlationId}";
+        return $"{sagaType.Type.Name}/{correlationId}";
     }
 }

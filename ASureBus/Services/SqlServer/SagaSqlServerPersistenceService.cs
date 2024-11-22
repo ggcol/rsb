@@ -1,4 +1,6 @@
-﻿using ASureBus.Core.TypesHandling.Entities;
+﻿using ASureBus.Core.Sagas;
+using ASureBus.Core.TypesHandling.Entities;
+using ASureBus.Utils;
 
 namespace ASureBus.Services.SqlServer;
 
@@ -8,21 +10,27 @@ internal class SagaSqlServerPersistenceService(ISqlServerService storage)
     public async Task<object?> Get(SagaType sagaType, Guid correlationId,
         CancellationToken cancellationToken = default)
     {
-        return await storage.Get(sagaType, correlationId, cancellationToken)
+        var result = await storage.Get(sagaType.Type.Name, correlationId, cancellationToken)
             .ConfigureAwait(false);
+        
+        return !string.IsNullOrWhiteSpace(result)
+            ? Serializer.Deserialize(result, sagaType.Type, new SagaConverter(sagaType.Type, sagaType.SagaDataType))
+            : null;
     }
 
     public async Task Save<TItem>(TItem item, SagaType sagaType, Guid correlationId,
         CancellationToken cancellationToken = default)
     {
-        await storage.Save(item, sagaType, correlationId, cancellationToken)
+        var serialized = Serializer.Serialize(item);
+        
+        await storage.Save(serialized, sagaType.Type.Name, correlationId, cancellationToken)
             .ConfigureAwait(false);
     }
 
     public async Task Delete(SagaType sagaType, Guid correlationId,
         CancellationToken cancellationToken = default)
     {
-        await storage.Delete(sagaType, correlationId, cancellationToken)
+        await storage.Delete(sagaType.Type.Name, correlationId, cancellationToken)
             .ConfigureAwait(false);
     }
 }

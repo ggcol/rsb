@@ -1,15 +1,13 @@
-﻿using ASureBus.Core.TypesHandling.Entities;
-
-namespace ASureBus.Services.SqlServer;
+﻿namespace ASureBus.Services.SqlServer;
 
 internal interface ISqlServerService
 {
-    internal Task Save<TItem>(TItem item, SagaType sagaType,
+    internal Task Save(string serializedItem, string tableName,
         Guid correlationId, CancellationToken cancellationToken = default);
 
-    internal Task<object?> Get(SagaType sagaType, Guid correlationId,
+    internal Task<string> Get(string tableName, Guid correlationId,
         CancellationToken cancellationToken = default);
 
-    internal Task Delete(SagaType sagaType, Guid correlationId,
+    internal Task Delete(string tableName, Guid correlationId,
         CancellationToken cancellationToken = default);
 }

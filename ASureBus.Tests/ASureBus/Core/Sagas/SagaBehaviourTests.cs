@@ -69,6 +69,7 @@ public class SagaBehaviourTests
     {
         public Guid CorrelationId { get; set; }
         public event EventHandler<SagaCompletedEventArgs>? Completed;
+        public bool IsComplete { get; }
 
         public void Complete()
         {

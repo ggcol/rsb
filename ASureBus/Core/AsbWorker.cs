@@ -1,4 +1,5 @@
-﻿using ASureBus.Accessories.Heavy;
+﻿using ASureBus.Abstractions;
+using ASureBus.Accessories.Heavy;
 using ASureBus.Core.Caching;
 using ASureBus.Core.Enablers;
 using ASureBus.Core.Entities;
@@ -165,10 +166,10 @@ internal sealed class AsbWorker : IHostedService
 
         try
         {
-            var implSaga = await GetConcreteSaga(sagaType, listenerType, correlationId)
+            var saga = await GetConcreteSaga(sagaType, listenerType, correlationId)
                     .ConfigureAwait(false);
 
-            var broker = BrokerFactory.Get(_serviceProvider, sagaType, implSaga, listenerType,
+            var broker = BrokerFactory.Get(_serviceProvider, sagaType, saga, listenerType,
                 correlationId);
 
             var asbMessage = await broker.Handle(args.Message.Body, args.CancellationToken)
@@ -182,13 +183,16 @@ internal sealed class AsbWorker : IHostedService
             await args.CompleteMessageAsync(args.Message, args.CancellationToken)
                 .ConfigureAwait(false);
 
-            if (_sagaIo is not null)
+            if (!IsComplete(saga!))
             {
-                await _sagaIo.Unload(implSaga, correlationId, sagaType).ConfigureAwait(false);
+                if (_sagaIo is not null)
+                {
+                    await _sagaIo.Unload(saga, correlationId, sagaType).ConfigureAwait(false);
+                }
+
+                _cache.Upsert(correlationId, saga);
             }
-
-            _cache.Upsert(correlationId, implSaga);
-
+            
             await _messageEmitter.FlushAll(broker.Collector, args.CancellationToken)
                 .ConfigureAwait(false);
         }
@@ -209,6 +213,11 @@ internal sealed class AsbWorker : IHostedService
         }
     }
 
+    private static bool IsComplete(object implSaga)
+    {
+        return ((ISaga)implSaga).IsComplete;
+    }
+
     private static async Task<Guid> GetCorrelationId(ProcessMessageEventArgs args)
     {
         var corrId = await Serializer.Deserialize<DeserializeCorrelationId>(
@@ -227,7 +236,7 @@ internal sealed class AsbWorker : IHostedService
             return saga;
         }
 
-        if (_sagaIo is not null)
+        if (_sagaIo is not null && !listenerType.IsInitMessageHandler)
         {
             saga = await _sagaIo.Load(correlationId, sagaType)
                 .ConfigureAwait(false);
