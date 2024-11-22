@@ -24,7 +24,7 @@ jobs:
       sqlserver:
         image: mcr.microsoft.com/mssql/server
         env:
-          SA_PASSWORD: ${{ secrets.MSSQL_PSW }}
+          SA_PASSWORD: "AMoreComplexPsw123!"
           ACCEPT_EULA: "Y"
         ports:
           - 1433:1433
@@ -53,7 +53,7 @@ jobs:
 
       - name: Run tests
         env:
-          ConnectionStrings__DefaultConnection: ${{ secrets.MSSQL_CS }}
+          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=master;User Id=sa;Password=AMoreComplexPsw123!;Trusted_Connection=False;MultipleActiveResultSets=true;TrustServerCertificate=True;"
         run: dotnet test --configuration Release --no-build --verbosity normal
 
       - name: Get the latest tag
