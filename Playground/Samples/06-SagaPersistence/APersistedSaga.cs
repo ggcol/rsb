@@ -33,13 +33,16 @@ public class APersistedSaga(ILogger<APersistedSaga> logger) : Saga<APersistedSag
         SagaData.AProp += $" {message.Something}";
 
         logger.LogInformation("========== {MessageName} ==========", messageName);
-        
+
+        var correlationId = context.CorrelationId;
         logger.LogInformation("{MessageName} received, correlationId: {CorrelationId}", 
-            messageName, context.CorrelationId);
+            messageName, correlationId);
 
         logger.LogInformation("Print saga data: {SagaData}", SagaData.AProp);
 
         IAmComplete();
+        
+        logger.LogInformation("Saga completed, correlationId: {CorrelationId}", correlationId);
         return Task.CompletedTask;
     }
 }

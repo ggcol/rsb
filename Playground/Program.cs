@@ -12,6 +12,7 @@ using Playground.Samples._04_ASaga;
 using Playground.Samples._05_Heavy;
 using Playground.Samples._07_DelayedAndScheduled;
 using Playground.Samples._08_ABrokenSaga;
+using Playground.Samples._09_LongerSaga;
 
 await Host
     .CreateDefaultBuilder()
@@ -94,6 +95,7 @@ await Host
             // services.AddHostedService<APersistedSagaInitJob>();
             // services.AddHostedService<DelayedAndScheduledInitJob>();
             // services.AddHostedService<ABrokenSagaInitJob>();
+            // services.AddHostedService<LongerSagaInitJob>();
             services.AddLogging();
         })
     
