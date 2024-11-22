@@ -13,7 +13,7 @@ jobs:
       sqlserver:
         image: mcr.microsoft.com/mssql/server
         env:
-          SA_PASSWORD: "test-psw"
+          SA_PASSWORD: "AMoreComplexPsw123!"
           ACCEPT_EULA: "Y"
         ports:
           - 1433:1433
@@ -42,7 +42,7 @@ jobs:
 
       - name: Run tests with coverage
         env:
-          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=master;User Id=sa;Password=test-psw;Trusted_Connection=False;MultipleActiveResultSets=true;"
+          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=master;User Id=sa;Password=AMoreComplexPsw123!;Trusted_Connection=False;MultipleActiveResultSets=true;"
         run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage/ --settings coverage.runsettings
 
       - name: Upload coverage to Codacy
