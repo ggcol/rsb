@@ -24,14 +24,14 @@ jobs:
       sqlserver:
         image: mcr.microsoft.com/mssql/server
         env:
-          SA_PASSWORD: "test-psw"
+          SA_PASSWORD: "AMoreComplexPsw123!"
           ACCEPT_EULA: "Y"
         ports:
           - 1433:1433
         options: >-
           --health-cmd "exit 0"
           --health-interval 10s
-          --health-timeout 5s
+          --health-timeout 30s
           --health-retries 5
 
     steps:
@@ -53,7 +53,7 @@ jobs:
 
       - name: Run tests
         env:
-          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=master;User Id=sa;Password=test-psw;Trusted_Connection=False;MultipleActiveResultSets=true;"
+          ConnectionStrings__DefaultConnection: "Server=localhost,1433;Database=master;User Id=sa;Password=AMoreComplexPsw123!;Trusted_Connection=False;MultipleActiveResultSets=true;TrustServerCertificate=True;"
         run: dotnet test --configuration Release --no-build --verbosity normal
 
       - name: Get the latest tag
